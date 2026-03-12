@@ -1,0 +1,131 @@
+import { Component, OnInit, inject } from '@angular/core'; 
+import { FormGroup, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ConsultationService } from '../shared/consultation.service';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2'; 
+
+@Component({
+  selector: 'app-consultation',
+  standalone: true, 
+  imports: [ReactiveFormsModule, CommonModule],
+  templateUrl: './consultation.component.html',
+  styleUrl: './consultation.component.css',
+})
+export class ConsultationComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private consultationService = inject(ConsultationService);
+  private router = inject(Router);
+
+  consultations: any[] = [];
+  addMode = true;
+  showModal = false;
+
+  consultationForm = this.fb.nonNullable.group({
+      id: [null as number | null],
+      name: ['', [Validators.required]],
+      description: ['', [Validators.required]],
+      specialty: ['', [Validators.required]],
+      duration: ['30', [Validators.required, Validators.min(1)]],
+      price: ['0', [Validators.required, Validators.min(0)]]
+    });
+  ngOnInit() {
+    this.getConsultations();
+  }
+  getConsultations() {
+    this.consultationService.getConsultations().subscribe({
+      next: (res:any) => {
+        this.consultations = res.data || res;
+      },
+      error: (err:any) => console.error('Hiba a betöltéskor:', err)
+    });
+  }
+  startShowModal() {
+    this.addMode = true;
+    this.showModal = true;
+    this.consultationForm.reset({ 
+      id: null,
+      name: '', 
+      description: '', 
+      specialty: '',
+      duration: 30,  
+      price: 0 
+    } as any);
+  }
+  startEdit(consultation: any) {
+    this.addMode = false;
+    this.showModal = true;
+    this.consultationForm.patchValue(consultation);
+  }
+
+  startSave() {
+    if (this.consultationForm.invalid) {
+      this.consultationForm.markAllAsTouched();
+      return;
+    }
+    const data = this.consultationForm.getRawValue();
+
+    if (this.addMode) {
+      this.consultationService.createConsultation(data as any).subscribe({
+        next: () => this.handleSuccess('Szolgáltatás hozzáadva!'),
+        error: (err:any) => this.handleError(err)
+      });
+    } else {
+      const {id, ...payload} = data;
+
+      if (id!==null) {
+        this.consultationService.updateConsultation(id as number, payload as any).subscribe({
+          next: () => this.handleSuccess('Sikeres módosítás!'),
+          error: (err:any) => this.handleError(err)
+        });
+      } else {
+        Swal.fire('Hiba!', 'Nincs érvényes azonosító a módosításhoz.', 'error');  
+      }
+    }
+  }
+
+  deleteConsultation(id: number){
+    Swal.fire({
+      title: 'Biztos törölni szeretnéd?',
+      text: "Ez a folyamat nem vonható vissza!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#003366',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Igen, töröld!',
+      cancelButtonText: 'Mégse'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.consultationService.deleteConsultation(id).subscribe({
+          next: () => {
+            this.getConsultations();
+            Swal.fire('Törölve!', 'A szolgáltatás eltávolítva.', 'success');
+          },
+          error: (err:any) => this.handleError(err)
+        });
+      }
+    });
+  }
+
+  private handleSuccess(message: string) {
+    this.showModal = false;
+    this.getConsultations();
+    this.consultationForm.reset();
+    this.addMode = true;
+    Swal.fire({ title: 'Siker!', text: message, icon: 'success', timer: 2000 });
+  }
+
+  private handleError(err: any) {
+    Swal.fire('Hiba!', err.error?.message || 'A művelet nem sikerült.', 'error');
+  }
+
+  cancel() {
+    this.showModal = false;
+    this.addMode = true;
+    this.consultationForm.reset();
+  }
+
+  onMakeBooking(consultation: any) {
+    this.router.navigate(['/booking', consultation.id]);
+  }
+}

@@ -1,0 +1,108 @@
+<div class="container py-5">
+
+  @if (selectedStaff) {
+    <div class="animate-fade-in">
+      <button class="btn btn-link text-decoration-none mb-4 p-0 text-elit" (click)="backToList()">
+        <i class="bi bi-arrow-left me-2"></i>Vissza a szakembereinkhez
+      </button>
+
+      <div class="row g-5">
+        <div class="col-md-4 text-center">
+          <img [src]="selectedStaff.imageUrl || 'images/default-doctor.png'" 
+               [alt]="selectedStaff.name" 
+               class="rounded-4 shadow-sm img-fluid doctor-img-large">
+        </div>
+        
+        <div class="col-md-8">
+          <h2 class="fw-bold mb-1">{{ selectedStaff.name }}</h2>
+          <p class="text-primary fs-5 mb-4">{{ selectedStaff.specialty }}</p>
+          
+          <div class="bio-section mb-5">
+            <h5 class="fw-bold border-bottom pb-2">Bemutatkozás</h5>
+            <p class="text-muted lead">
+              {{ selectedStaff.bio || 'Tapasztalt szakemberünk várja jelentkezését az Elit Klinika modern környezetében.' }}
+            </p>
+          </div>
+
+          <div class="services-section p-4 bg-light rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Elérhető szolgáltatások</h5>
+            <div class="list-group list-group-flush bg-transparent">
+              <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom px-0">
+                <div>
+                  <span class="fw-bold d-block">Szakorvosi konzultáció</span>
+                  <small class="text-muted">Általános felmérés és tanácsadás</small>
+                </div>
+                <div class="text-end">
+                  <span class="d-block fw-bold text-elit mb-2">25 000 Ft</span>
+                  
+                  @if (auth.isAuthenticated()) {
+                    <button class="btn btn-elit btn-sm rounded-pill px-4" 
+                            [routerLink]="['/booking']" 
+                            [queryParams]="{ staffId: selectedStaff.id }">
+                      Foglalás
+                    </button>
+                  } @else {
+                    <button class="btn btn-elit btn-sm rounded-pill px-4" 
+                            [routerLink]="['/login']" 
+                            [queryParams]="{ returnUrl: '/booking', staffId: selectedStaff.id }">
+                      Bejelentkezés a foglaláshoz
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <h2 class="text-center mb-5 fw-bold section-title">Szakembereink</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      @for (staff of staffs; track staff.id) {
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0 doctor-card">
+            <div class="text-center mt-4">
+              @if (staff.imageUrl) {
+                <img [src]="staff.imageUrl" [alt]="staff.name" class="rounded-circle doctor-img"
+                     #imgElement
+                     (error)="imgElement.src = 'images/default_doctor.png'">
+              } @else {
+                <div class="rounded-circle bg-light text-primary d-inline-flex align-items-center justify-content-center doctor-placeholder">
+                  <i class="bi bi-person-badge fs-1"></i>
+                </div>
+              }
+            </div>
+
+            <div class="card-body text-center p-4">
+              <h5 class="card-title fw-bold mb-1">{{ staff.name }}</h5>
+              <p class="specialty-text small mb-3 text-primary">{{ staff.specialty }}</p>
+              
+              <p class="card-text text-muted small mb-4 bio-text">
+                {{ staff.bio || 'Tapasztalt szakemberünk várja jelentkezését.' }}
+              </p>
+
+              <button class="btn btn-outline-elit rounded-pill px-4 w-100 mb-2" (click)="selectStaff(staff)">
+                Profil megtekintése
+              </button>
+              
+              @if (auth.isAuthenticated()) {
+                <button class="btn btn-elit rounded-pill px-4 w-100" 
+                        [routerLink]="['/booking']" 
+                        [queryParams]="{ staffId: staff.id }">
+                  Időpontfoglalás
+                </button>
+              } @else {
+                <button class="btn btn-elit rounded-pill px-4 w-100" 
+                        [routerLink]="['/login']" 
+                        [queryParams]="{ returnUrl: '/booking', staffId: staff.id }">
+                  Bejelentkezés és foglalás
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

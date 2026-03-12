@@ -1,0 +1,31 @@
+
+.min-vh-75 {
+  min-height: 75vh;
+}
+
+.card {
+  transition: transform 0.3s ease;
+}
+
+.input-group-text {
+  color: #6c757d;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: none;
+  background-color: #fff !important;
+}
+
+.login-btn-custom {
+  background-color: #003366; /* Sötét tengerészkék (Navy) */
+  color: white !important;
+  border: 1px solid #002244;
+  transition: all 0.3s ease;
+}
+
+.login-btn-custom:hover {
+  background-color: #001a33; /* Még sötétebb kék lebegtetéskor */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}

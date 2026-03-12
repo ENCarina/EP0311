@@ -1,0 +1,72 @@
+.step-animation {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.min-height-card {
+    min-height: 480px;
+    transition: all 0.3s ease;
+}
+
+.slot-button {
+    transition: all 0.2s ease-in-out;
+    border-width: 2px;
+    border-radius: 10px;
+}
+
+.slot-button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.slot-button:disabled {
+    opacity: 0.6;
+    text-decoration: line-through;
+    background-color: #f8f9fa;
+}
+
+/* Haladási sáv színe */
+.progress-bar {
+    background-color: #0d6efd;
+    transition: width 0.5s ease-in-out;
+}/* Kártyák animációja */
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.hover-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+}
+
+.custom-img {
+    height: 250px;
+    object-fit: cover;
+}
+
+/* Figyelemfelkeltő gomb animáció */
+.pulse-button {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Mobil igazítás */
+@media (max-width: 768px) {
+    .custom-img {
+        height: 200px;
+    }
+    .display-4 {
+        font-size: 2.2rem;
+    }
+}

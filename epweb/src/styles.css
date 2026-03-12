@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+@import "bootstrap";
+@import 'bootstrap-icons';
+
+.navbar-brand:hover i.bi-heart-pulse-fill {
+  animation: beat .25s infinite alternate;
+  transform-origin: center;
+}
+
+@keyframes beat {
+  to { transform: scale(1.2); }
+}
