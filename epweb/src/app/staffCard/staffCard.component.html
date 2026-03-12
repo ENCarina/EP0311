@@ -8,13 +8,14 @@
 
       <div class="row g-5">
         <div class="col-md-4 text-center">
-          <img [src]="selectedStaff.imageUrl || 'images/default-doctor.png'" 
-               [alt]="selectedStaff.user?.name" 
+          <img [src]="selectedStaff.imageUrl" 
+               [alt]="selectedStaff.name" 
+               (error)="selectedStaff.imageUrl = '/images/default-doctor.png'"
                class="rounded-4 shadow-sm img-fluid doctor-img-large">
         </div>
         
         <div class="col-md-8">
-          <h2 class="fw-bold mb-1">{{ selectedStaff.user?.name }}</h2>
+          <h2 class="fw-bold mb-1">{{ selectedStaff.name }}</h2>
           <p class="text-primary fs-5 mb-4">{{ selectedStaff.specialty }}</p>
           
           <div class="bio-section mb-5">
@@ -63,7 +64,7 @@
           <div class="card h-100 shadow-sm border-0 staff-card">
             <div class="text-center mt-4">
               @if (staff.imageUrl) {
-                <img [src]="staff.imageUrl" [alt]="staff.user?.name" class="rounded-circle doctor-img"
+                <img [src]="staff.imageUrl" [alt]="staff.name" class="rounded-circle doctor-img"
                      #imgElement
                      (error)="imgElement.src = 'images/default_doctor.png'">
               } @else {
@@ -74,7 +75,7 @@
             </div>
 
             <div class="card-body text-center p-4">
-              <h5 class="card-title fw-bold mb-1">{{ staff.user?.name }}</h5>
+              <h5 class="card-title fw-bold mb-1">{{ staff.name }}</h5>
               <p class="specialty-text small mb-3 text-primary">{{ staff.specialty }}</p>
               
               <p class="card-text text-muted small mb-4 bio-text">

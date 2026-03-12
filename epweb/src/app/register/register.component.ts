@@ -35,11 +35,18 @@ export class RegisterComponent {
   private createCompareValidator(): ValidatorFn{ 
     return (control: AbstractControl) => {
       const password = control.get('password')?.value;
-      const confirmPassword = control.get('confirmPassword')?.value;
+      const confirm = control.get('confirmPassword')?.value;
       
-      if (password !== confirmPassword) {
-          control.get('confirmPassword')?.setErrors({ mismatch: true });
+      const confirmControl = control.get('confirmPassword');
+
+      if (!password || !confirm) return null;
+
+      if (password !== confirm) {
+          confirmControl?.setErrors({ ...confirmControl.errors, mismatch: true });
           return { mismatch: true };
+      }
+      if (control.get('confirmPassword')?.hasError('mismatch')) {
+       control.get('confirmPassword')?.setErrors(null);
       }
       return null;
     };
@@ -50,9 +57,16 @@ export class RegisterComponent {
       return;
     }
       this.isLoading = true;
-      const { confirmPassword, ...dataToSend } = this.registerForm.getRawValue();
+      const rawValues = this.registerForm.getRawValue();
+      
+      const payload = {
+      name: rawValues.name,
+      email: rawValues.email,
+      password: rawValues.password,
+      password_confirmation: rawValues.confirmPassword 
+      };
 
-      this.auth.register(dataToSend).pipe(takeUntilDestroyed()).subscribe({
+      this.auth.register(payload).subscribe({
         next: (res:any) => {
           this.isLoading = false;
           Swal.fire({

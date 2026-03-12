@@ -21,7 +21,21 @@ export class StaffCardComponent implements OnInit {
   private loadStaffData(): void {
     this.api.getStaff().subscribe({
       next: (res:any) => {
-        this.staffs = res.data || res;
+        const rawData = res.data || res;
+        this.staffs = rawData.map((s: any) => {
+          const profile = s.staffProfile || s.user;
+
+          let imagePath = '/images/default-doctor.png'; 
+          if (s.id === 1) imagePath = '/images/doc1.jpg'; 
+          if (s.id === 2) imagePath = '/images/doc2.jpg';
+          if (s.id === 3) imagePath = '/images/doc3.jpg';
+          return {
+            ...s,
+            name: s.staffProfile?.name || s.name || 'Névtelen',
+            role: s.staffProfile?.roleId?.toString() || s.role || '1',
+            imageUrl: imagePath
+          };  
+        });
       },
       error: (err) => console.error(err) 
     });      

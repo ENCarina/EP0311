@@ -30,6 +30,7 @@ const AuthController = {
                 throw new Error('Error! User already exists: ' + user.name)
             }
             await AuthController.tryRegister(req, res)
+
         } catch (error) {
             if (clientError) {
                 res.status(400)
@@ -44,31 +45,39 @@ const AuthController = {
         }
     },
     async tryRegister(req, res) {
-        const verificationToken = crypto.randomBytes(32).toString('hex')
-        const verifyUrl = process.env.APP_URL + '/verify-email/' + verificationToken
+        try {
+            const verificationToken = crypto.randomBytes(32).toString('hex')
+            const verifyUrl = process.env.APP_URL + 'verify-email/' + verificationToken
         
-        const user = {
-            name: req.body.name,
-            email: req.body.email,
-            password: bcrypt.hashSync(req.body.password),
-            roleId:0, // alapértelmezett szerep: user
-            verificationToken: verificationToken,
-        }
-        const result = await User.create(user)
-
-        if (typeof sendEmail !== 'undefined') {
-            sendEmail({
+            const user = {
+                name: req.body.name,
                 email: req.body.email,
-                subject: 'Regisztráció',
-                html: `Regisztráció megerősítése:<br>
-                ${verifyUrl}`
-            })
-        }
-        res.status(201).json({
-            success: true,
-            data: result
-        }) 
+                password: bcrypt.hashSync(req.body.password),
+                roleId:0, 
+                verificationToken: verificationToken,
+                verified: false //explicit
+            }
+            const result = await User.create(user)
+
+            if (typeof sendEmail !== 'undefined') {
+                sendEmail({
+                    to: req.body.email,
+                    subject: 'Regisztráció',
+                    html: `Regisztráció megerősítése:<br>${verifyUrl}`
+                }).catch (err =>{
+                    console.error("Email hiba:", err.message);
+                });
+            }
+
+            res.status(201).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        } 
     },
+
     async verifyEmail(req, res) {
         try {
             const user = await User.findOne({
@@ -85,7 +94,7 @@ const AuthController = {
             message: 'The email is verified!',
         })
         } catch (error) {
-            res.status(500).json({ success: false, error: e.message });
+            res.status(500).json({ success: false, error: error.message });
         }
     },
     async login(req, res) {
@@ -107,6 +116,14 @@ const AuthController = {
                 message: 'Ezzel az email címmel nincs regisztrált felhasználó!'
                 });
             }
+            if (user.verified === false || user.verified == 0) {
+                /*return res.status(401).json({
+                success: false,
+                message: 'Kérjük, igazolja vissza email címét a bejelentkezéshez!'
+                });
+                */
+               console.log("Figyelem: A felhasználó nincs aktiválva, de a fejlesztés miatt átengedjük.");
+            }
 
             const passwordIsValid = await bcrypt.compare(password, user.password);
             
@@ -116,11 +133,11 @@ const AuthController = {
                 message: 'Érvénytelen jelszó!'
                 });
             }
-                
             return AuthController.tryLogin(req, res, user);
 
         } catch (error) {
-            res.json({
+            console.error("Login error:", error);
+            return res.status(500).json({
                 success: false,
                 message: 'Hiba történt a bejelentkezés során!',
                 error: error.message
@@ -129,7 +146,6 @@ const AuthController = {
     },
     async tryLogin(req, res, user) {
         try {
-        // Ellenőrizzük, hogy létezik-e a kulcs, különben hibát dob
         const secretKey = process.env.APP_KEY || 'default_secret_key';
         var token = jwt.sign(
             { id: user.id , roleId: user.roleId}, 

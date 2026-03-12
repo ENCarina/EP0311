@@ -39,6 +39,11 @@ export class LoginComponent {
 
   this.auth.login(loginPayload).subscribe({
     next: (res: any) => {
+      if (res.accessToken) {
+        localStorage.setItem('token', res.accessToken);
+        localStorage.setItem('user', JSON.stringify(res)); 
+
+      }
       const role = res.roleId !== undefined ? res.roleId : (res.user?.roleId);
       const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/booking';
       const staffId = this.route.snapshot.queryParams['staffId'];
@@ -57,7 +62,7 @@ export class LoginComponent {
           if (navigated) {
             console.log('Sikeres navigáció!');
           } else {
-            console.warn('A navigáció nem történt meg (Guard blokkolhatja)!');
+            console.warn('A navigáció nem történt meg!');
           }
           this.isLoading = false;
         }).catch(err => {
@@ -68,7 +73,14 @@ export class LoginComponent {
     }, 
     error: (err: any) => {
       this.isLoading = false;
-      this.errorMessage = err.error?.message || 'Sikertelen bejelentkezés!';
+      
+      if (err.status === 401 && err.error?.message?.includes('verified')) {
+        this.errorMessage = 'Kérjük, igazolja vissza email címét a belépéshez!';
+      } else if (err.status === 401) {
+        this.errorMessage = 'Hibás email vagy jelszó!';
+      } else {
+        this.errorMessage = err.error?.message || 'Sikertelen bejelentkezés!';
+      }
       Swal.fire('Hiba!', this.errorMessage, 'error');
     }
   }); 

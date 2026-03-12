@@ -32,18 +32,31 @@
 
     <div class="mb-3">
       <label class="form-label">Jelszó megerősítése</label>
-      <input type="password" formControlName="ConfirmPassword" 
+      <input type="password" formControlName="confirmPassword" 
             class="form-control"
-            [class.is-invalid]="registerForm.hasError('mismatch') && registerForm.get('ConfirmPassword')?.touched">
-      <div class="invalid-feedback">A jelszavak nem egyeznek!</div>
+            [class.is-invalid]="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched">
+      <div class="invalid-feedback">
+          <span *ngIf="registerForm.get('confirmPassword')?.hasError('required')">A megerősítés kötelező!</span>
+          <span *ngIf="registerForm.hasError('mismatch') && !registerForm.get('confirmPassword')?.hasError('required')">A jelszavak nem egyeznek!</span>
+      </div>
     </div>
 
       <button type="submit" [disabled]="!registerForm.valid || isLoading" class="btn btn-primary w-100">
         <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
         Regisztrálok
-      </button>
+      </button> 
 
     </form>
+    
+    <hr class="my-4 text-muted">
+
+    <div class="text-center">
+      <p class="mb-0 small text-secondary">Már van fiókod?</p>
+      <a routerLink="/login" class="btn btn-link text-decoration-none fw-bold" style="color: #003366;">
+        Bejelentkezés
+      </a>
+    </div>
+    
   </div>
 </div>
 

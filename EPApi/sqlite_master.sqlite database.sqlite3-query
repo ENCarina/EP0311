@@ -1,4 +1,4 @@
 -- database: ./database.sqlite
 
 
-SELECT * FROM Slots WHERE isAvailable = 1 AND date >= '2026-03-09';
+UPDATE users SET verified = 1;
