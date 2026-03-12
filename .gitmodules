@@ -1,0 +1,4 @@
+[submodule "EPort"]
+	path = EPort
+	url = https://github.com/ENCarina/EPort.git
+	branch = livi_front

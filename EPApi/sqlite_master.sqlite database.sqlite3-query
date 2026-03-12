@@ -1,4 +1,0 @@
--- database: ./database.sqlite
-
-
-UPDATE users SET verified = 1;
