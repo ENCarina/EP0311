@@ -28,7 +28,8 @@ export const routes: Routes = [
     { path: 'booking/:id', component: BookingComponent, canActivate: [authGuard] },
     { path: 'booking', component:BookingComponent, canActivate: [authGuard]},
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
-
+    { path: 'admin/consultation', component: ConsultationComponent, canActivate: [authGuard]},
+    
     { path: '**', redirectTo: 'home' },
 
 ];

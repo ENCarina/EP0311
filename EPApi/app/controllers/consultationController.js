@@ -1,14 +1,26 @@
 import Consultation from '../models/consultation.js'
 
 const ConsultationController = {
-    handleError(res, error) {
-        const status = error.message === 'Fail! Record not found!' ? 404 : 500;
-        res.status(status).json({
-            success: false,
-            message: error.message || 'Error! The query failed!',
-            error: error.message
-        });
-    },
+   handleError(res, error) {
+    let status = 500;
+    let message = error.message || 'Hiba történt a művelet során!';
+
+    if (error.message === 'Fail! Record not found!') {
+        status = 404;
+    } else if (error.name === 'SequelizeUniqueConstraintError') {
+        status = 400;
+        message = 'Ez a név már foglalt! Kérlek, válassz másikat.';
+    } else if (error.name === 'SequelizeValidationError') {
+        status = 400;
+        message = error.errors.map(e => e.message).join(', ');
+    }
+
+    res.status(status).json({
+        success: false,
+        message: message,
+        error: error.name
+    });
+},
 
     async index(req, res) {
         try {
@@ -40,7 +52,9 @@ const ConsultationController = {
 
     async update(req, res) {
         try {
-            const [updatedRows] = await Consultation.update(req.body, {
+            const { id, ...updateData } = req.body;
+
+            const [updatedRows] = await Consultation.update(updateData, {
                 where: { id: req.params.id }
             });
 

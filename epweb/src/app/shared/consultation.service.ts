@@ -1,14 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Consultation } from '../shared/interfaces/consultation.interface';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConsultationService {
-  private url = 'http://localhost:8000/api/consultations';
-  private bookingUrl = 'http://localhost:8000/api/bookings';
+  private readonly url = 'http://localhost:8000/api/consultations';
+  private readonly bookingUrl = 'http://localhost:8000/api/bookings';
   
   protected readonly http= inject(HttpClient);
 

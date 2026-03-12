@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core'; 
-import { FormGroup, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ConsultationService } from '../shared/consultation.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -24,10 +24,10 @@ export class ConsultationComponent implements OnInit {
   consultationForm = this.fb.nonNullable.group({
       id: [null as number | null],
       name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      description: ['', [Validators.required], Validators.minLength(3)],
       specialty: ['', [Validators.required]],
-      duration: ['30', [Validators.required, Validators.min(1)]],
-      price: ['0', [Validators.required, Validators.min(0)]]
+      duration: [60, [Validators.required, Validators.min(5)]],
+      price: [0, [Validators.required, Validators.min(0)]]
     });
   ngOnInit() {
     this.getConsultations();
@@ -35,7 +35,7 @@ export class ConsultationComponent implements OnInit {
   getConsultations() {
     this.consultationService.getConsultations().subscribe({
       next: (res:any) => {
-        this.consultations = res.data || res;
+        this.consultations = Array.isArray(res) ? res : (res.data || []);
       },
       error: (err:any) => console.error('Hiba a betöltéskor:', err)
     });
@@ -43,19 +43,19 @@ export class ConsultationComponent implements OnInit {
   startShowModal() {
     this.addMode = true;
     this.showModal = true;
-    this.consultationForm.reset({ 
-      id: null,
-      name: '', 
-      description: '', 
-      specialty: '',
-      duration: 30,  
-      price: 0 
-    } as any);
+    this.consultationForm.reset();
   }
   startEdit(consultation: any) {
     this.addMode = false;
     this.showModal = true;
-    this.consultationForm.patchValue(consultation);
+    this.consultationForm.patchValue({
+      id: consultation.id,
+      name: consultation.name,
+      description: consultation.description,
+      specialty: consultation.specialty,
+      duration: consultation.duration,
+      price: consultation.price
+    });
   }
 
   startSave() {
@@ -73,8 +73,8 @@ export class ConsultationComponent implements OnInit {
     } else {
       const {id, ...payload} = data;
 
-      if (id!==null) {
-        this.consultationService.updateConsultation(id as number, payload as any).subscribe({
+      if (id) {
+        this.consultationService.updateConsultation(id, payload as any).subscribe({
           next: () => this.handleSuccess('Sikeres módosítás!'),
           error: (err:any) => this.handleError(err)
         });

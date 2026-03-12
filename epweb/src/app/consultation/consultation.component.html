@@ -39,7 +39,7 @@
         </tr>
         } @empty {
         <tr>
-          <td colspan="6" class="text-center py-4 text-muted">Nincs rögzített szolgáltatás.</td>
+          <td colspan="7" class="text-center py-4 text-muted">Nincs rögzített szolgáltatás.</td>
         </tr>
         }
       </tbody>
@@ -86,7 +86,9 @@
             }
             <div class="mb-3">
               <label class="form-label">Név</label>
-              <input type="text" class="form-control" formControlName="name">
+              <input type="text" class="form-control" formControlName="name"
+                    [class.is-invalid]="consultationForm.get('name')?.invalid && consultationForm.get('name')?.touched">
+              <div class="invalid-feedback">A név megadása kötelező!</div>
             </div>
             <div class="mb-3">
               <label class="form-label">Leírás</label>
@@ -98,7 +100,9 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Időtartam (perc)</label>
-              <input type="number" class="form-control" formControlName="duration">
+              <input type="number" class="form-control" formControlName="duration"
+                      [class.is-invalid]="consultationForm.get('duration')?.invalid && consultationForm.get('duration')?.touched">
+              <div class="invalid-feedback">Minimum 5 percet meg kell adnod!</div>
             </div>
             <div class="mb-3">
               <label class="form-label">Ár (Ft)</label>
@@ -108,7 +112,10 @@
         </div>
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" (click)='cancel()'>Bezárás</button>
-          <button type="submit" class="btn btn-primary" form="consultationForm">Mentés</button>
+          <button type="submit" class="btn btn-primary" form="consultationForm"
+                  [disabled]="consultationForm.invalid">
+          {{ addMode ? 'Létrehozás' : 'Módosítások mentése' }}
+          </button>
         </div>
       </div>
     </div>

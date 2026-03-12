@@ -8,7 +8,6 @@ export class StaffService {
   protected readonly http= inject(HttpClient);
     private readonly baseUrl = 'http://localhost:8000/api';
 
-    // 2. Minden metódus a saját specifikus útvonalát használja
     getStaff() {
         return this.http.get(`${this.baseUrl}/staff`);
     }
