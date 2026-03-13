@@ -24,7 +24,6 @@ db.Slot.belongsTo(db.Staff, { foreignKey: 'staffId' });
 // 3. Booking kapcsolatok
 db.User.hasMany(db.Booking, { foreignKey: 'patientId', as: 'appointments' });
 db.Booking.belongsTo(db.User, { foreignKey: 'patientId', as: 'patient' });
-db.Booking.findAll({ include: [{ model: db.Staff, as: 'doctor' }] });
 
 // Consultation - Booking (1:N)
 db.Consultation.hasMany(db.Booking, { foreignKey: 'consultationId', as: 'bookings' });
