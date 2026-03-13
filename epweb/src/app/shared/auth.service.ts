@@ -91,7 +91,6 @@ export class AuthService {
   if (!userData) return null;
   try {
     const user = JSON.parse(userData);
-    // Kezeljük, ha a backend 'id' vagy 'userId' néven küldi
     return user.id || user.userId || null;
   } catch (e) {
     return null;
@@ -110,24 +109,32 @@ export class AuthService {
     return 'Betöltés...';
   }
   register(user: any) {
-    const url = this.host + 'register';
+    const url = `${this.host}register`;
+
     return this.http.post(url, user).pipe(
       tap((response: any) => {
-        if (this.isBrowser && response.success && response.token) {
-          localStorage.setItem('token', response.token);
+        const token = response.token || response.accessToken;
 
-          if (response.data?.roleId !== undefined) {
-            localStorage.setItem('roleId', response.data.roleId.toString());
-            this.currentUserRole.set(response.data.roleId);
+          if (this.isBrowser && response.success && token) {
+            localStorage.setItem('token', token);
+            this._isAuthenticated.set(true);
+
+            const roleId = response.data?.roleId || response.roleId;
+            const userId = response.data?.id || response.id;
+        
+          if (roleId !== undefined) {
+            localStorage.setItem('roleId', roleId.toString());
+            this.currentUserRole.set(Number(roleId));
           }
-          this._isAuthenticated.set(true);
+          if (userId) {
+            localStorage.setItem('userId', userId.toString());
+            this.currentUserId.set(Number(userId));
+          }
         }
       })
     );
   }
   sendVerificationToken(token: string) {
-    const url = this.host + '/verify-email/' + token
-    return this.http.get(url)
+    return this.http.get(`${this.host}verify-email/${token}`);
   }
 }
-

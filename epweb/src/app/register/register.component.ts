@@ -44,12 +44,16 @@ export class RegisterComponent {
       if (password !== confirm) {
           confirmControl?.setErrors({ ...confirmControl.errors, mismatch: true });
           return { mismatch: true };
+      }else {
+      if (confirmControl?.hasError('mismatch')) {
+          const remainingErrors = { ...confirmControl.errors };
+          delete remainingErrors['mismatch'];
+          const finalErrors = Object.keys(remainingErrors).length ? remainingErrors : null;
+          confirmControl.setErrors(finalErrors);
+        }
+        return null;
       }
-      if (control.get('confirmPassword')?.hasError('mismatch')) {
-       control.get('confirmPassword')?.setErrors(null);
-      }
-      return null;
-    };
+    }
   }
   onSubmit() {
     if (this.registerForm.invalid) {
@@ -63,7 +67,7 @@ export class RegisterComponent {
       name: rawValues.name,
       email: rawValues.email,
       password: rawValues.password,
-      password_confirmation: rawValues.confirmPassword 
+      confirmPassword: rawValues.confirmPassword 
       };
 
       this.auth.register(payload).subscribe({

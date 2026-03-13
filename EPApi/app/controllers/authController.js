@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
 import dotenvFlow from 'dotenv-flow'
 import crypto from 'crypto'
-import { sendEmail} from '../services/emailService.js'
+import {EmailService} from '../services/emailService.js'
 
 dotenvFlow.config() 
 
@@ -11,71 +11,65 @@ const AuthController = {
     async register(req, res) {        
         var clientError = false;
         try {
-            if(!req.body.name ||
-                !req.body.email ||
-                !req.body.password ||
-                !req.body.password_confirmation) {
+            if(!req.body.name || !req.body.email || !req.body.password || !req.body.confirmPassword) {
                 clientError = true
                 throw new Error('Error! Bad request data!')
             }
-            if(req.body.password != req.body.password_confirmation) {
+            if(req.body.password != req.body.confirmPassword) {
                 clientError = true
                 throw new Error('Error! The two password is not same!')
             }
-            const user = await User.findOne({
-                where: { name: req.body.name }
+            const userExists = await User.findOne({
+                where: { email: req.body.email }
             })
-            if(user) {
+            if(userExists) {
                 clientError = true
-                throw new Error('Error! User already exists: ' + user.name)
+                throw new Error('Error! User already exists with this email! ')
             }
             await AuthController.tryRegister(req, res)
 
         } catch (error) {
-            if (clientError) {
-                res.status(400)
-            }else {
-                res.status(500)
-            }            
-            await res.json({
+           res.status(clientError ? 400 : 500).json({
                 success: false,
                 message: 'Error! User creation failed!',
                 error: error.message
-            })            
+            })
         }
     },
     async tryRegister(req, res) {
         try {
             const verificationToken = crypto.randomBytes(32).toString('hex')
-            const verifyUrl = process.env.APP_URL + 'verify-email/' + verificationToken
+            const verifyUrl = `${process.env.APP_URL}verify-email/${verificationToken}`
         
             const user = {
                 name: req.body.name,
                 email: req.body.email,
-                password: bcrypt.hashSync(req.body.password),
+                password: bcrypt.hashSync(req.body.password, 10),
                 roleId:0, 
                 verificationToken: verificationToken,
-                verified: false //explicit
+                verified: false
             }
             const result = await User.create(user)
 
-            if (typeof sendEmail !== 'undefined') {
-                sendEmail({
-                    to: req.body.email,
-                    subject: 'Regisztráció',
-                    html: `Regisztráció megerősítése:<br>${verifyUrl}`
-                }).catch (err =>{
-                    console.error("Email hiba:", err.message);
-                });
+        // Üdv email küldés
+            try {
+                await EmailService.sendWelcomeEmail(
+                    user.email, 
+                    user.name, 
+                    verifyUrl
+                );
+             } catch (emailErr) {
+                console.error("Email küldési hiba:", emailErr.message);
             }
-
-            res.status(201).json({
+            return res.status(201).json({
                 success: true,
+                message: 'Registration successful! Please check your email.',
                 data: result
             });
+
         } catch (error) {
             return res.status(500).json({ success: false, error: error.message });
-        } 
+        }
     },
 
     async verifyEmail(req, res) {
@@ -87,33 +81,33 @@ const AuthController = {
                 return res.status(404).json({success: false, message: 'Error! User not found!'});
             }
         user.verified = true
+        user.verificationToken = null
         await user.save()
 
         res.status(200).json({
             success: true,
             message: 'The email is verified!',
         })
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+},
     async login(req, res) {
         
         try {
             const { email, password } = req.body;
 
             if(!email || !password) {
-                return res.status(400).json({
-                success: false,
-                message: 'Hiányzó email vagy jelszó!'
-                });
+               return res.status(400).json({ 
+                success: false, 
+                message: 'Hiányzó email vagy jelszó!' });
             }
-            const user = await User.findOne({ where: { email } });
 
+            const user = await User.findOne({ where: { email } });
             if(!user) {
                 return res.status(404).json({
                 success: false,
-                message: 'Ezzel az email címmel nincs regisztrált felhasználó!'
+                message: 'Nincs ilyen felhasználó!'
                 });
             }
             if (user.verified === false || user.verified == 0) {
@@ -122,11 +116,10 @@ const AuthController = {
                 message: 'Kérjük, igazolja vissza email címét a bejelentkezéshez!'
                 });
                 */
-               console.log("Figyelem: A felhasználó nincs aktiválva, de a fejlesztés miatt átengedjük.");
+               console.log("Figy!: A felhasználó nincs aktiválva, de a fejlesztés miatt átengedve.");
             }
 
             const passwordIsValid = await bcrypt.compare(password, user.password);
-            
             if(!passwordIsValid) {
                 return res.status(401).json({
                 success: false,
@@ -136,12 +129,7 @@ const AuthController = {
             return AuthController.tryLogin(req, res, user);
 
         } catch (error) {
-            console.error("Login error:", error);
-            return res.status(500).json({
-                success: false,
-                message: 'Hiba történt a bejelentkezés során!',
-                error: error.message
-            })
+            return res.status(500).json({ success: false, error: error.message })
         }
     },
     async tryLogin(req, res, user) {

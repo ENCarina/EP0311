@@ -21,7 +21,7 @@ async function up({ context: QueryInterface }) {
     },
     
     role: {
-      type: DataTypes.ENUM('admin', 'doctor', 'staff'),
+      type: DataTypes.ENUM('admin', 'doctor', 'staff', 'user'),
       defaultValue: 'staff'
     }, 
 

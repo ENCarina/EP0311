@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import User from '../models/user.js'
+import { Op } from 'sequelize'
 
 const UserController = {
     async index(req, res) {
@@ -43,38 +44,36 @@ const UserController = {
         })
     },
     async create(req, res) {
-        var clientError = false;
+        let clientError = false;
         try {
-            if(!req.body.name ||
-                !req.body.email ||
-                !req.body.password ||
-                !req.body.password_confirmation) {
-                clientError = true
-                throw new Error('Error! Bad request data!')
+            const { name, email, password, confirmPassword } = req.body;
+
+            if(!name || !email || !password || !confirmPassword) {
+                clientError = true;
+                throw new Error('Error! Hiányzó adatok!')
             }
-            if(req.body.password != req.body.password_confirmation) {
+            if(password != confirmPassword) {
                 clientError = true
-                throw new Error('Error! The two password is not same!')
+                throw new Error('Error! A két jelszó nem egyezik!')
             }
-            const user = await User.findOne({
-                where: { name: req.body.name }
-            })
-            if(user) {
-                clientError = true
-                throw new Error('Error! User already exists: ' + user.name)
+            const existinguser = await User.findOne({
+                where: { 
+                    [Op.or]: [{ name: name }, { email: email }]
+            }
+        });
+            if(existinguser) {
+                clientError = true;
+                const field = existingUser.name === name ? 'név' : 'email';
+                throw new Error(`Error! Ez a ${field} már foglalt!`);
             }            
-            await UserController.tryCreate(req, res)
+            await UserController.tryCreate(req, res);
+
         }catch(error) {
-            if (clientError) {
-                res.status(400)
-            }else {
-                res.status(500)
-            }
-            res.json({
+           res.status(clientError ? 400 : 500).json({
                 success: false,
-                message: 'Error! The query is failed!',
+                message: 'Error! A művelet sikertelen!',
                 error: error.message
-            })
+            });
         }
     },
     async tryCreate(req, res) {
@@ -88,38 +87,31 @@ const UserController = {
         const result = userData.toJSON();
         delete result.password;
         
-        res.status(201)
-        res.json({
+        res.status(201).json({
             success: true,
             data: result
         })
     },
     async updatePassword(req, res) {
-        var clientError = false;
+        let clientError = false;
         try {
-            if(!req.body.password ||
-                !req.body.password_confirmation) {
+            if(!req.body.password || !req.body.confirmPassword) {
                 clientError = true
-                throw new Error('Error! Bad request data!')
+                throw new Error('Error! Hiányzó jelszó mezők!')
             }
-            if(req.body.password != req.body.password_confirmation) {
+            if(req.body.password != req.body.confirmPassword) {
                 clientError = true
-                throw new Error('Error! The two password is not same!')
+                throw new Error('Error! A két jelszó nem egyezik!')
             }
             await UserController.tryUpdatePassword(req, res)
         }catch(error) {
-            if (clientError) {
-                res.status(400)
-            }else {
-                res.status(500)
-            }
-            res.json({
+           res.status(clientError ? 400 : 500).json({
                 success: false,
-                message: 'Error! The query is failed!',
                 error: error.message
-            })
+            });
         }
     },
+
     async tryUpdatePassword(req, res) {
         const user = await User.findByPk(req.params.id);
         if(!user) {
