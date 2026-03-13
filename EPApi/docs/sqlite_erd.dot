@@ -1,0 +1,111 @@
+digraph SQLiteERD {
+  graph [rankdir=LR, fontsize=10, fontname="Arial"];
+  node  [shape=plain, fontsize=10, fontname="Arial"];
+  edge  [fontsize=9, fontname="Arial"];
+
+  bookings [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>bookings</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">name : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">patientId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">staffId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">consultationId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">slotId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">duration : INTEGER</TD></TR>
+      <TR><TD ALIGN="LEFT">startTime : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">endTime : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">status : TEXT</TD></TR>
+      <TR><TD ALIGN="LEFT">price : DECIMAL(10,2)</TD></TR>
+      <TR><TD ALIGN="LEFT">isPublic : TINYINT(1)</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  users [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>users</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">name : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">email : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">password : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">roleId : INTEGER</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  consultations [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>consultations</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">name : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">description : TEXT</TD></TR>
+      <TR><TD ALIGN="LEFT">specialty : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">duration : INTEGER</TD></TR>
+      <TR><TD ALIGN="LEFT">price : DECIMAL(10,2)</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  slots [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>slots</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">staffId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">consultationId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">date : DATE</TD></TR>
+      <TR><TD ALIGN="LEFT">startTime : TIME</TD></TR>
+      <TR><TD ALIGN="LEFT">endTime : TIME</TD></TR>
+      <TR><TD ALIGN="LEFT">isAvailable : TINYINT(1)</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  staff_consult [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>staff_consult</B></TD></TR>
+      <TR><TD ALIGN="LEFT">staffId : INTEGER (PK, FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">consultationId : INTEGER (PK, FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  user_tbl [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>user</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+    </TABLE>
+  >];
+
+  staff [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="lightgray"><B>staff</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id : INTEGER (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">userId : INTEGER (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">specialty : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">isAvailable : TINYINT(1)</TD></TR>
+      <TR><TD ALIGN="LEFT">bio : TEXT</TD></TR>
+      <TR><TD ALIGN="LEFT">imageUrl : VARCHAR(255)</TD></TR>
+      <TR><TD ALIGN="LEFT">createdAt : DATETIME</TD></TR>
+      <TR><TD ALIGN="LEFT">updatedAt : DATETIME</TD></TR>
+    </TABLE>
+  >];
+
+  bookings -> slots [label="slotId -> id", arrowhead="normal"];
+  bookings -> consultations [label="consultationId -> id", arrowhead="normal"];
+  bookings -> staff [label="staffId -> id", arrowhead="normal"];
+  bookings -> users [label="patientId -> id", arrowhead="normal"];
+
+  slots -> consultations [label="consultationId -> id", arrowhead="normal"];
+  slots -> staff [label="staffId -> id", arrowhead="normal"];
+
+  staff_consult -> consultations [label="consultationId -> id", arrowhead="normal"];
+  staff_consult -> staff [label="staffId -> id", arrowhead="normal"];
+
+  staff -> user_tbl [label="userId -> id", arrowhead="normal"];
+}
