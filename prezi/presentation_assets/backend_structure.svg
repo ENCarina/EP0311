@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Backend structure</title>
+  <desc id="desc">EPApi backend folders, controllers, models, migrations, and seeders.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <style>
+      .card { fill: white; stroke: #94a3b8; stroke-width: 2; rx: 18; ry: 18; }
+      .head { fill: url(#head); rx: 18; ry: 18; }
+      .label { font: 700 28px 'Segoe UI', Arial, sans-serif; fill: white; }
+      .title { font: 700 42px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 20px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .item { font: 600 22px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subitem { font: 400 18px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .pill { fill: #dbeafe; stroke: #60a5fa; stroke-width: 1.5; rx: 10; ry: 10; }
+      .pill-text { font: 700 16px 'Segoe UI', Arial, sans-serif; fill: #1d4ed8; }
+      .line { stroke: #64748b; stroke-width: 3; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="760" fill="url(#bg)" />
+  <text x="60" y="70" class="title">EPApi backend structure</text>
+  <text x="60" y="105" class="subtitle">Controller -> Service -> Model -> DB separation, with migrations and seeders kept outside the app layer.</text>
+
+  <line x1="250" y1="180" x2="250" y2="680" class="line"/>
+  <line x1="250" y1="250" x2="360" y2="250" class="line"/>
+  <line x1="250" y1="400" x2="360" y2="400" class="line"/>
+  <line x1="250" y1="550" x2="360" y2="550" class="line"/>
+  <line x1="250" y1="650" x2="360" y2="650" class="line"/>
+
+  <rect x="60" y="150" width="220" height="110" class="card"/>
+  <rect x="60" y="150" width="220" height="42" class="head"/>
+  <text x="85" y="179" class="label">EPApi/app</text>
+  <text x="85" y="218" class="item">Entry points</text>
+  <text x="85" y="244" class="subitem">app.js, index.js</text>
+
+  <rect x="360" y="170" width="340" height="155" class="card"/>
+  <rect x="360" y="170" width="340" height="42" class="head"/>
+  <text x="385" y="199" class="label">controllers/</text>
+  <text x="385" y="238" class="item">auth, booking, consultation</text>
+  <text x="385" y="266" class="subitem">slot, staff, user controllers</text>
+  <rect x="385" y="284" width="110" height="28" class="pill"/>
+  <text x="403" y="304" class="pill-text">HTTP layer</text>
+
+  <rect x="740" y="170" width="390" height="155" class="card"/>
+  <rect x="740" y="170" width="390" height="42" class="head"/>
+  <text x="765" y="199" class="label">middleware/ + routes/</text>
+  <text x="765" y="238" class="item">auth.js, authjwt.js, checkRole.js</text>
+  <text x="765" y="266" class="subitem">upload.js, api.js</text>
+  <rect x="765" y="284" width="132" height="28" class="pill"/>
+  <text x="782" y="304" class="pill-text">access control</text>
+
+  <rect x="360" y="325" width="340" height="150" class="card"/>
+  <rect x="360" y="325" width="340" height="42" class="head"/>
+  <text x="385" y="354" class="label">services/</text>
+  <text x="385" y="393" class="item">bookingService.js</text>
+  <text x="385" y="421" class="subitem">emailService.js</text>
+  <rect x="385" y="439" width="120" height="28" class="pill"/>
+  <text x="400" y="459" class="pill-text">business rules</text>
+
+  <rect x="740" y="325" width="390" height="150" class="card"/>
+  <rect x="740" y="325" width="390" height="42" class="head"/>
+  <text x="765" y="354" class="label">models/</text>
+  <text x="765" y="393" class="item">booking, consultation, slot</text>
+  <text x="765" y="421" class="subitem">staff, user, modrels</text>
+  <rect x="765" y="439" width="104" height="28" class="pill"/>
+  <text x="783" y="459" class="pill-text">ORM layer</text>
+
+  <rect x="360" y="480" width="340" height="145" class="card"/>
+  <rect x="360" y="480" width="340" height="42" class="head"/>
+  <text x="385" y="509" class="label">database/migrations</text>
+  <text x="385" y="548" class="item">00_create_role</text>
+  <text x="385" y="576" class="subitem">01_users ... 06_bookings</text>
+  <rect x="385" y="594" width="132" height="28" class="pill"/>
+  <text x="407" y="614" class="pill-text">schema history</text>
+
+  <rect x="740" y="480" width="390" height="145" class="card"/>
+  <rect x="740" y="480" width="390" height="42" class="head"/>
+  <text x="765" y="509" class="label">database/seeders</text>
+  <text x="765" y="548" class="item">users, staff, consultations</text>
+  <text x="765" y="576" class="subitem">slots, staff_consult, bookings, demo_v2</text>
+  <rect x="765" y="594" width="114" height="28" class="pill"/>
+  <text x="783" y="614" class="pill-text">demo data</text>
+
+  <rect x="360" y="640" width="770" height="72" class="card"/>
+  <text x="390" y="682" class="item">database.sqlite / Sequelize connection</text>
+  <text x="725" y="682" class="subitem">persistent storage used by models and migrations</text>
+</svg>
