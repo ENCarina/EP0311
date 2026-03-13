@@ -15,6 +15,22 @@ git clone https://github.com/ENCarina/EP0311.git
 cd EP0311
 ```
 
+## 1/b) Átváltás a telepítési útmutató branchre
+
+Megjegyzés: a `git clone` alapból a default branch-et húzza le (jelenleg ez a `master`).
+Ezután válts át a telepítési útmutató branchre:
+
+```powershell
+git fetch origin
+git switch --track origin/telepitesi-utmutato-v2
+```
+
+Ha a branch már létezik lokálisan:
+
+```powershell
+git switch telepitesi-utmutato-v2
+```
+
 ## 2) Backend függőségek telepítése
 
 ```powershell
