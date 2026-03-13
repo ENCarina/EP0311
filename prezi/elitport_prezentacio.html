@@ -506,7 +506,7 @@
       <div class="grid-2 db-layout">
         <div class="img-wrap img-fit zoom-frame" id="dbZoomFrame" role="button" tabindex="0" aria-label="Adatbázis ábra nagyítása">
           <span class="zoom-hint">Nagyítás</span>
-          <img id="dbZoomImg" src="presentation_assets/adatbazis_erd_clear.png" alt="Adatbázis ER diagram (nagyított, olvasható változat)" />
+          <img id="dbZoomImg" src="presentation_assets/sqlite_erd.svg" alt="Adatbázis ER diagram (SQLite séma, SVG)" />
         </div>
         <div class="card slide-note">
           <h3>Fő entitások</h3>
@@ -516,7 +516,7 @@
             <li>staff ↔ consultations: M:N</li>
             <li>slots ↔ bookings: slot-alapú foglalás</li>
           </ul>
-          <p class="small">Kapcsolatok forrása: EPApi/app/models/modrels.js + migrációk.</p>
+          <p class="small">Kapcsolatok forrása: EPApi/database.sqlite alapján generált ERD (SVG).</p>
         </div>
       </div>
       <div class="foot"><span>Data model</span><span>9 / 14</span></div>
