@@ -29,8 +29,12 @@ async function up({context: QueryInterface}) {
 
 async function down({context: QueryInterface}) {
   await QueryInterface.dropTable('staff_consult', ['staffId', 'consultationId'], {
-    unique: true
+    unique: true,
+    name: 'staff_consult_unique'
   });
+}
+async function down({ context: QueryInterface }) {
+  await QueryInterface.dropTable('staff_consult');
 }
 
 export { up, down }

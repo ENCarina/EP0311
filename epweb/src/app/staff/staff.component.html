@@ -15,55 +15,57 @@
                 <th>Szerepkör</th>
                 <th>Szakterület</th>
                 <th>Állapot</th>
-                <th class="text-center" style="width: 120px;">Műveletek</th>
+                <th class="text-center" style="width: 150px;">Műveletek</th>
             </tr>
         </thead>
         <tbody>
             @for (staff of staffs; track staff.id) {
-                <tr>
+                <tr [class.opacity-50]="!staff.isActive" [class.bg-light]="!staff.isActive">
                     <td class="ps-3 text-muted small">#{{staff.id}}</td>
                     <td>
                         <div class="fw-bold text-dark">{{staff.name}}</div>
+                        @if (!staff.isActive) { <span class="badge bg-secondary extra-small">Inaktív</span> }
                     </td>
                     <td class="text-muted small">{{staff.email}}</td>
                     <td>
-                        <span class="badge rounded-pill bg-opacity-10 text-info bg-info px-3">
-                            {{staff.role}}
+                        <span class="badge rounded-pill bg-opacity-10 text-info bg-info px-3"
+                            [ngClass]="staff.role === '1' ? 'text-info bg-info' : 'text-primary bg-primary'">
+                            {{staff.role === '1' ? 'Orvos' : (staff.role === '2' ? 'Admin' : 'Asszisztens') }}
                         </span>
                     </td>
                     <td><span class="small">{{staff.specialty || '—'}}</span></td>
-                    <td>
-                      @if (staff.isAvailable) {
+                    <td> 
+                      @if (staff.isAvailable && staff.isActive) {
                         <span class="badge bg-success-subtle text-success border border-success-subtle small">
                             <i class="bi bi-check-circle me-1"></i> Elérhető
                         </span>
                       } @else {
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle small">
-                            <i class="bi bi-x-circle me-1"></i> Foglalt
+                            <i class="bi bi-x-circle me-1"></i> Nem elérhető
                         </span>
                       }
                     </td>
                     <td class="text-center">
                         <div class="btn-group shadow-sm">
-                            <button class="btn btn-outline-primary btn-sm" 
-                                    title="Időpontok kezelése"
-                                    (click)="viewBookings(staff.id)">
+                            <button class="btn btn-outline-primary btn-sm" title="Időpontok" (click)="viewBookings(staff.id)">
                                 <i class="bi bi-calendar-event"></i>
                             </button>
-                            <button class="btn btn-outline-secondary btn-sm" 
-                                    title="Szerkesztés"
-                                    (click)="startEdit(staff)">
+                            <button class="btn btn-outline-secondary btn-sm" title="Szerkesztés" (click)="startEdit(staff)">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-sm" 
-                                    title="Törlés"
-                                    (click)="deleteStaff(staff.id)">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            
+                            @if (staff.isActive) {
+                                <button class="btn btn-outline-danger btn-sm" title="Inaktiválás" (click)="deleteStaff(staff.id)">
+                                    <i class="bi bi-person-x"></i>
+                                </button>
+                            } @else {
+                                <button class="btn btn-outline-success btn-sm" title="Visszaállítás" (click)="restoreStaff(staff)">
+                                    <i class="bi bi-person-check"></i>
+                                </button>
+                            }
                         </div>
                     </td>
-                </tr>
-            } @empty {
+                </tr> } @empty {
                 <tr>
                     <td colspan="7" class="text-center py-5">
                         <i class="bi bi-people text-muted display-4 d-block mb-3"></i>
@@ -74,72 +76,104 @@
         </tbody>
     </table>
 </div>
-
-<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="bi" [class.bi-plus-circle]="addMode" [class.bi-pencil]="!addMode"></i>
-                    {{ addMode ? 'Új szakember felvétele' : 'Szakember adatainak módosítása' }}
-                </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
-            </div>
-            
-            <form [formGroup]="staffForm" (ngSubmit)="save()">
-                <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Név</label>
-                            <input type="text" formControlName="name" class="form-control" placeholder="Pl. Dr. Vágási Imre">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Email cím</label>
-                            <input type="email" formControlName="email" class="form-control" placeholder="pelda@email.hu">
-                        </div>
-                        
-                        @if (addMode) {
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Jelszó</label>
-                            <input type="password" formControlName="password" class="form-control" placeholder="******">
-                        </div>
-                        }
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Szakterület</label>
-                            <input type="text" formControlName="specialty" class="form-control" placeholder="Pl. Kardiológus">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Szerepkör</label>
-                            <select formControlName="role" class="form-select">
-                                <option value="1">Szakember</option>
-                                <option value="2">Adminisztrátor</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Bio / Bemutatkozás</label>
-                            <textarea formControlName="bio" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" formControlName="isAvailable" id="availSwitch">
-                                <label class="form-check-input-label" for="availSwitch">Aktív / Elérhető</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-link text-secondary" (click)="closeModal()">Mégse</button>
-                    <button type="submit" class="btn btn-primary px-4" [disabled]="staffForm.invalid">
-                        {{ addMode ? 'Hozzáadás' : 'Mentés frissítése' }}
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @if (showModal) {
-    <div class="modal-backdrop fade show"></div>
-}
+  <div class="modal-backdrop fade show"></div>
 
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0">
+        
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="bi me-2" [ngClass]="addMode ? 'bi-person-plus' : 'bi-pencil-square'"></i>
+            {{ addMode ? 'Új szakember felvétele' : 'Szakember szerkesztése' }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <form [formGroup]="staffForm">
+            <div class="row g-3">
+              
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Név *</label>
+                <input type="text" formControlName="name" class="form-control" 
+                       [class.is-invalid]="staffForm.get('name')?.touched && staffForm.get('name')?.invalid">
+                <div class="invalid-feedback">A név megadása kötelező (min. 3 karakter).</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Email *</label>
+                <input type="email" formControlName="email" class="form-control"
+                       [class.is-invalid]="staffForm.get('email')?.touched && staffForm.get('email')?.invalid">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Jelszó {{ addMode ? '*' : '(hagyd üresen, ha nem változik)' }}</label>
+                <input type="password" formControlName="password" class="form-control">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Szerepkör</label>
+                <select formControlName="role" class="form-select">
+                  <option value="1">Orvos</option>
+                  <option value="2">Admin</option>
+                  <option value="3">Asszisztens</option>
+                </select>
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label small fw-bold">Szakterület *</label>
+                <input type="text" formControlName="specialty" class="form-control" placeholder="pl. Kardiológus"
+                       [class.is-invalid]="staffForm.get('specialty')?.touched && staffForm.get('specialty')?.invalid">
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label small fw-bold">Bemutatkozás (Bio)</label>
+                <textarea formControlName="bio" class="form-control" rows="3"></textarea>
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label small fw-bold d-block">Hozzárendelt kezelések</label>
+                <div class="d-flex flex-wrap gap-2 border rounded p-2 bg-light">
+                  @for (consult of allConsultations; track consult.id) {
+                    <span (click)="toggleTreatment(consult.id)" 
+                          class="badge cursor-pointer p-2 shadow-sm border"
+                          [ngClass]="selectedTreatments.includes(consult.id) ? 'bg-primary text-white border-primary' : 'bg-white text-dark border-secondary'"
+                          style="cursor: pointer;">
+                      <i class="bi me-1" [ngClass]="selectedTreatments.includes(consult.id) ? 'bi-check-circle-fill' : 'bi-plus-circle'"></i>
+                      {{ consult.name }}
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="col-md-6 d-flex align-items-center mt-4">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" formControlName="isAvailable" id="availCheck">
+                  <label class="form-check-label fw-bold small" for="availCheck">Páciensek fogadása (Elérhető)</label>
+                </div>
+              </div>
+
+              <div class="col-md-6 d-flex align-items-center mt-4">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" formControlName="isActive" id="activeCheck">
+                  <label class="form-check-label fw-bold small" for="activeCheck">Aktív státusz</label>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer bg-light border-top">
+          <button type="button" class="btn btn-outline-secondary px-4" (click)="closeModal()">Mégse</button>
+          <button type="button" class="btn btn-primary px-5 shadow-sm" (click)="save()">
+            {{ addMode ? 'Létrehozás' : 'Módosítások mentése' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

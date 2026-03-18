@@ -20,7 +20,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (con of consultations; track con.id) {
+        @for (con of filteredConsultations; track con.id) {
         <tr>
           <td class="text-muted">#{{con.id}}</td>
           <td>{{con.name}}</td>
@@ -48,7 +48,7 @@
 
   <div class="d-md-none">
     <h4 class="mt-4 mb-3 text-secondary">Szolgáltatások (Mobil lista)</h4>
-    @for (con of consultations; track con.id) {
+    @for (con of filteredConsultations; track con.id) {
     <div class="card shadow-sm mb-3">
       <div class="card-body">
         <h5 class="card-title text-primary">{{con.name}}</h5>
@@ -92,13 +92,14 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Leírás</label>
-              <textarea class="form-control" formControlName="description"></textarea>
+              <textarea class="form-control" formControlName="description"
+              [class.is-invalid]="consultationForm.get('description')?.invalid && consultationForm.get('description')?.touched"></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label">Szakterület</label>
-              <textarea class="form-control" formControlName="specialty"></textarea>
+              <input type="text" class="form-control" formControlName="specialty" placeholder="pl. Fogászat">
             </div>
-            <div class="mb-3">
+            <div class="mb-3"> 
               <label class="form-label">Időtartam (perc)</label>
               <input type="number" class="form-control" formControlName="duration"
                       [class.is-invalid]="consultationForm.get('duration')?.invalid && consultationForm.get('duration')?.touched">
@@ -106,7 +107,9 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Ár (Ft)</label>
-              <input type="number" class="form-control" formControlName="price">
+              <input type="number" class="form-control" formControlName="price"
+                [class.is-invalid]="consultationForm.get('price')?.invalid && consultationForm.get('price')?.touched">
+              <div class="invalid-feedback">Az ár nem lehet negatív!</div>
             </div>
           </form>
         </div>

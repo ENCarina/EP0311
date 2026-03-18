@@ -24,9 +24,19 @@ const ConsultationController = {
 
     async index(req, res) {
         try {
-            const consultations = await Consultation.findAll();
+            
+            const { specialty } = req.query; 
+            const queryOptions = {};
+            if (specialty) {
+                queryOptions.where = {
+                    specialty: specialty 
+                };
+            }
+            const consultations = await Consultation.findAll(queryOptions);
+    
             res.status(200).json({ success: true, data: consultations });
         } catch (error) {
+            console.error("Backend hiba az index végponton:", error);
             ConsultationController.handleError(res, error);
         }
     },

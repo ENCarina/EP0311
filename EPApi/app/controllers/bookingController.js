@@ -100,15 +100,25 @@ const BookingController = {
         );
 
         await t.commit();
-
-        // Email küldés (nem blokkolja a választ)
-        EmailService.sendBookingConfirmation(userExists.email || "teszt@email.hu", newBooking)
+        
+        const emailData = {
+            ...newBooking.toJSON(),
+            appointment_date: new Date(newBooking.startTime).toLocaleString('hu-HU', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            name: consultationExists.name || 'Orvosi vizsgálat'
+        };
+        EmailService.sendBookingConfirmation(userExists.email || "teszt@email.hu", emailData)
             .catch(err => console.error("Email hiba:", err));
 
         return res.status(201).json({
             success: true,
             message: 'Sikeres foglalás!',
-            data: newBooking
+            data: emailData
         });
 
     } catch (error) {

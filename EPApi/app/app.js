@@ -18,7 +18,7 @@ sequelize.sync({ force: false})
 const logfile = 'access.log'
 var accessLogStream = fs.createWriteStream(logfile, { flags: 'a' })
 
-app.use('/images', express.static(UPLOAD_PATH))
+app.use('/images', express.static('public/images'));
 app.use(morgan('dev', { stream: accessLogStream }))
 app.use(cors())
 app.use(express.json())

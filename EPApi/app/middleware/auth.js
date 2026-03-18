@@ -6,15 +6,21 @@ const isAdmin = async (req, res, next) => {
         if(!user) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'Felhasználó nem található'
             })
         }
-        if(user.roleId === 1) {
+        if (!user.isActive) {
+            return res.status(403).json({
+                success: false,
+                message: 'Ez a fiók felfüggesztésre került.'
+            });
+        }
+        if(user.roleId === 2) {
             next()
         }else {
             return res.status(403).json({
                 success: false,
-                message: 'You are not admin'
+                message: 'Ehhez a művelethez Admin jogosultság szükséges!'
             })
         }
     }catch(err) {

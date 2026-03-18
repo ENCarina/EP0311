@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2'; 
 
+
 @Component({
   selector: 'app-consultation',
   standalone: true, 
@@ -17,29 +18,52 @@ export class ConsultationComponent implements OnInit {
   private consultationService = inject(ConsultationService);
   private router = inject(Router);
 
-  consultations: any[] = [];
+  allConsultations: any[] = [];     
+  filteredConsultations: any[] = [];
+  selectedStaff: any = null;
+ 
   addMode = true;
   showModal = false;
-
   consultationForm = this.fb.nonNullable.group({
-      id: [null as number | null],
-      name: ['', [Validators.required]],
-      description: ['', [Validators.required], Validators.minLength(3)],
-      specialty: ['', [Validators.required]],
-      duration: [60, [Validators.required, Validators.min(5)]],
-      price: [0, [Validators.required, Validators.min(0)]]
-    });
+    id: [null as number | null],
+    name: ['', [Validators.required]],
+    description: ['', [Validators.required, Validators.minLength(3)]], 
+    specialty: ['', [Validators.required]],
+    duration: [60, [Validators.required, Validators.min(5)]],
+    price: [0, [Validators.required, Validators.min(0)]]
+});
   ngOnInit() {
     this.getConsultations();
   }
   getConsultations() {
     this.consultationService.getConsultations().subscribe({
       next: (res:any) => {
-        this.consultations = Array.isArray(res) ? res : (res.data || []);
+        const data = Array.isArray(res) ? res : (res.data || []);
+        this.allConsultations = data;
+
+        if (this.selectedStaff) {
+          this.filterBySpecialty(this.selectedStaff.specialty);
+        } else {
+          this.filteredConsultations = data;
+        }
       },
       error: (err:any) => console.error('Hiba a betöltéskor:', err)
     });
   }
+  onStaffSelect(staff: any) {
+    this.selectedStaff = staff; 
+    this.filterBySpecialty(staff.specialty);
+}
+ private filterBySpecialty(specialty: string) {
+    if (!specialty) {
+      this.filteredConsultations = this.allConsultations;
+      return;
+    }
+
+    this.filteredConsultations = this.allConsultations.filter(c => 
+      c.specialty === specialty
+    );
+}
   startShowModal() {
     this.addMode = true;
     this.showModal = true;
@@ -48,13 +72,14 @@ export class ConsultationComponent implements OnInit {
   startEdit(consultation: any) {
     this.addMode = false;
     this.showModal = true;
+
     this.consultationForm.patchValue({
       id: consultation.id,
       name: consultation.name,
       description: consultation.description,
       specialty: consultation.specialty,
-      duration: consultation.duration,
-      price: consultation.price
+      duration: Number(consultation.duration),
+      price: Number(consultation.price)
     });
   }
 
@@ -72,7 +97,6 @@ export class ConsultationComponent implements OnInit {
       });
     } else {
       const {id, ...payload} = data;
-
       if (id) {
         this.consultationService.updateConsultation(id, payload as any).subscribe({
           next: () => this.handleSuccess('Sikeres módosítás!'),

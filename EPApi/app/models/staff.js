@@ -19,6 +19,7 @@ const Staff = sequelize.define('staff', {
     },
     specialty: { type: DataTypes.STRING, allowNull: true },
     isAvailable: { type: DataTypes.BOOLEAN, defaultValue: true },
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     bio: { type: DataTypes.TEXT, allowNull: true },
     imageUrl: { type: DataTypes.STRING, allowNull: true },
 }, {

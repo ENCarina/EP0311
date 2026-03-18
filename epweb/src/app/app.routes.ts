@@ -9,6 +9,8 @@ import { RegisterComponent } from './register/register.component';
 import { StaffCardComponent } from './staffCard/staffCard.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { authGuard } from './auth-guard';
+import { UserListComponent } from './admin/user-list/user-list.component';
+
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -21,12 +23,14 @@ export const routes: Routes = [
     //publikus kártya
     { path: 'staffCard', component: StaffCardComponent }, 
     //{ path: 'staff/:id', component: StaffDetailComponent }, 
-    //admin 
-    { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard] }, 
-    { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
-
+   
     { path: 'booking/:id', component: BookingComponent, canActivate: [authGuard] },
     { path: 'booking', component:BookingComponent, canActivate: [authGuard]},
+    
+    //admin
+    { path: 'admin/users', component: UserListComponent, canActivate: [authGuard] }, 
+    { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard] }, 
+    { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
     { path: 'admin/consultation', component: ConsultationComponent, canActivate: [authGuard]},
     

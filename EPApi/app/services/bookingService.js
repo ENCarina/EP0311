@@ -22,27 +22,34 @@ export const BookingService = {
         }, { transaction: t});
 
         await slot.update({ isAvailable: false }, { transaction: t });  // Slot lefoglalása
-        await t.commit(); // Ha minden OK, mentés az adatbázisba
+        await t.commit(); // mentés az adatbázisba
 
-        console.log('DEBUG: EmailService típusa:', typeof EmailService);
-        if (typeof EmailService !== 'undefined') {
-            await EmailService.sendBookingConfirmation(user.email, newBooking).catch(err => {
-                console.error('E-mail küldési hiba:', err);
-            });
+        const emailData = {
+            ...newBooking.get({ plain: true }),
+            name: bookingData.name || 'Orvosi vizsgálat'
+        };
+        const dateVal = slot.date;
+        const timeVal = slot.startTime || slot.StartTime; // biztos ami biztos
+
+        if (dateVal && timeVal) {
+            emailData.appointment_date = `${dateVal} ${timeVal}`;
+            console.log("DEBUG: Összeállított dátum:", emailData.appointment_date);
         } else {
-            console.error('HIBA: Az EmailService nem lett importálva!');
+            emailData.appointment_date = "Időpont visszaigazolás alatt";
+            console.error("HIBA: A slot adatai hiányoznak a slot objektumból!", slot.get({plain:true}));
+        }
+       
+        if (typeof EmailService !== 'undefined') {
+           await EmailService.sendBookingConfirmation(user.email, emailData).catch(err =>{
+             console.error('E-mail hiba:', err);
+            });
         }
 
-        // E-mail küldés
-        await EmailService.sendBookingConfirmation(user.email, newBooking).catch(err => {
-            console.error('E-mail küldési hiba:', err);
-        });
+            return newBooking;
 
-        return newBooking;
-
-    } catch (error) {
-        if (t) await t.rollback();
-        throw error;
+        } catch (error) {
+            if (t) await t.rollback();
+            throw error;
         }
     },
     // 2. Szabad időpontok keresése

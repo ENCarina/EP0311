@@ -1,14 +1,14 @@
-/* --- IDŐPONT KÁRTYA (SLOT) --- */
+
 .slot-card {
   cursor: pointer;
   background-color: #ffffff;
-  border: 2px solid #C0C0C0 !important; /* Alapértelmezett ezüst keret */
+  border: 2px solid #e0e0e0 !important;
   border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.2s ease-in-out;
   height: 100%;
 }
 
-/* Hover állapot: felemelkedik és sötétkék keretet kap */
+
 .slot-card:hover:not([disabled]) {
   transform: translateY(-5px);
   border-color: #002C5A !important;
@@ -16,15 +16,15 @@
   box-shadow: 0 8px 15px rgba(0, 44, 90, 0.1);
 }
 
-/* Kiválasztott állapot (Active/Selected) */
+
 .slot-card.border-primary {
-  background-color: #e7f1ff;
+  background-color:#f8fbff;
   border-color: #002C5A !important;
   border-width: 2px !important;
   box-shadow: 0 4px 12px rgba(0, 44, 90, 0.15);
 }
 
-/* --- IDŐPONT GOMB (A kártyán belül) --- */
+/* --- IDŐPONT GOMB  --- */
 .slot-button {
   background-color: #FFFFFF;
   color: #002C5A;
@@ -33,20 +33,22 @@
   font-weight: 600;
   transition: all 0.3s ease;
   width: 100%;
+  pointer-events: none;
 }
 
 /* Ha a kártya fölé visszük az egeret, a gomb is "aktiválódik" */
-.slot-card:hover .slot-button {
+.slot-card:hover:not(.disabled) .slot-button {
   background-color: #002C5A;
   color: #FFFFFF;
   border-color: #002C5A;
 }
 
-/* Tiltott állapot (ha már foglalt) */
-.slot-card[disabled], 
+/* Tiltott állapot */ 
 .slot-card.disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(1);
+  filter: grayscale(0.8);
   transform: none !important;
+  background-color: #f8f9fa;
+  border-color: #dee2e6 !important;
 }

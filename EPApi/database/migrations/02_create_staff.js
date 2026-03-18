@@ -33,6 +33,9 @@ async function up({ context: QueryInterface }) {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
+    
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+
     bio: {
       type: DataTypes.TEXT,
       allowNull: true

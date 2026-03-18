@@ -47,7 +47,8 @@ const AuthController = {
                 password: bcrypt.hashSync(req.body.password, 10),
                 roleId:0, 
                 verificationToken: verificationToken,
-                verified: false
+                verified: false,
+                isActive: true
             }
             const result = await User.create(user)
 
@@ -104,10 +105,10 @@ const AuthController = {
             }
 
             const user = await User.findOne({ where: { email } });
-            if(!user) {
-                return res.status(404).json({
+            if(!user || user.isActive === false) {
+                return res.status(401).json({
                 success: false,
-                message: 'Nincs ilyen felhasználó!'
+                message: 'Érvénytelen e-mail vagy inaktív fiók!'
                 });
             }
             if (user.verified === false || user.verified == 0) {

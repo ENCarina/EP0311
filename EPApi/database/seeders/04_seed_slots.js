@@ -13,19 +13,19 @@ async function up({context: QueryInterface}) {
   // }
 
   const slotsData = [
-          { staffId: 1, consultationId: 1, date: '2026-03-14', startTime: '08:00:00', endTime: '09:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 1, consultationId: 1, date: '2026-03-14', startTime: '09:00:00', endTime: '10:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 1, consultationId: 1, date: '2026-03-13', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 2, consultationId: 2, date: '2026-03-13', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 2, consultationId: 3, date: '2026-03-13', startTime: '13:00:00', endTime: '14:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 3, consultationId: 3, date: '2026-03-12', startTime: '14:00:00', endTime: '15:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 2, consultationId: 2, date: '2026-03-12', startTime: '15:00:00', endTime: '16:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 2, consultationId: 2, date: '2026-03-12', startTime: '09:00:00', endTime: '10:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 3, consultationId: 3, date: '2026-03-14', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 3, consultationId: 2, date: '2026-03-14', startTime: '13:00:00', endTime: '14:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 1, consultationId: 1, date: '2026-03-14', startTime: '15:00:00', endTime: '16:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 1, consultationId: 1, date: '2026-03-15', startTime: '09:00:00', endTime: '10:00:00', isAvailable : true, createdAt: new Date(), updatedAt: new Date()},
-          { staffId: 2, consultationId: 2, date: '2026-03-15', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 1, consultationId: 1, date: '2026-03-16', startTime: '08:00:00', endTime: '09:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 1, consultationId: 1, date: '2026-03-16', startTime: '09:00:00', endTime: '10:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 1, consultationId: 1, date: '2026-03-16', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 2, consultationId: 2, date: '2026-03-16', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 2, consultationId: 3, date: '2026-03-16', startTime: '13:00:00', endTime: '14:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 3, consultationId: 3, date: '2026-03-16', startTime: '14:00:00', endTime: '15:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 2, consultationId: 2, date: '2026-03-17', startTime: '15:00:00', endTime: '16:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 2, consultationId: 2, date: '2026-03-17', startTime: '09:00:00', endTime: '10:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 3, consultationId: 3, date: '2026-03-17', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 3, consultationId: 2, date: '2026-03-17', startTime: '13:00:00', endTime: '14:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 1, consultationId: 1, date: '2026-03-19', startTime: '15:00:00', endTime: '16:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 2, consultationId: 1, date: '2026-03-19', startTime: '09:00:00', endTime: '10:00:00', isAvailable : true, createdAt: new Date(), updatedAt: new Date()},
+          { staffId: 3, consultationId: 2, date: '2026-03-19', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
           
                 
   ];  

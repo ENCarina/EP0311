@@ -5,7 +5,6 @@ async function up({context: QueryInterface}) {
     { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() }, // Dr. Kovács - Kardiológia
     { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() }, // Dr. Tóth - Fogászat
     { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() }, // Dr. House - Pszichiátria
-    { staffId: 3, consultationId: 1, createdAt: new Date(), updatedAt: new Date() }, // Dr. House - Kardiológia szaktanácsadás (több szakterület)
   ];
 
   if(db && db.staff_consult) {

@@ -9,6 +9,7 @@ const Consultation = sequelize.define('consultations', {
     duration: {type: DataTypes.INTEGER, allowNull: false, defaultValue:60, validate: {min: 5}},
     price: {type: DataTypes.DECIMAL(10,2), allowNull: false, defaultValue:0.00, validate: {min: 0}},
 }, {
+    tableName: 'consultations',
     timestamps: true,
     freezeTableName: true
 })
