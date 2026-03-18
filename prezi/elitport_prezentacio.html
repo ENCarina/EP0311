@@ -353,57 +353,49 @@
     <section class="slide">
       <div>
         <div class="kicker">Frontend</div>
-        <h2>Felhasználói felület és UX</h2>
+        <h2>Frontend felépítés</h2>
       </div>
       <div class="grid-2">
-        <div class="img-wrap"><img src="presentation_assets/app_staffcard.png" alt="StaffCard screenshot" /></div>
+        <div class="img-wrap img-fit zoom-frame" role="button" tabindex="0" onclick="openLightbox('presentation_assets/frontend_structure.svg', 'Frontend strukturális ábra')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox('presentation_assets/frontend_structure.svg', 'Frontend strukturális ábra');}">
+          <span class="zoom-hint">Nagyítás</span>
+          <img src="presentation_assets/frontend_structure.svg" alt="Frontend strukturális ábra" />
+        </div>
         <div class="card">
-          <h3>Valósan implementált elemek</h3>
+          <h3>Komponensek és service réteg</h3>
           <ul>
-            <li>Angular 20 standalone komponensek és route alapú oldalstruktúra.</li>
-            <li>Publikus oldalak: home, about, staffCard, login, register.</li>
-            <li>Védett oldalak: booking, admin/staff, admin/consultation (guarddal).</li>
-            <li>Bootstrap 5 alapú reszponzív felépítés.</li>
+            <li>Feature mappák: about, booking, consultation, home, login, register, staff, staffCard, verify-email.</li>
+            <li>Shared service-ek: auth, booking, consultation, staff.</li>
+            <li>Auth guard és interceptor külön rétegben kezeli a védett navigációt és tokenes kéréseket.</li>
+            <li>Az UI komponensek nem közvetlenül API-znek, hanem service-eken keresztül dolgoznak.</li>
           </ul>
-          <p class="small">Forrás: epweb/src/app/app.routes.ts és package.json</p>
+          <p class="small">Forrás: epweb/src/app komponensmappák + shared service-ek.</p>
         </div>
       </div>
-      <div class="foot"><span>Frontend high-level</span><span>3 / 14</span></div>
+      <div class="foot"><span>Frontend structure</span><span>3 / 14</span></div>
     </section>
 
     <section class="slide">
       <div>
         <div class="kicker">Backend</div>
-        <h2>API, üzleti logika, perzisztencia</h2>
+        <h2>Backend felépítés</h2>
       </div>
-      <div class="grid-3">
-        <div class="card">
-          <h3>Technológia</h3>
-          <ul>
-            <li>Node.js + Express.js</li>
-            <li>Sequelize ORM</li>
-            <li>SQLite3 (dev/test)</li>
-            <li>MariaDB driver támogatás</li>
-          </ul>
+      <div class="grid-2">
+        <div class="img-wrap img-fit zoom-frame" role="button" tabindex="0" onclick="openLightbox('presentation_assets/backend_structure.svg', 'Backend strukturális ábra')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox('presentation_assets/backend_structure.svg', 'Backend strukturális ábra');}">
+          <span class="zoom-hint">Nagyítás</span>
+          <img src="presentation_assets/backend_structure.svg" alt="Backend strukturális ábra" />
         </div>
         <div class="card">
-          <h3>Biztonság</h3>
+          <h3>Rétegek és felelősségek</h3>
           <ul>
-            <li>JWT token ellenőrzés middleware-ben</li>
-            <li>bcrypt jelszó-hash</li>
-            <li>Role ellenőrzési middleware</li>
+            <li>Controllerek fogadják a HTTP kéréseket és validációs döntéseket.</li>
+            <li>Modellek és relációk Sequelize-on keresztül írják le a perzisztenciát.</li>
+            <li>Migrációk külön kezelik a séma evolúcióját, seederek a demo és teszt adatfeltöltést.</li>
+            <li>Middleware-ekben marad az auth, role-check és upload logika.</li>
           </ul>
-        </div>
-        <div class="card">
-          <h3>Műveletek</h3>
-          <ul>
-            <li>User, Staff, Consultation CRUD</li>
-            <li>Slots kezelése és szűrése</li>
-            <li>Booking létrehozás / módosítás / törlés</li>
-          </ul>
+          <p class="small">Forrás: EPApi/app + EPApi/database mappastruktúra.</p>
         </div>
       </div>
-      <div class="foot"><span>Forrás: EPApi/package.json + app/routes/api.js</span><span>4 / 14</span></div>
+      <div class="foot"><span>Backend structure</span><span>4 / 14</span></div>
     </section>
 
     <section class="slide">
@@ -440,62 +432,84 @@
 
     <section class="slide">
       <div>
-        <div class="kicker">Screenshot</div>
-        <h2>Home oldal – belépési pont</h2>
+        <div class="kicker">Kódminőség</div>
+        <h2>Tiszta kód és karbantarthatóság</h2>
       </div>
       <div class="grid-2">
-        <div class="img-wrap"><img src="presentation_assets/app_home.png" alt="Home oldal" /></div>
         <div class="card">
-          <h3>Mit kommunikál ez az oldal?</h3>
+          <h3>Elvek, amiket követünk</h3>
           <ul>
-            <li>Márka és értékajánlat első benyomásra.</li>
-            <li>Gyors navigáció a foglalási folyamat felé.</li>
-            <li>Reszponzív és áttekinthető komponensstruktúra.</li>
+            <li>Felelősség szerinti szétválasztás: controller, service, model, middleware, komponens.</li>
+            <li>Beszédes fájl- és függvénynevek, külön auth és booking logika.</li>
+            <li>Ismétlődés csökkentése service-ek és shared utilok használatával.</li>
+            <li>A migrációk és seederek nem keverednek az alkalmazás runtime logikájával.</li>
           </ul>
-          <p class="small">Képfelvétel futó alkalmazásból: http://localhost:4200/home</p>
+        </div>
+        <div class="card">
+          <h3>Miért fontos ez a projektben?</h3>
+          <ul>
+            <li>Könnyebb új funkciót beépíteni külön branch-ekből.</li>
+            <li>Gyorsabban lokalizálható hiba frontend és backend oldalon is.</li>
+            <li>Jobban tesztelhető az auth, booking és staff logika külön rétegekben.</li>
+            <li>Átláthatóbb átadás és csapatmunka prezentáció, demo és fejlesztés közben.</li>
+          </ul>
         </div>
       </div>
-      <div class="foot"><span>Product UX nézet</span><span>6 / 14</span></div>
+      <div class="foot"><span>Clean code focus</span><span>6 / 14</span></div>
     </section>
 
     <section class="slide">
       <div>
-        <div class="kicker">Screenshot</div>
-        <h2>Login oldal – authentikációs kapu</h2>
+        <div class="kicker">Frontend működés</div>
+        <h2>Szolgáltatások és védett folyamatok</h2>
       </div>
       <div class="grid-2">
-        <div class="img-wrap"><img src="presentation_assets/app_login.png" alt="Login oldal" /></div>
         <div class="card">
-          <h3>Kapcsolódás a backendhez</h3>
+          <h3>Frontend service layer</h3>
           <ul>
-            <li>Belépés e-mail/jelszó alapon.</li>
-            <li>Sikeres autentikáció után JWT-alapú session.</li>
-            <li>Guard + interceptor révén védett oldalak és API-kérések.</li>
+            <li>Az auth.service kezeli a belépést, token tárolást és session logikát.</li>
+            <li>A booking, consultation és staff service-ek domain szerint bontják a hívásokat.</li>
+            <li>Az interceptor egységesen viszi a hitelesítési adatokat a kérésekbe.</li>
           </ul>
-          <p class="small">Implementációs támasz: Auth guard + auth interceptor az Angular appban.</p>
+        </div>
+        <div class="card">
+          <h3>Felhasználói útvonalak</h3>
+          <ul>
+            <li>Publikus nézetek: információ, regisztráció, belépés, staff lista.</li>
+            <li>Védett nézetek: booking és adminisztratív folyamatok.</li>
+            <li>A route guard már navigáció előtt eldönti, ki melyik felületet érheti el.</li>
+          </ul>
+          <p class="small">Forrás: auth-guard.ts, auth.interceptor.ts, shared/*.service.ts.</p>
         </div>
       </div>
-      <div class="foot"><span>Auth flow</span><span>7 / 14</span></div>
+      <div class="foot"><span>Frontend flows</span><span>7 / 14</span></div>
     </section>
 
     <section class="slide">
       <div>
-        <div class="kicker">Screenshot</div>
-        <h2>StaffCard oldal – szolgáltatásválasztás előszobája</h2>
+        <div class="kicker">Perzisztencia</div>
+        <h2>Migrációk, seederek és adat-életciklus</h2>
       </div>
       <div class="grid-2">
-        <div class="img-wrap"><img src="presentation_assets/app_staffcard.png" alt="StaffCard oldal" /></div>
         <div class="card">
-          <h3>Felhasználói döntéstámogatás</h3>
+          <h3>Séma felépítése</h3>
           <ul>
-            <li>Orvos/személyzet és szakterület áttekintése.</li>
-            <li>Páciens oldalról ez a foglalási funnel eleje.</li>
-            <li>Kártyás UI: gyors összehasonlíthatóság.</li>
+            <li>00_create_role-tól 06_create_bookings-ig épül fel a teljes foglalási séma.</li>
+            <li>A relációk nem ad hoc módon, hanem verziózott migrációkkal jönnek létre.</li>
+            <li>Ez megkönnyíti a reprodukálható telepítést és a hibakeresést.</li>
           </ul>
-          <p class="small">Képfelvétel futó alkalmazásból: http://localhost:4200/staffCard</p>
+        </div>
+        <div class="card">
+          <h3>Adatfeltöltés és demo állapot</h3>
+          <ul>
+            <li>A seederek külön töltik fel a users, staff, consultations, slots és bookings adatokat.</li>
+            <li>A demo_v2 seed segít az előadható, kipróbálható állapot előállításában.</li>
+            <li>Fejlesztői oldalon így egy új környezet gyorsan felállítható.</li>
+          </ul>
+          <p class="small">Forrás: EPApi/database/migrations és EPApi/database/seeders.</p>
         </div>
       </div>
-      <div class="foot"><span>Conversion fókusz</span><span>8 / 14</span></div>
+      <div class="foot"><span>Database lifecycle</span><span>8 / 14</span></div>
     </section>
 
     <section class="slide">
