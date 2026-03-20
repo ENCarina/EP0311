@@ -1,34 +1,46 @@
-<div class="container mt-5 text-center">
-  <div class="row justify-content-center">
-    <div class="col-md-6 card shadow p-4">
+<div class="confirm-wrapper d-flex align-items-center">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-5">
+        <div class="card elite-confirm-card shadow-lg border-0 text-center p-5 animate__animated animate__fadeIn">
+          
+          @if(loading) {
+            <div class="py-4">
+              <div class="spinner-elite mb-4"></div>
+              <h2 class="fw-light letter-spacing-1">Fiók aktiválása</h2>
+              <p class="text-muted">Kérjük, várjon, amíg hitelesítjük adatait...</p>
+            </div>
+          }
 
-      @if(loading) {
-        <div class="py-4">
-          <div class="spinner-border text-info mb-3" role="status">
-            <span class="visually-hidden">Ellenőrzés...</span>
-          </div>
-          <p class="h4">Fiók aktiválása folyamatban...</p>
+          @if(success) {
+            <div class="status-content">
+              <div class="icon-box success-icon-box mb-4">
+                <i class="bi bi-check2-circle"></i>
+              </div>
+              <h2 class="fw-bold mb-3 text-dark">Sikeres visszaigazolás!</h2>
+              <p class="text-muted mb-4 px-md-4">Köszönjük bizalmát! Fiókja mostantól aktív, és minden szolgáltatásunk elérhető az Ön számára.</p>
+              <button class="btn btn-primary-elite w-100 py-3 rounded-pill shadow-sm" routerLink="/login">
+                TOVÁBB A BEJELENTKEZÉSHEZ
+              </button>
+            </div>
+          }
+
+          @if(error) {
+            <div class="status-content">
+              <div class="icon-box error-icon-box mb-4">
+                <i class="bi bi-exclamation-triangle"></i>
+              </div>
+              <h2 class="fw-bold mb-3 text-dark">Sikertelen aktiválás</h2>
+              <p class="text-muted mb-4 px-md-4">A megerősítő link sajnos érvénytelen vagy már lejárt. Kérjük, próbálja meg újra a regisztrációt.</p>
+              <button class="btn btn-outline-secondary-elite w-100 py-3 rounded-pill mb-2" routerLink="/register">
+                ÚJ REGISZTRÁCIÓ INDÍTÁSA
+              </button>
+              <a routerLink="/login" class="btn btn-link text-decoration-none mt-2 small">Vissza a főoldalra</a>
+            </div>
+          }
+
         </div>
-      }
-
-      @if(success) {
-        <div class="alert alert-success py-4">
-          <h2 class="alert-heading">Sikeres visszaigazolás!</h2>
-          <p>Köszönjük! A regisztrációd mostantól aktív.</p>
-          <hr>
-          <button class="btn btn-success" routerLink="/login">Tovább a bejelentkezéshez</button>
-        </div>
-      }
-
-      @if(error) {
-        <div class="alert alert-danger py-4">
-          <h2 class="alert-heading">Sikertelen aktiválás!</h2>
-          <p>A megerősítő link érvénytelen vagy már lejárt.</p>
-          <hr>
-          <button class="btn btn-outline-danger" routerLink="/register">Új regisztráció</button>
-        </div>
-      }
-
+      </div>
     </div>
   </div>
 </div>

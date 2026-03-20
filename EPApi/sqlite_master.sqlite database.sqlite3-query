@@ -1,4 +1,4 @@
 -- database: ./database.sqlite
 
 
-UPDATE users SET verified = 1;
+UPDATE staff SET isActive = true WHERE archivedAt IS NULL;

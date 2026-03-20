@@ -23,8 +23,17 @@ export class UserListComponent implements OnInit {
    this.adminService.getAllUsers().subscribe({
     next: (res: any) => {
       console.log('Megérkezett adatok:', res);
-      this.users = Array.isArray(res) ? res : (res.data || []); 
-    },
+      const data = Array.isArray(res) ? res : (res.data || []);
+       
+      this.users = data.map((u: any) => {
+        const status = u.staff ? u.staff.isActive : u.isActive;
+        return{
+          ...u,
+          isActive:(status === undefined || status === null) ? true : Boolean(status)
+        };
+    }),
+    console.log('Feldogozott user adatok:', this.users)
+  },
     error: (err) => {
       console.error('Hiba a betöltésnél:', err);
       Swal.fire('Hiba', 'Nem sikerült betölteni a listát', 'error');
@@ -82,31 +91,32 @@ onResetPassword(user: any) {
 onPromoteToStaff(user: any) {
   Swal.fire({
     title: 'Szakember kinevezése',
-    text: `Milyen szakterületet rendeljünk hozzá: ${user.name}?`,
+    text: `Adja meg a munkakört (pl. Asszisztens vagy Orvos) a következőhöz: ${user.name}`,
     input: 'text',
     inputLabel: 'Szakterület (pl. Fogorvos)',
+    inputPlaceholder: 'Munkakör megnevezése...',
     showCancelButton: true,
-    confirmButtonText: 'Igen, előléptetem!',
+    confirmButtonText: 'Kinevezés',
     cancelButtonText: 'Mégse',
     confirmButtonColor: this.navyColor,
     inputValidator: (value) => {
-      if (!value) return 'A szakterület megadása kötelező!';
+      if (!value) return 'A munkakör megadása kötelező!';
       return null;
       }
   }).then((result) => {
     if (result.isConfirmed) {
       this.adminService.promoteUser(user.id, { specialty: result.value }).subscribe({
         next: () => {
-          Swal.fire('Siker!', 'A felhasználó most már szakember.', 'success');
+          Swal.fire('Siker!', 'A státusz módosítva.', 'success');
           this.loadUsers(); // Lista frissítése
         },
-        error: (err:any) => Swal.fire('Hiba', err.error.message || 'Sikertelen előléptetés', 'error')
+        error: (err:any) => Swal.fire('Hiba', err.error.message || 'Sikertelen művelet', 'error')
       });
     }
   });
 }
+
 onEditUser(user: any) {
-    // Itt megtartottam a korábbi komplexebb szerkesztő felületedet
     Swal.fire({
       title: `${user.name} adatainak szerkesztése`,
       html: `
@@ -130,11 +140,17 @@ onEditUser(user: any) {
       }
     }).then((result) => {
       if (result.isConfirmed) {
-        // Itt hívd meg a megfelelő szerviz metódust (pl. updateUser)
-        console.log('Szerkesztett adatok:', result.value);
-      }
-    });
-  }
+        // Itt hívjuk meg a backendet
+      this.adminService.updateUser(user.id, result.value).subscribe({
+        next: () => {
+          Swal.fire('Siker!', 'Az adatok frissültek.', 'success');
+          this.loadUsers(); // Frissítjük a listát, hogy lássuk a változást
+        },
+        error: (err:any) => Swal.fire('Hiba', 'Nem sikerült a mentés', 'error')
+      });
+    }
+  });
+}
   onArchive(id: number) {
     Swal.fire({
       title: 'Biztosan archiválod?',

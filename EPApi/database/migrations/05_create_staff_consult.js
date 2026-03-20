@@ -27,7 +27,7 @@ async function up({context: QueryInterface}) {
   });
 }
 
-async function down({context: QueryInterface}) {
+async function addIndex({context: QueryInterface}) {
   await QueryInterface.dropTable('staff_consult', ['staffId', 'consultationId'], {
     unique: true,
     name: 'staff_consult_unique'

@@ -1,183 +1,276 @@
-import bcrypt from 'bcryptjs';
 import db from '../models/modrels.js'
-import { Op } from 'sequelize';
-
-const { Staff, User } = db;
+const { User, Staff, Role, Consultation, Op } = db;
+import bcrypt from 'bcryptjs';
 
 const UserController = {
+    // --- LISTÁZÁS (ADMIN FELÜLETRE IS) ---
     async index(req, res) {
         try {
-            await UserController.tryIndex(req, res)
-        }catch(error) {
+            await UserController.tryIndex(req, res);
+        } catch (error) {
             console.error("!!! CONTROLLER HIBA:", error);
-            res.status(500)
-            res.json({
+            res.status(500).json({
                 success: false,
-                message: 'Error! The query is failed!',
-                details: error.message // Ideiglenesen küldjük vissza az Angularnak is
-            })
+                message: 'Hiba a lekérdezés során!',
+                details: error.message
+            });
         }
     },
+
     async tryIndex(req, res) {
-        
         const users = await User.findAll({
             attributes: { exclude: ['password'] },
-            include: [{ model: Staff, as: 'staffProfile', required: false }],
-            order: [[{ model: Staff, as: 'staffProfile' }, 'isActive', 'DESC'], ['name', 'ASC']]
+            include: [
+                {
+                    model: Role,
+                    as: 'role', 
+                    attributes: ['id', 'name'],
+                    required: false
+                },
+                {
+                    model: Staff,
+                    as: 'staffProfile',
+                    required: false, // A sima User-ek is megjelennek!
+                    include: [
+                        {
+                            model: Consultation,
+                            as: 'treatments',
+                            through: { attributes: [] },
+                            required: false
+                        }
+                    ]
+                }
+            ],
+            order: [
+                //[{ model: Staff, as: 'staffProfile' }, 'isActive', 'DESC'], // Előbb az aktív szakemberek, aztán ABC név szerint
+                ['name', 'ASC']
+            ]
         });
-        console.log(">>> TESZT SIKERES! Találatok:", users.length);
+
         res.status(200).json({
             success: true,
             data: users
         });
     },
+
+    // --- EGY FELHASZNÁLÓ RÉSZLETEI ---
     async show(req, res) {
         try {
-            await UserController.tryShow(req, res)
-        }catch(error) {
-            console.error("DEBUG:", error);
-            res.status(500)
-            res.json({
+            await UserController.tryShow(req, res);
+        } catch (error) {
+            console.error("DEBUG SHOW HIBA:", error);
+            res.status(500).json({
                 success: false,
-                message: 'Error! The query is failed!'
-            })
+                message: 'Hiba a felhasználó lekérésekor!'
+            });
         }
     },
+
     async tryShow(req, res) {
-        const user = await User.findByPk(req.params.id)
-        res.status(200)
-        res.json({
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: Role,
+                    as: 'role',
+                    required: false
+                },
+                {
+                    model: Staff,
+                    as: 'staffProfile',
+                    include: [{
+                        model: Consultation,
+                        as: 'treatments', 
+                        through: { attributes: [] }
+                    }]
+                }
+            ]
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+        }
+
+        res.status(200).json({
             success: true,
             data: user
-        })
+        });
     },
+
+    // --- LÉTREHOZÁS (REGISZTRÁCIÓ) ---
     async create(req, res) {
         let clientError = false;
         try {
             const { name, email, password, confirmPassword } = req.body;
 
-            if(!name || !email || !password || !confirmPassword) {
+            if (!name || !email || !password || !confirmPassword) {
                 clientError = true;
-                throw new Error('Error! Hiányzó adatok!')
-            }
-            if(password != confirmPassword) {
-                clientError = true
-                throw new Error('Error! A két jelszó nem egyezik!')
-            }
-            const existingUser = await User.findOne({
-                where: { 
-                    [Op.or]: [{ name: name }, { email: email }]
-            }
-        });
-            if(existingUser) {
-                clientError = true;
-                const field = existingUser.name === name ? 'név' : 'email';
-                throw new Error(`Error! Ez a ${field} már foglalt!`);
-            }            
-            await UserController.tryCreate(req, res);
-
-        }catch(error) {
-           res.status(clientError ? 400 : 500).json({
-                success: false,
-                message: 'Error! A művelet sikertelen!',
-                error: error.message
-            });
-        }
-    },
-    async tryCreate(req, res) {
-        const newUser = {
-            name: req.body.name,
-            email: req.body.email,
-            password: bcrypt.hashSync(req.body.password, 10),
-            roleId: req.body.roleId || 1
-        }        
-        const userData = await User.create(newUser)
-        const result = userData.toJSON();
-        delete result.password;
-        
-        res.status(201).json({
-            success: true,
-            data: result
-        })
-    },
-    async updatePassword(req, res) {
-        let clientError = false;
-        try {
-            const { password, confirmPassword } = req.body;
-            const targetId = req.params.id; // A router-ben :id van, így innen olvassuk ki
-            const requester = req.user;
-
-            if (requester.roleId !== 2 && requester.id != targetId) {
-            clientError = true;
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Nincs jogosultságod más jelszavát módosítani!' 
-            });
-            }
-            if (!password || !confirmPassword) {
-            clientError = true;
-            throw new Error('Hiányzó jelszó mezők!');
+                throw new Error('Hiányzó adatok!');
             }
             if (password !== confirmPassword) {
                 clientError = true;
                 throw new Error('A két jelszó nem egyezik!');
             }
-            await UserController.tryUpdatePassword(req, res);
 
+            const existingUser = await User.findOne({
+                where: { [Op.or]: [{ name }, { email }] }
+            });
+
+            if (existingUser) {
+                clientError = true;
+                const field = existingUser.name === name ? 'név' : 'email';
+                throw new Error(`Ez a ${field} már foglalt!`);
+            }
+
+            await UserController.tryCreate(req, res);
         } catch (error) {
             res.status(clientError ? 400 : 500).json({
                 success: false,
-                message: error.message // Az error.message-et küldjük, hogy a Swal kiírja
+                message: error.message
+            });
+        }
+    },
+
+    async tryCreate(req, res) {
+        const newUser = {
+            name: req.body.name,
+            email: req.body.email,
+            password: bcrypt.hashSync(req.body.password, 10),
+            roleId: req.body.roleId !== undefined ? req.body.roleId : 0,
+            isActive: true
+        };
+
+        const userData = await User.create(newUser);
+        const result = userData.toJSON();
+        delete result.password;
+
+        res.status(201).json({
+            success: true,
+            data: result
+        });
+    },
+
+    // --- JELSZÓ MÓDOSÍTÁS ---
+    async updatePassword(req, res) {
+        let clientError = false;
+        try {
+            const { password, confirmPassword } = req.body;
+            const targetId = req.params.id;
+            const requester = req.user; // AuthMiddleware-ből 
+
+            // Jogosultság: Csak admin (2) vagy saját maga
+            if (requester.roleId !== 2 && Number(requester.id) !== Number(targetId)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Nincs jogosultságod más jelszavát módosítani!'
+                });
+            }
+
+            if (!password || !confirmPassword) {
+                clientError = true;
+                throw new Error('Hiányzó jelszó mezők!');
+            }
+            if (password !== confirmPassword) {
+                clientError = true;
+                throw new Error('A két jelszó nem egyezik!');
+            }
+
+            await UserController.tryUpdatePassword(req, res);
+        } catch (error) {
+            res.status(clientError ? 400 : 500).json({
+                success: false,
+                message: error.message
             });
         }
     },
 
     async tryUpdatePassword(req, res) {
-        const { id } = req.params; 
+        const { id } = req.params;
         const { password } = req.body;
 
         const user = await User.findByPk(id);
-        if(!user) {
+        if (!user) {
             return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
         }
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
 
+        const hashedPassword = await bcrypt.hash(password, 10);
         await user.update({ password: hashedPassword });
-        console.log(`>>> Jelszó sikeresen frissítve: User ID ${id}`);
-        return res.status(200).json({ success: true, message: 'Jelszó sikeresen módosítva!' }); 
-        },
 
+        return res.status(200).json({ success: true, message: 'Jelszó sikeresen módosítva!' });
+    },
+
+    // --- ELŐLÉPTETÉS SZAKEMBERRÉ ---
     async promoteToStaff(req, res) {
-    try {
-        const { id } = req.params; 
-        const { specialty, bio } = req.body; 
+        try {
+            const { id } = req.params;
+            const { specialty } = req.body;
 
-        const user = await User.findByPk(id);
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+            const user = await User.findByPk(id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+            }
+            if (user.roleId !== 2) {
+            await user.update({ roleId: 1 });
         }
-
-        await user.update({ roleId: 1 });
-
-        await Staff.create({
-            userId: id,
-            specialty: specialty || 'Általános szakértő',
-            bio: bio || '',
-            isActive: true,
-            isAvailable: true
+            const [staff, created] = await Staff.findOrCreate({
+            where: { userId: id },
+            defaults: {
+                specialty: specialty || 'Általános szakértő',
+                isActive: true,
+                isAvailable: true
+            }
         });
+            if (!created) {
+            await staff.update({ 
+                isActive: true, 
+                specialty: specialty || staff.specialty 
+            });
+        }
+            res.status(200).json({
+                success: true,
+                message: created ? 'A felhasználó mostantól szakember!' : 'A szakmai profil frissítve lett!',
+                data: {
+                    roleId: user.roleId,
+                    staffId: staff.id
+                    }
+                });
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'A felhasználó mostantól szakember!' 
-        });
-    } catch (error) {
-        console.error("Promote hiba:", error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-},
-    // --- STÁTUSZ (AKTÍV/INAKTÍV) VÁLTÁS ---
+        } catch (error) {
+            console.error("Promote hiba:", error);
+            res.status(500).json({
+                success: false,
+                message: 'Hiba történt...a szakemberré avatás során.'
+            });
+        }
+    },
+
+    // --- ALAPADATOK FRISSÍTÉSE ---
+    async update(req, res) {
+        try {
+            const { id } = req.params;
+            const { name, email, roleId } = req.body;
+
+            const user = await User.findByPk(id);
+            if (!user) return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
+
+            await user.update({
+                name: name || user.name,
+                email: email || user.email,
+                roleId: roleId !== undefined ? roleId : user.roleId
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Adatok sikeresen frissítve!',
+                data: user
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    // --- STÁTUSZ VÁLTÁS ---
     async updateStatus(req, res) {
         try {
             await UserController.tryUpdateStatus(req, res);
@@ -185,17 +278,17 @@ const UserController = {
             res.status(500).json({ success: false, message: 'Hiba a státusz frissítésekor!', error: error.message });
         }
     },
+
     async tryUpdateStatus(req, res) {
         const { id } = req.params;
         const { isActive } = req.body;
         const user = await User.findByPk(id);
-        
+
         if (!user) return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
 
         user.isActive = isActive;
         await user.save();
 
-        // Szinkronizáljuk a Staff profilt is, ha létezik
         const staffProfile = await Staff.findOne({ where: { userId: id } });
         if (staffProfile) {
             staffProfile.isActive = isActive;
@@ -204,51 +297,52 @@ const UserController = {
 
         res.status(200).json({ success: true, data: { id: user.id, isActive: user.isActive } });
     },
+
+    // --- TÖRLÉS (ARCHIVÁLÁS) ---
     async destroy(req, res) {
         try {
-            await UserController.tryDestroy(req, res)
-        }catch(error) {
-            res.status(500)
-            res.json({
+            await UserController.tryDestroy(req, res);
+        } catch (error) {
+            res.status(500).json({
                 success: false,
-                message: 'Error! The query is failed!',
+                message: 'Hiba a törlés/archiválás során!',
                 error: error.message
-            })
+            });
         }
     },
+
     async tryDestroy(req, res) {
         const userId = req.params.id;
 
+        // Ne tudja saját magát törölni
         if (Number(userId) === Number(req.userId)) {
             return res.status(400).json({
                 success: false,
-                message: 'Error! Saját magadat nem archiválhatod!'
-                });
-            }
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'Error! Felhasználó nem található!'
+                message: 'Saját magadat nem archiválhatod!'
             });
         }
+        // 2. Felhasználó lekérése
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
+        }
+        // 3. Archiválás (User tábla)
         user.isActive = false;
         await user.save();
 
-        const staffProfile = await Staff.findOne({ where: { userId: userId } });
-
+        // 4. Kapcsolódó szakember profil archiválása
+        const staffProfile = await Staff.findOne({ where: { userId } });
         if (staffProfile) {
             staffProfile.isActive = false;
             await staffProfile.save();
         }
-
-        res.status(200)
-        res.json({
+        // 5. Válasz küldése a friss állapotról
+        res.status(200).json({
             success: true,
-            message: 'A felhasználó és kapcsolódó profilja sikeresen archiválva.',
-            data: { id: user.id, isActive: user.isActive }
+            message: 'Sikeres archiválás.',
+            data: { id: user.id, isActive: user.isActive, name: user.name }
         });
     }
-}
+};
 
-export default UserController
+export default UserController;

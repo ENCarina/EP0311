@@ -1,7 +1,46 @@
-/* You can add global styles to this file, and also import other style files */
+/* Google Fonts importálása: Montserrat az elit, tiszta megjelenésért */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import "bootstrap";
 @import 'bootstrap-icons';
 
+:root {
+  --elite-blue: #007bff; /* Az ElitPort alapszíne */
+  --elite-dark: #1a1a1a; /* Finomabb fekete a szövegeknek */
+  --elite-light: #ffffff; /* Tiszta fehér */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%; /* Fontos a footer rögzítéséhez */
+  background-color: var(--elite-light); 
+  font-family: 'Montserrat', sans-serif; /* Globális betűtípus váltás */
+  color: var(--elite-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Flexbox szerkezet az app-root-ra, hogy a footer mindig az alján legyen */
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Tartalom kiterjesztése, hogy lefelé tolja a láblécet */
+main {
+  flex: 1 0 auto;
+  width: 100%;
+  display: block;
+}
+
+/* Footer stabilitás */
+footer {
+  flex-shrink: 0;
+}
+
+/* Navigációs logó animációja */
 .navbar-brand:hover i.bi-heart-pulse-fill {
   animation: beat .25s infinite alternate;
   transform-origin: center;
@@ -9,4 +48,36 @@
 
 @keyframes beat {
   to { transform: scale(1.2); }
+}
+
+/* Globális simítások az elit érzetért */
+h1, h2, h3, h4, .display-4 {
+  letter-spacing: -0.5px;
+}
+
+.text-primary {
+  color: var(--elite-blue) !important;
+}
+
+/* Scrollbar finomítás (opcionális, de elegáns) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--elite-blue);
+}
+
+/* Reszponzív overflow védelem */
+body {
+  overflow-x: hidden !important;
 }

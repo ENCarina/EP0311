@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2'; 
 
-
 @Component({
   selector: 'app-consultation',
   standalone: true, 
@@ -24,6 +23,8 @@ export class ConsultationComponent implements OnInit {
  
   addMode = true;
   showModal = false;
+
+  // Form összeállítása
   consultationForm = this.fb.nonNullable.group({
     id: [null as number | null],
     name: ['', [Validators.required]],
@@ -31,44 +32,46 @@ export class ConsultationComponent implements OnInit {
     specialty: ['', [Validators.required]],
     duration: [60, [Validators.required, Validators.min(5)]],
     price: [0, [Validators.required, Validators.min(0)]]
-});
+  });
+
   ngOnInit() {
     this.getConsultations();
   }
+
   getConsultations() {
     this.consultationService.getConsultations().subscribe({
-      next: (res:any) => {
+      next: (res: any) => {
         const data = Array.isArray(res) ? res : (res.data || []);
         this.allConsultations = data;
-
-        if (this.selectedStaff) {
-          this.filterBySpecialty(this.selectedStaff.specialty);
-        } else {
-          this.filteredConsultations = data;
-        }
+        this.applyFilter();
       },
-      error: (err:any) => console.error('Hiba a betöltéskor:', err)
+      error: (err: any) => console.error('Hiba a betöltéskor:', err)
     });
   }
-  onStaffSelect(staff: any) {
-    this.selectedStaff = staff; 
-    this.filterBySpecialty(staff.specialty);
-}
- private filterBySpecialty(specialty: string) {
-    if (!specialty) {
-      this.filteredConsultations = this.allConsultations;
-      return;
-    }
 
-    this.filteredConsultations = this.allConsultations.filter(c => 
-      c.specialty === specialty
-    );
-}
+  private applyFilter() {
+    if (this.selectedStaff?.specialty) {
+      this.filteredConsultations = this.allConsultations.filter(c => 
+        c.specialty === this.selectedStaff.specialty
+      );
+    } else {
+      this.filteredConsultations = this.allConsultations;
+    }
+  }
+
   startShowModal() {
     this.addMode = true;
     this.showModal = true;
-    this.consultationForm.reset();
+    this.consultationForm.reset({
+      id: null,
+      name: '',
+      description: '',
+      specialty: '',
+      duration: 60,
+      price: 0
+    });
   }
+
   startEdit(consultation: any) {
     this.addMode = false;
     this.showModal = true;
@@ -88,27 +91,31 @@ export class ConsultationComponent implements OnInit {
       this.consultationForm.markAllAsTouched();
       return;
     }
+
     const data = this.consultationForm.getRawValue();
 
     if (this.addMode) {
-      this.consultationService.createConsultation(data as any).subscribe({
-        next: () => this.handleSuccess('Szolgáltatás hozzáadva!'),
-        error: (err:any) => this.handleError(err)
+      // --- ÚJ FELVÉTEL ---
+      const { id, ...payload } = data; // Újnál nem küldünk ID-t (vagy null-t)
+      this.consultationService.createConsultation(payload as any).subscribe({
+        next: () => this.handleSuccess('Szolgáltatás sikeresen hozzáadva!'),
+        error: (err: any) => this.handleError(err)
       });
     } else {
-      const {id, ...payload} = data;
-      if (id) {
+      // --- MÓDOSÍTÁS ---
+      if (data.id) {
+        const { id, ...payload } = data;
         this.consultationService.updateConsultation(id, payload as any).subscribe({
           next: () => this.handleSuccess('Sikeres módosítás!'),
-          error: (err:any) => this.handleError(err)
+          error: (err: any) => this.handleError(err)
         });
       } else {
-        Swal.fire('Hiba!', 'Nincs érvényes azonosító a módosításhoz.', 'error');  
+        Swal.fire('Hiba!', 'Hiányzó azonosító a módosításhoz.', 'error');
       }
     }
   }
 
-  deleteConsultation(id: number){
+  deleteConsultation(id: number) {
     Swal.fire({
       title: 'Biztos törölni szeretnéd?',
       text: "Ez a folyamat nem vonható vissza!",
@@ -125,7 +132,7 @@ export class ConsultationComponent implements OnInit {
             this.getConsultations();
             Swal.fire('Törölve!', 'A szolgáltatás eltávolítva.', 'success');
           },
-          error: (err:any) => this.handleError(err)
+          error: (err: any) => this.handleError(err)
         });
       }
     });
@@ -136,10 +143,11 @@ export class ConsultationComponent implements OnInit {
     this.getConsultations();
     this.consultationForm.reset();
     this.addMode = true;
-    Swal.fire({ title: 'Siker!', text: message, icon: 'success', timer: 2000 });
+    Swal.fire({ title: 'Siker!', text: message, icon: 'success', timer: 2000, showConfirmButton: false });
   }
 
   private handleError(err: any) {
+    console.error('API hiba:', err);
     Swal.fire('Hiba!', err.error?.message || 'A művelet nem sikerült.', 'error');
   }
 

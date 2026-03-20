@@ -26,6 +26,12 @@ export class AdminService {
     );
   }
 
+  updateUser(userId: number, userData: { name: string; email: string }): Observable<any> {
+  return this.http.put<{ success: boolean; message: string }>(
+    `${this.apiUrl}/users/${userId}`, userData, { headers: this.getHeaders() }
+  );
+}
+
   promoteUser(userId: number, data: { specialty: string }): Observable<any> {
     const payload = {
       userId: userId,

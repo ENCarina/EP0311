@@ -1,32 +1,34 @@
-import User from '../models/user.js'
+import User from '../models/user.js';
 
 const checkRole = (requiredRole) => {
     return async (req, res, next) => {
         try {
-            
+            // Lekérdezzük a legfrissebb adatokat
             const user = await User.findByPk(req.userId);
 
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Felhasználó nem található!' });
             }
-            const accountActive = user.isActive !== false && user.is_active !== false;
 
-            // SOFT DELETE ELLENŐRZÉS:
-            if (!accountActive) {
+            // Csak az isActive-et nézzük 
+            if (user.isActive === false) {
                 return res.status(403).json({ success: false, message: 'A fiókod inaktív.' });
             }
 
-            // jogosultság ELLENŐRZÉS (0: User, 1: Staff, 2: Admin)
+            // Jogosultság ellenőrzés (A >= jel jó, mert az Admin (2) láthatja a Staff (1) dolgait is)
             if (user.roleId >= requiredRole) {
+                // Átadjuk a teljes user objektumot a következő lépésnek (Controllernek), 
+                // így ott már nem kell findByPk-t hívni!
+                req.user = user; 
                 next();
             } else {
                 return res.status(403).json({
                     success: false,
-                    message: 'Nincs jogosultságod!'
+                    message: 'Nincs jogosultságod a művelethez!'
                 });
             }
         } catch (error) {
-            return res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: 'Szerver hiba a jogosultság ellenőrzésekor.' });
         }
     };
 };

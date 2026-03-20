@@ -1,49 +1,54 @@
 import db from '../models/modrels.js';
-import { EmailService } from './emailService.js';  
+import { EmailService } from './emailService.js';
 
 export const BookingService = {
-    
-    // 1. Új foglalás létrehozása
+
     async createBooking(bookingData, user) {
         let t;
         try {
-            t = await db.sequelize.transaction();  
+            t = await db.sequelize.transaction();
 
             const slot = await db.Slot.findByPk(bookingData.slotId, { transaction: t });
 
-            if (!slot || !slot.isAvailable) {
+            if (!slot) {
+                throw new Error('A választott időpont nem található!');
+            }
+            if (!slot.isAvailable) {
                 throw new Error('Ez az időpont már foglalt!');
-            }   
+            }
 
-        const newBooking = await db.Booking.create({
-            ...bookingData,
-            patientId:user.id, 
-            status: 'Confirmed'
-        }, { transaction: t});
+            const newBooking = await db.Booking.create({
+                ...bookingData,
+                patientId: bookingData.patientId || (user ? user.id : null),
+                startTime: bookingData.startTime || slot.startTime,
+                date: bookingData.date || slot.date,
+                duration: bookingData.duration || slot.duration || 30,
+                status: 'Confirmed'
+            }, { transaction: t });
 
-        await slot.update({ isAvailable: false }, { transaction: t });  // Slot lefoglalása
-        await t.commit(); // mentés az adatbázisba
+            await slot.update({ isAvailable: false }, { transaction: t });
 
-        const emailData = {
-            ...newBooking.get({ plain: true }),
-            name: bookingData.name || 'Orvosi vizsgálat'
-        };
-        const dateVal = slot.date;
-        const timeVal = slot.startTime || slot.StartTime; // biztos ami biztos
+            await t.commit();
 
-        if (dateVal && timeVal) {
-            emailData.appointment_date = `${dateVal} ${timeVal}`;
-            console.log("DEBUG: Összeállított dátum:", emailData.appointment_date);
-        } else {
-            emailData.appointment_date = "Időpont visszaigazolás alatt";
-            console.error("HIBA: A slot adatai hiányoznak a slot objektumból!", slot.get({plain:true}));
-        }
-       
-        if (typeof EmailService !== 'undefined') {
-           await EmailService.sendBookingConfirmation(user.email, emailData).catch(err =>{
-             console.error('E-mail hiba:', err);
-            });
-        }
+            const emailData = {
+                ...newBooking.get({ plain: true }),
+                name: bookingData.name || 'Orvosi vizsgálat'
+            };
+
+            const dateVal = slot.date;
+            const timeVal = slot.startTime || slot.StartTime;
+
+            if (dateVal && timeVal) {
+                emailData.appointment_date = `${dateVal} ${timeVal}`;
+            } else {
+                emailData.appointment_date = "Időpont visszaigazolás alatt";
+            }
+
+            if (EmailService && user?.email) {
+                EmailService.sendBookingConfirmation(user.email, emailData).catch(err => {
+                    console.error('E-mail hiba:', err);
+                });
+            }
 
             return newBooking;
 
@@ -52,44 +57,40 @@ export const BookingService = {
             throw error;
         }
     },
-    // 2. Szabad időpontok keresése
+
     async getAvailableSlots(staffId, date) {
         return await db.Slot.findAll({
-            where: { 
+            where: {
                 staffId: Number(staffId),
-                startTime: {
-                    [db.sequelize.Op.like]: `${date}%` 
-                },
-                isAvailable: true 
+                date: date,
+                isAvailable: true
             },
-            order: [['startTime', 'ASC']]   
+            order: [['startTime', 'ASC']]
         });
     },
 
-    // 3. Foglalás lemondása speciális szabályokkal
     async cancelBooking(bookingId, userId) {
         const t = await db.sequelize.transaction();
         try {
-            const booking = await db.Booking.findByPk(bookingId);
-        
+            const booking = await db.Booking.findByPk(bookingId, { transaction: t });
+
             if (!booking) throw new Error('Foglalás nem található!');
             if (booking.patientId !== userId) throw new Error('Nincs jogosultságod a lemondáshoz!');
 
-        // 24 órán belül már nem mondható le online
-        const now = new Date(); // 24 órás szabály ellenőrzése
-        const slot = await db.Slot.findByPk(booking.slotId, { transaction: t });
-        const bookingDate = new Date(slot.startTime);
-        const hoursDiff = (bookingDate - now) / (1000 * 60 * 60);
-
-        if (hoursDiff < 24) {
-            throw new Error('24 órán belüli lemondás csak telefonon lehetséges!');
-        }
-        // Slot felszabadítása
+            const slot = await db.Slot.findByPk(booking.slotId, { transaction: t });
+            
             if (slot) {
+                const now = new Date();
+                const bookingFullDate = new Date(`${slot.date} ${slot.startTime}`);
+                const hoursDiff = (bookingFullDate - now) / (1000 * 60 * 60);
+
+                if (hoursDiff < 24) {
+                    throw new Error('24 órán belüli lemondás csak telefonon lehetséges!');
+                }
+
                 await slot.update({ isAvailable: true }, { transaction: t });
             }
 
-            // Foglalás törlése (vagy státusz állítása 'Cancelled'-re)
             await booking.destroy({ transaction: t });
 
             await t.commit();
@@ -100,4 +101,4 @@ export const BookingService = {
             throw error;
         }
     }
-}
+};

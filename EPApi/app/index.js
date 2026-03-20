@@ -1,10 +1,11 @@
 import app from './app.js'
-import dotenvFlow from 'dotenv-flow'
+import dotenv from 'dotenv';
 
-dotenvFlow.config()
+dotenv.config()
 
-const PORT = process.env.APP_PORT || 8000
+const PORT = process.env.APP_PORT || 8000;
 
 app.listen(PORT, () => {
-    console.log(`Listening on port: ${PORT}`)
-})
+    console.log(`Listening on port: ${PORT}`);
+    console.log(`-------------------------------------------`);
+});

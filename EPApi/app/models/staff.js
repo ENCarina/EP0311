@@ -24,6 +24,7 @@ const Staff = sequelize.define('staff', {
     imageUrl: { type: DataTypes.STRING, allowNull: true },
 }, {
     timestamps: true,
+    tableName: 'staff',
     freezeTableName: true
 })
 

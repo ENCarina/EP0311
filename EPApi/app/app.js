@@ -24,8 +24,8 @@ app.use(cors())
 app.use(express.json())
 
 app.use((req, res, next) => {
-    console.log(`>>> BEÉRKEZŐ KÉRÉS: ${req.method} ${req.originalUrl}`);
-    console.log(`>>> AUTHORIZATION HEADER: ${req.headers.authorization ? 'VAN' : 'NINCS'}`);
+    //console.log(`>>> BEÉRKEZŐ KÉRÉS: ${req.method} ${req.originalUrl}`);
+    //console.log(`>>> AUTHORIZATION HEADER: ${req.headers.authorization ? 'VAN' : 'NINCS'}`);
     next();
 });
 app.use('/api', router);

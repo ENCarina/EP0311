@@ -1,4 +1,4 @@
-<div class="text-center py-5 container">
+<!-- <div class="text-center py-5 home-container">
   <h2 class="display-4 fw-bold text-primary">Üdvözöljük az ELIT MedicalCentre-ben</h2>
   <p class="lead text-muted mb-5">Digitális páciens menedzsment az Ön kényelméért.</p>
   
@@ -32,4 +32,53 @@
       <i class="bi bi-person-lock me-2"></i> Jelentkezzen be a foglaláshoz
     }
   </button>
+</div> -->
+<div class="home-hero-wrapper">
+  <div class="stones-overlay"></div>
+
+  <div class="container text-center py-5 position-relative">
+    <div class="header-section mb-5 animate__animated animate__fadeIn">
+      <h2 class="display-3 fw-light text-dark mb-2">
+        <span class="fw-bold text-primary">ELIT</span> MedicalCentre
+      </h2>
+      <div class="divider-line mx-auto"></div>
+      <p class="lead text-secondary mt-3 fw-light">Digitális páciens menedzsment az Ön kényelméért.</p>
+    </div>
+    
+    <div class="row g-5 justify-content-center">
+      <div class="col-lg-5 col-md-6 col-12">
+        <div class="elite-card">
+          <div class="img-container">
+            <img src="booking.jpg" class="card-img-top" alt="Rendelő">
+          </div>
+          <div class="card-body p-4">
+            <h4 class="fw-bold letter-spacing-1">Modern Környezet</h4>
+            <p class="text-muted fw-light">Csúcstechnológiás eszközeink és barátságos rendelőink garantálják a kiváló ellátást.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 col-md-6 col-12">
+        <div class="elite-card">
+          <div class="img-container">
+            <img src="Medical.jpg" class="card-img-top" alt="Ellátás">
+          </div>
+          <div class="card-body p-4">
+            <h4 class="fw-bold letter-spacing-1">Szakértő Kezek</h4>
+            <p class="text-muted fw-light">Kiválóan képzett szakorvosaink a legmagasabb szakmai színvonalon gondoskodnak Önkről.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5 pt-4">
+      <button (click)="onStartBooking()" class="btn-elite-primary shadow-lg">
+        @if (authService.isAuthenticated()) {
+          <i class="bi bi-calendar-check-fill me-2"></i> <span>IDŐPONTFOGLALÁS INDÍTÁSA</span>
+        } @else {
+          <i class="bi bi-lock-fill me-2"></i> <span>JELENTKEZZEN BE A FOGLALÁSHOZ</span>
+        }
+      </button>
+    </div>
+  </div>
 </div>

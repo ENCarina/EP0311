@@ -29,10 +29,8 @@ export const routes: Routes = [
     
     //admin
     { path: 'admin/users', component: UserListComponent, canActivate: [authGuard] }, 
-    { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard] }, 
-    { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
-    { path: 'admin/consultation', component: ConsultationComponent, canActivate: [authGuard]},
+    { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
     
     { path: '**', redirectTo: 'home' },
 

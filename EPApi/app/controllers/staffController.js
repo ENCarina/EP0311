@@ -1,6 +1,9 @@
 import db from '../models/modrels.js'
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { Staff, User, Consultation } = db;
+const APP_URL = process.env.APP_URL || 'http://localhost:8000';
 
 const StaffController = {
     // 1. Publikus profilok az UI-ra
@@ -30,8 +33,10 @@ const StaffController = {
                 name: staff.user ? staff.user.name : 'Névtelen szakember',
                 specialty: staff.specialty,
                 bio: staff.bio,
-                imageUrl: staff.imageUrl,
-                treatments: staff.treatments
+                imageUrl: staff.imageUrl 
+                    ? `${APP_URL}${staff.imageUrl}` 
+                    : `${APP_URL}/images/default-avatar.png`,
+                treatments: staff.treatments   
             }));
 
             res.json({ success: true, data: formattedProfiles });
@@ -71,30 +76,22 @@ const StaffController = {
 // 3. Egy szakember adatlapja
     async show(req, res) {
         try {
-            const staff = await Staff.findOne({
-                where: { userId: req.params.id },
-                include: [{
-                    model: User,
-                    as: 'user',
-                    attributes:['name', 'email','roleId']
-                },
-                {
-                    model: Consultation,
-                    as: 'treatments',
-                    attributes: ['id', 'name', 'price'],
-                    through: { attributes: [] }
-                }
-            ]
+            const staff = await Staff.findByPk(req.params.id,{
+                include: [{ model: User, as: 'user', attributes:['name', 'email','roleId'] },
+                    {
+                        model: Consultation,
+                        as: 'treatments',
+                        attributes: ['id', 'name', 'price'],
+                        through: { attributes: [] }
+                    }
+                ]
             });
-            if(!staff) { return res.status(404).json({ success: false, message: 'Staff not found' }) }
+
+            if(!staff) { return res.status(404).json({ success: false, message: 'Szakember nem található' }) }
+            
             res.status(200).json({ success: true, data: staff });
         }catch(error) {
-            res.status(500)
-            res.json({
-                success: false,
-                message: 'Error! The query is failed!',
-                error: error.message
-            })
+            res.status(500).json({ success: false, error: error.message });
         }
     },
     async tryShow(req, res) {
@@ -117,27 +114,21 @@ const StaffController = {
             const staffId = req.params.id; 
             let { treatmentIds } = req.body;
 
-            console.log("Kapott adatok (body):", req.body);
-            const staffMember = await db.Staff.findOne({ where: { userId: staffId } });
+            const staffMember = await db.Staff.findByPk(staffId);
 
             if (!staffMember) {
             return res.status(404).json({ success: false, message: 'Orvos nem található' });
             }
-            if (!treatmentIds) {
-                treatmentIds = [];
-            } else if (!Array.isArray(treatmentIds)) {
-                treatmentIds = [Number(treatmentIds)];
-            } else {
-                treatmentIds = treatmentIds.filter(id => id != null).map(id => Number(id));
-            }
+            const idsToSave = Array.isArray(treatmentIds) 
+            ? treatmentIds.map(Number) 
+            : (treatmentIds ? [Number(treatmentIds)] : []);
 
-            console.log("Tisztított ID-k mentéshez:", treatmentIds);
-    
-            await staffMember.setTreatments(treatmentIds);
+            await staffMember.setTreatments(idsToSave);
 
             return res.status(200).json({ 
                 success: true, 
-                message: 'Kezelések sikeresen frissítve!' 
+                message: 'Kezelések sikeresen frissítve!',
+                count: idsToSave.length 
             });
 
         } catch (error) {
@@ -149,7 +140,7 @@ const StaffController = {
     // 5. Adott orvos kezeléseinek lekérése
     async getTreatmentsForStaff(req, res) {
         try {
-            const staffWithTreatments = await db.Staff.findOne({
+            const staffWithTreatments = await db.Staff.findByPk(req.params.id, {
                 where: { userId: req.params.id },
                 include: [{
                     model: db.Consultation,
@@ -158,9 +149,10 @@ const StaffController = {
                     through: { attributes: [] } 
                 }]
             });
-            if (!staffWithTreatments) return res.status(404).json({ message: "Nincs ilyen orvos" });
-            res.json({ success: true, data: staffWithTreatments.treatments });
+            if (!staffWithTreatments) return res.status(404).json({ message: "Szakember nem található a Staff táblában ezzel az ID-val." });
+            res.json({ success: true, data: staffWithTreatments.treatments || [] });
         } catch (error) {
+            console.error("SQL hiba a szakember kezeléseinél:", error);
             res.status(500).json({ error: error.message });
         }
     },

@@ -9,6 +9,7 @@ import BookingController from '../controllers/bookingController.js';
 import SlotController from '../controllers/slotController.js';
 import ConsultationController from '../controllers/consultationController.js';
 import checkRole from '../middleware/checkRole.js';
+
  
 router.post('/register', AuthController.register)
 router.post('/login', AuthController.login)
@@ -24,7 +25,8 @@ router.get('/users/:id', [verifyToken], UserController.show);
 router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy);
 // ÚJ: Státusz váltás (Az isActive switch-hez a táblázatban)
 router.post('/users/:id/status', [verifyToken, checkRole(2)], UserController.updateStatus);
-
+// ÚJ: Általános adatok (név, email) módosítása
+router.put('/users/:id/', [verifyToken, checkRole(2)], UserController.update);
 // --- STAFF (Szakemberek) ---
 router.get('/staff', [verifyToken], StaffController.index);
 router.post('/staff/promote', [verifyToken, checkRole(2)], StaffController.promoteToStaff);
@@ -47,6 +49,7 @@ router.get('/consultations', ConsultationController.index);
 router.get('/consultations/:id', ConsultationController.show);
 router.post('/consultations', [verifyToken, checkRole(2)], ConsultationController.store);
 router.post('/consultations/:id',[verifyToken, checkRole(2)], ConsultationController.update);
+router.put('/consultations/:id', [verifyToken, checkRole(2)], ConsultationController.update);
 router.delete('/consultations/:id',[verifyToken, checkRole(2)], ConsultationController.destroy);
 
 router.get('/slots', [verifyToken], SlotController.index);

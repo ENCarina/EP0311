@@ -1,17 +1,190 @@
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 768px) { /* 600px helyett a 768px (tablet/mobil) biztonságosabb */
+    
+    .table-responsive {
+        border: none !important;
+        background: transparent !important;
+    }
 
-  table, thead, tbody, th, td, tr {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    /* Fejléc elrejtése */
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    /* Minden sor egy különálló "kártya" lesz */
+    tr {
+        background: #ffffff;
+        border-radius: 15px !important;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #edf2f7 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    td {
+        /* Cellák elrendezése: Bal oldalon a címke, jobb oldalon az érték */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none !important;
+        padding: 0.75rem 0.5rem !important;
+        position: relative;
+        text-align: right;
+    }
+
+    /* Az oszlop neve (data-column) */
+    td::before {
+        content: attr(data-column);
+        flex: 1;
+        text-align: left;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+    }
+
+    /* Az ID és a műveletek kiemelése mobilon */
+    td:first-child {
+        border-bottom: 1px solid #f1f5f9 !important;
+        margin-bottom: 0.5rem;
+        background-color: #f8fafc;
+        border-radius: 10px 10px 0 0;
+    }
+
+    td:last-child {
+        justify-content: center; /* A gombok legyenek középen */
+        margin-top: 1rem;
+        padding-top: 1rem !important;
+        border-top: 1px solid #f1f5f9 !important;
+    }
+
+    /* Badge-ek mobilon is mutassanak jól */
+    .badge {
+        font-size: 0.75rem;
+    }
+}
+/* Táblázat fejléce - sötétebb, professzionális hatás */
+.table-light {
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table th {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* Modal finomítása */
+.modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #001f3f, #003366) !important;
+    padding: 1.5rem;
+}
+
+/* Kezelések (Badges) interaktív stílusa */
+.treatment-badge {
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+.treatment-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.treatment-badge.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+/* Form elemek */
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #d1d5db;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    border-color: #007bff;
+}
+
+/* Custom Switch színek */
+.form-check-input:checked {
+    background-color: #10b981; /* Smaragdzöld az aktív állapothoz */
+    border-color: #10b981;
+}
+
+/* Gombok */
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    font-weight: 600;
+}
+
+/* Háttérszín az egész admin felületnek, hogy a fehér kártya elváljon tőle */
+:host {
     display: block;
-  }
-  thead tr {
-    display: none;
-  }
+    min-height: 100vh;
+    background-color: #f8fafd; /* Halvány kékes-szürke háttér */
+}
 
- td:before {
-    content: attr(data-column);
-    width: 45%;
-    padding-right: 10px;
-    white-space: nowrap;
-    font-weight: bold;
-  }
+/* Kártya stílusa, ami kiemeli a táblázatot */
+.admin-table-card {
+    background: #ffffff;
+    border-radius: 20px !important;
+    border: 1px solid rgba(0, 0, 0, 0.03) !important;
+}
+
+/* A táblázat fejléce kapjon egy kis színt */
+.table thead th {
+    background-color: #fcfdfe;
+    color: #64748b;
+    border-bottom: 1px solid #edf2f7;
+    padding: 1.25rem 1rem;
+}
+
+/* Reszponzív margók mobilon */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    /* Ha a gomb még mindig rácsúszik a navbarra mobilon */
+    .mt-4 {
+        margin-top: 5rem !important; 
+    }
+}
+
+/* Elit gomb stílus (ha nincs globálisan definiálva) */
+.btn-elit {
+    background: linear-gradient(135deg, #001f3f, #003366);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-elit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 31, 63, 0.2);
+    color: white;
 }

@@ -1,0 +1,35 @@
+/* 1. Alapbeállítások*/
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* A kijelző teljes magasságát kitölti */
+  background-color: #ffffff; /* Itt állítjuk vissza a tiszta fehéret */
+}
+
+/* 2. A fő tartalom (main) kiterjesztése */
+main {
+  flex: 1 0 auto; /* Ez "tolja le" a footert az oldal aljára */
+  background-color: #ffffff;
+}
+
+/* 3. A Navbar finomhangolása az elit megjelenésért */
+.navbar {
+  /* Itt a Bootstrap kék helyett használhatsz egy elegánsabb fehéret is */
+  /* background-color: #ffffff !important; */ 
+  /* border-bottom: 1px solid #eeeeee; */
+  z-index: 1030;
+}
+
+/* 4. Footer (lábléc) rögzítése és stílusa */
+footer {
+  flex-shrink: 0; /* Megakadályozza, hogy a footer összenyomódjon */
+  background-color: #1a1a1a !important; /* Mélyebb fekete a prémium hatásért */
+  border-top: 2px solid #007bff; /* Az ElitPort kékje vagy arany/ezüst csík */
+}
+
+
+.home-bg-stones {
+  background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
+               url('/images/medical-bg1.jpg') no-repeat center center;
+  background-size: cover;
+}
