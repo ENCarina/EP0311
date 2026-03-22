@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './booking.component.css'
 })
 export class BookingComponent implements OnInit {
+  private readonly daySlotsPageSize = 5;
   private readonly bookingApi = inject(BookingService);
   private readonly staffApi = inject(StaffService);
   private readonly route = inject(ActivatedRoute);
@@ -31,10 +32,13 @@ export class BookingComponent implements OnInit {
 
   protected selectedStaffId: number | null = null;
   protected selectedDate: string = this.getInitialBookingDate();
-  protected selectedConsultationId: number | null = null; 
+  protected selectedConsultationId: number | null = null;
   protected filteredConsultations: Consultation[] = [];
   protected consultations: Consultation[] = [];
   protected readonly today = new Date().toISOString().split('T')[0];
+  protected currentWeekStart: Date = this.getWeekStart(new Date());
+  protected selectedSlot: Slot | null = null;
+  protected daySlotStartIndexMap: { [date: string]: number } = {};
 
   protected get selectedStaff(): any | undefined {
     return this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
@@ -127,75 +131,190 @@ export class BookingComponent implements OnInit {
 
   protected onStaffChange(): void {
     this.updateFilteredConsultations();
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
     this.loadSlots();
   }
 
-  protected onFilterChange(): void {
+  /** Csak a dátum/hét navigáció – NEM tölt újra adatot */
+  protected onDateChange(): void {
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
+    this.currentWeekStart = this.getWeekStart(this.selectedDate);
+  }
+
+  /** Vizsgálat típus váltásakor újra lekéri a slotokat */
+  protected onConsultationChange(): void {
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
     this.loadSlots();
   }
 
-  private getSlotHour(slot: Slot): number {
-    return Number(slot.startTime.split(':')[0]);
+  protected getWeekDays(): string[] {
+    const days: string[] = [];
+    const start = new Date(this.currentWeekStart);
+
+    for (let i = 0; i < 7; i += 1) {
+      const day = new Date(start);
+      day.setDate(start.getDate() + i);
+      days.push(this.toDateKey(day));
+    }
+
+    return days;
   }
 
-  protected get morningSlots(): Slot[] {
-    return this.availableSlots.filter(slot => {
-      const hour = this.getSlotHour(slot);
-      return hour >= 8 && hour < 12;
-    });
+  protected goToPreviousWeek(): void {
+    const prev = new Date(this.currentWeekStart);
+    prev.setDate(prev.getDate() - 7);
+    this.currentWeekStart = prev;
+    this.ensureSelectedSlotVisible();
   }
 
-  protected get afternoonSlots(): Slot[] {
-    return this.availableSlots.filter(slot => {
-      const hour = this.getSlotHour(slot);
-      return hour >= 12 && hour < 17;
-    });
+  protected goToNextWeek(): void {
+    const next = new Date(this.currentWeekStart);
+    next.setDate(next.getDate() + 7);
+    this.currentWeekStart = next;
+    this.ensureSelectedSlotVisible();
   }
 
-  protected get eveningSlots(): Slot[] {
-    return this.availableSlots.filter(slot => {
-      const hour = this.getSlotHour(slot);
-      return hour >= 17;
-    });
+  protected goToCurrentWeek(): void {
+    this.currentWeekStart = this.getWeekStart(new Date());
+    this.ensureSelectedSlotVisible();
   }
 
-  protected formatSlotDate(date: string): string {
-    return date.replace(/-/g, '.');
+  protected getWeekLabel(): string {
+    const weekDays = this.getWeekDays();
+    if (!weekDays.length) return '';
+
+    const first = this.formatDateLabelShort(weekDays[0]);
+    const last = this.formatDateLabelShort(weekDays[6]);
+    return `${first} - ${last}`;
   }
 
-  /**
-   * Szabad időpontok lekérése
-   */
-  loadSlots(): void {
+  protected getSlotsForDate(date: string): Slot[] {
+    return this.availableSlots
+      .filter(slot => slot.date === date)
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+  }
+
+  protected getVisibleSlotsForDate(date: string): Slot[] {
+    const allSlots = this.getSlotsForDate(date);
+    const start = this.daySlotStartIndexMap[date] || 0;
+    return allSlots.slice(start, start + this.daySlotsPageSize);
+  }
+
+  protected canScrollDayEarlier(date: string): boolean {
+    return (this.daySlotStartIndexMap[date] || 0) > 0;
+  }
+
+  protected canScrollDayLater(date: string): boolean {
+    const allSlots = this.getSlotsForDate(date);
+    const start = this.daySlotStartIndexMap[date] || 0;
+    return start + this.daySlotsPageSize < allSlots.length;
+  }
+
+  protected scrollDayEarlier(date: string): void {
+    const currentStart = this.daySlotStartIndexMap[date] || 0;
+    this.daySlotStartIndexMap[date] = Math.max(0, currentStart - this.daySlotsPageSize);
+  }
+
+  protected scrollDayLater(date: string): void {
+    const allSlots = this.getSlotsForDate(date);
+    const currentStart = this.daySlotStartIndexMap[date] || 0;
+    const maxStart = Math.max(0, allSlots.length - this.daySlotsPageSize);
+    this.daySlotStartIndexMap[date] = Math.min(maxStart, currentStart + this.daySlotsPageSize);
+  }
+
+  protected isToday(date: string): boolean {
+    return date === this.toDateKey(new Date());
+  }
+
+  protected getWeekdayLabel(date: string): string {
+    const dateObj = new Date(`${date}T00:00:00`);
+    return dateObj.toLocaleDateString('hu-HU', { weekday: 'short' });
+  }
+
+  protected getDayMonthLabel(date: string): string {
+    const dateObj = new Date(`${date}T00:00:00`);
+    return dateObj.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+  }
+
+  protected isSlotSelected(slot: Slot): boolean {
+    return !!this.selectedSlot && this.selectedSlot.id === slot.id;
+  }
+
+  protected formatTimeOnly(time: string): string {
+    if (!time) return '';
+
+    const parsedTime = new Date(time);
+    if (!isNaN(parsedTime.getTime())) {
+      return parsedTime.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    return time.substring(0, 5);
+  }
+
+  protected formatTimeRange(slot: Slot): string {
+    const start = this.formatTimeOnly(slot.startTime || '');
+    const end = this.formatTimeOnly(slot.endTime || '');
+    return `${start} - ${end}`;
+  }
+
+  protected loadSlots(): void {
     if (!this.selectedStaffId || !this.selectedConsultationId) {
       this.availableSlots = [];
+      this.selectedSlot = null;
       return;
     }
 
     this.isLoading = true;
+    // Dátum nélkül kérjük le az összes elérhető slotot,
+    // hogy a heti nézet minden napján megjelenjenek az időpontok.
     this.bookingApi.getAvailableSlots(
-      Number(this.selectedStaffId), 
-      Number(this.selectedConsultationId), 
-      this.selectedDate
+      Number(this.selectedStaffId),
+      Number(this.selectedConsultationId)
     ).subscribe({
       next: (res: any) => {
         const allData = res.data || res;
-        this.availableSlots = allData.filter((slot: Slot) => slot.date === this.selectedDate);
+        this.availableSlots = allData
+          .filter((slot: Slot) => this.isSelectableDate(slot.date))
+          .sort((a: Slot, b: Slot) => {
+            const dateCompare = (a.date || '').localeCompare(b.date || '');
+            if (dateCompare !== 0) return dateCompare;
+            return (a.startTime || '').localeCompare(b.startTime || '');
+          });
+
+        const hasSelected = this.selectedSlot
+          ? this.availableSlots.some(s => s.id === this.selectedSlot?.id)
+          : false;
+        if (!hasSelected) {
+          this.selectedSlot = null;
+        }
+
+        if (this.selectedDate) {
+          this.currentWeekStart = this.getWeekStart(this.selectedDate);
+        }
+
         this.isLoading = false;
+
         this.errorMessage = '';
       },
       error: (err: any) => {
         this.isLoading = false;
         this.availableSlots = [];
+        this.selectedSlot = null;
         this.errorMessage = 'Hiba az időpontok lekérésekor.';
       }
     });
   }
 
-  onReserve(slot: Slot): void {
+  protected onReserve(slot: Slot): void {
+    this.selectedSlot = slot;
+    this.ensureSlotVisibleInDayPage(slot);
+
     Swal.fire({
       title: 'Foglalás megerősítése',
-      text: `Időpont: ${slot.date} ${slot.startTime.slice(0, 5)}`,
+      text: `Időpont: ${slot.date} ${this.formatTimeOnly(slot.startTime)}`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#003366',
@@ -206,6 +325,52 @@ export class BookingComponent implements OnInit {
         this.executeBooking(slot);
       }
     });
+  }
+
+  private isSelectableDate(date: string): boolean {
+    const dateObj = new Date(`${date}T00:00:00`);
+    return !isNaN(dateObj.getTime());
+  }
+
+  private getWeekStart(dateValue: Date | string): Date {
+    const date = new Date(dateValue);
+    const day = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() - day);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  private toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatDateLabelShort(date: string): string {
+    const dateObj = new Date(`${date}T00:00:00`);
+    return dateObj.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+  }
+
+  private ensureSelectedSlotVisible(): void {
+    if (!this.selectedSlot) return;
+
+    const visibleDays = this.getWeekDays();
+    if (!visibleDays.includes(this.selectedSlot.date)) {
+      this.selectedSlot = null;
+      return;
+    }
+
+    this.ensureSlotVisibleInDayPage(this.selectedSlot);
+  }
+
+  private ensureSlotVisibleInDayPage(slot: Slot): void {
+    const allSlots = this.getSlotsForDate(slot.date);
+    const slotIndex = allSlots.findIndex(item => item.id === slot.id);
+    if (slotIndex < 0) return;
+
+    const start = Math.floor(slotIndex / this.daySlotsPageSize) * this.daySlotsPageSize;
+    this.daySlotStartIndexMap[slot.date] = start;
   }
 
   /**

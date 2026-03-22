@@ -11,14 +11,15 @@ export class BookingService {
   private readonly API_URL = 'http://localhost:8000/api';
   constructor(private http: HttpClient) {}
 
-  getAvailableSlots(staffId: number, consultationId: number, date: string): Observable<Slot[]> {
-    return this.http.get<Slot[]>(`${this.API_URL}/slots`, {
-      params: {
-        staffId: staffId.toString(),
-        consultationId: consultationId.toString(),
-        date: date
-      }
-    });
+  getAvailableSlots(staffId: number, consultationId: number, date?: string): Observable<Slot[]> {
+    const params: Record<string, string> = {
+      staffId: staffId.toString(),
+      consultationId: consultationId.toString()
+    };
+    if (date) {
+      params['date'] = date;
+    }
+    return this.http.get<Slot[]>(`${this.API_URL}/slots`, { params });
   }
       
   createBooking(booking: Booking): Observable<Booking> {
