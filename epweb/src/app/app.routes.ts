@@ -10,12 +10,14 @@ import { StaffCardComponent } from './staffCard/staffCard.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { authGuard } from './auth-guard';
 import { UserListComponent } from './admin/user-list/user-list.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
 
     { path: 'home', component:HomeComponent },
+    { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent },
     { path: 'verify-email/:token', component: VerifyEmailComponent},

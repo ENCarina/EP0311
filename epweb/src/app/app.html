@@ -23,6 +23,14 @@
         <li class="nav-item"><a class="nav-link text-white fw-medium px-3" routerLink="/staffCard" routerLinkActive="active">Szakembereink</a></li>
 
         @if (auth.isAuthenticated()) {
+          @if (auth.getRoleId() !== 2) {
+            <li class="nav-item">
+              <a class="nav-link text-white fw-medium px-3" routerLink="/dashboard" routerLinkActive="active">
+                <i class="bi bi-speedometer2 me-1"></i>Vezérlőpult
+              </a>
+            </li>
+          }
+
           <li class="nav-item">
             <a class="nav-link text-white fw-medium px-3" routerLink="/booking" routerLinkActive="active">Foglalás</a>
           </li>

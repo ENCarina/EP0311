@@ -50,7 +50,7 @@ export class BookingService {
   
   getMyBookings(): Observable<any[]> {
     return this.http.get<{ success: boolean; data: Booking[] }>(`${this.API_URL}/bookings`).pipe(
-      map(res => res.data)
+      map((res: any) => Array.isArray(res) ? res : (res?.data || []))
     );
   }
   

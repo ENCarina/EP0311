@@ -5,12 +5,32 @@ import { EmailService } from '../services/emailService.js';
 const BookingController = {
     async index(req, res) {
         try {
+            const currentUserId = req.user?.id || req.userId;
+            const currentUserRole = req.user?.roleId;
+
+            if (!currentUserId) {
+                return res.status(401).json({ success: false, error: 'User not authenticated' });
+            }
+
+            let whereClause = { patientId: currentUserId };
+
+            if (currentUserRole === 1) {
+                const staffRecord = await db.Staff.findOne({ where: { userId: currentUserId } });
+                if (!staffRecord) {
+                    return res.status(200).json({ success: true, data: [] });
+                }
+                whereClause = { staffId: staffRecord.id };
+            } else if (currentUserRole === 2) {
+                whereClause = {};
+            }
+
             const bookings = await db.Booking.findAll({
+                where: whereClause,
                 include: [
                     { model: db.User, as: 'patient', attributes: ['name', 'email'] },
-                    { model: db.Staff, as: 'doctor', attributes: ['id', 'specialty'], include: [{ model: db.User, as: 'staffProfile', attributes: ['name'] }] },
-                    { model: db.Slot, attributes: ['date', 'startTime', 'endTime', 'duration'] },
-                    { model: db.Consultation, attributes: ['id', 'name', 'price'] }
+                    { model: db.Staff, as: 'doctor', attributes: ['id', 'specialty'], include: [{ model: db.User, as: 'user', attributes: ['name'] }] },
+                    { model: db.Slot, as: 'timeSlot', attributes: ['date', 'startTime', 'endTime'] },
+                    { model: db.Consultation, as: 'type', attributes: ['id', 'name', 'price'] }
                 ],
                 order: [['createdAt', 'DESC']]
             });
