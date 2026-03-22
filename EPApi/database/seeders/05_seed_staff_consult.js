@@ -2,9 +2,17 @@ import db from '../../app/models/modrels.js';
 
 async function up({context: QueryInterface}) {
   const pivotData = [
-    { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() }, // Dr. Kovács - Kardiológia
-    { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() }, // Dr. Tóth - Fogászat
-    { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() }, // Dr. House - Pszichiátria
+    { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 1, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 1, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
+
+    { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 2, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 2, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
+
+    { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 3, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 3, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
   ];
 
   if(db && db.staff_consult) {

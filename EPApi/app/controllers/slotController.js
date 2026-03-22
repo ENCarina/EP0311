@@ -25,9 +25,12 @@ const SlotController = {
                 whereClause.staffId = Number (staffId);
             }
 
+            if (consultationId) {
+                whereClause.consultationId = Number(consultationId);
+            }
+
             if (date) {
-                whereClause.date = { [Op.gte]: date };
-                //whereClause.date = date; 
+                whereClause.date = date;
 
             console.log("Keresési feltételek:", whereClause);
             }

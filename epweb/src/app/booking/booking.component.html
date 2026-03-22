@@ -23,9 +23,12 @@
                     name="staffSelector">
               <option [ngValue]="null" disabled>-- Válasszon orvost --</option>
               @for (staff of staffs; track staff.id) {
-                <option [ngValue]="staff.id">{{ staff.name }} - {{ staff.specialty }}</option>
+                <option [ngValue]="staff.id">{{ getStaffLabel(staff) }}</option>
               }
             </select>
+            @if (selectedStaffId && selectedStaffName) {
+              <div class="form-text">Kiválasztott orvos: <strong>{{ selectedStaffName }}</strong></div>
+            }
           </div>
 
           <div class="mb-3">
@@ -33,7 +36,7 @@
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedConsultationId" 
                     (change)="onFilterChange()">
-              @for (cons of consultations; track cons.id) {
+              @for (cons of filteredConsultations; track cons.id) {
                 <option [ngValue]="cons.id">{{ cons.name }} - {{ cons.price }} Ft</option>
               }
             </select>
@@ -64,33 +67,111 @@
         <div class="alert alert-danger rounded-4 shadow-sm border-0">{{ errorMessage }}</div>
       }
 
-      <div class="row g-3">
-        @for (slot of availableSlots; track slot.id) {
-          <div class="col-md-6 col-xl-4">
-            <div class="card h-100 slot-card border-0 shadow-sm" 
-                 [class.border-primary]="slot.isAvailable"
-                 [class.disabled]="!slot.isAvailable"
-                 (click)="slot.isAvailable && onReserve(slot)">
-              
-              <div class="card-body text-center p-4">
-                <div class="text-primary mb-3">
-                  <i class="bi bi-clock-fill fs-3"></i>
+      <div class="slots-scroll-area pe-1">
+        <div class="time-group mb-4">
+          <h5 class="time-group-title">Délelőtti időpontok</h5>
+          @if (morningSlots.length === 0) {
+            <p class="time-group-empty">Nincs elérhető időpont ebben az idősávban.</p>
+          } @else {
+            <div class="row g-3 slot-grid-row">
+              @for (slot of morningSlots; track slot.id) {
+                <div class="col-sm-6 col-xl-4 d-flex">
+                  <div class="card slot-card border-0 shadow-sm w-100 h-100"
+                       [class.border-primary]="slot.isAvailable"
+                       [class.disabled]="!slot.isAvailable"
+                       (click)="slot.isAvailable && onReserve(slot)">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="text-primary mb-3">
+                          <i class="bi bi-clock-fill slot-clock-icon"></i>
+                        </div>
+                        <h5 class="slot-time mb-2 fw-bold text-dark">
+                          {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
+                        </h5>
+                        <p class="slot-date mb-4">{{ formatSlotDate(slot.date) }}</p>
+                      </div>
+                      <button class="btn slot-button slot-book-btn rounded-pill w-100"
+                              [disabled]="!slot.isAvailable">
+                        {{ slot.isAvailable ? 'Lefoglalom' : 'Foglalt' }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                
-                <h5 class="mb-1 fw-bold text-dark">
-                  {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
-                </h5>
-                <p class="text-muted small mb-4">{{ slot.date }}</p>
-                
-                <button class="btn slot-button btn-sm rounded-pill w-100 py-2"
-                        [disabled]="!slot.isAvailable">
-                  {{ slot.isAvailable ? 'Lefoglalom' : 'Foglalt' }}
-                </button>
-              </div>
+              }
             </div>
-          </div>
-        } @empty {
-          <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
+          }
+        </div>
+
+        <div class="time-group mb-4">
+          <h5 class="time-group-title">Délutáni időpontok</h5>
+          @if (afternoonSlots.length === 0) {
+            <p class="time-group-empty">Nincs elérhető időpont ebben az idősávban.</p>
+          } @else {
+            <div class="row g-3 slot-grid-row">
+              @for (slot of afternoonSlots; track slot.id) {
+                <div class="col-sm-6 col-xl-4 d-flex">
+                  <div class="card slot-card border-0 shadow-sm w-100 h-100"
+                       [class.border-primary]="slot.isAvailable"
+                       [class.disabled]="!slot.isAvailable"
+                       (click)="slot.isAvailable && onReserve(slot)">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="text-primary mb-3">
+                          <i class="bi bi-clock-fill slot-clock-icon"></i>
+                        </div>
+                        <h5 class="slot-time mb-2 fw-bold text-dark">
+                          {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
+                        </h5>
+                        <p class="slot-date mb-4">{{ formatSlotDate(slot.date) }}</p>
+                      </div>
+                      <button class="btn slot-button slot-book-btn rounded-pill w-100"
+                              [disabled]="!slot.isAvailable">
+                        {{ slot.isAvailable ? 'Lefoglalom' : 'Foglalt' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="time-group">
+          <h5 class="time-group-title">Esti időpontok</h5>
+          @if (eveningSlots.length === 0) {
+            <p class="time-group-empty">Nincs elérhető időpont ebben az idősávban.</p>
+          } @else {
+            <div class="row g-3 slot-grid-row">
+              @for (slot of eveningSlots; track slot.id) {
+                <div class="col-sm-6 col-xl-4 d-flex">
+                  <div class="card slot-card border-0 shadow-sm w-100 h-100"
+                       [class.border-primary]="slot.isAvailable"
+                       [class.disabled]="!slot.isAvailable"
+                       (click)="slot.isAvailable && onReserve(slot)">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="text-primary mb-3">
+                          <i class="bi bi-clock-fill slot-clock-icon"></i>
+                        </div>
+                        <h5 class="slot-time mb-2 fw-bold text-dark">
+                          {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
+                        </h5>
+                        <p class="slot-date mb-4">{{ formatSlotDate(slot.date) }}</p>
+                      </div>
+                      <button class="btn slot-button slot-book-btn rounded-pill w-100"
+                              [disabled]="!slot.isAvailable">
+                        {{ slot.isAvailable ? 'Lefoglalom' : 'Foglalt' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (availableSlots.length === 0 && !errorMessage) {
+          <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0 mt-3">
             <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
             <h5 class="text-muted">Nincs szabad időpont</h5>
             <p class="text-muted small">Próbálj meg másik dátumot vagy orvost választani.</p>

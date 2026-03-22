@@ -1,9 +1,7 @@
-
 .container {
   background-color: #ffffff;
 }
 
-/* --- SZŰRŐ PANEL (Bal oldal) --- */
 .card.shadow-sm.rounded-4 {
   background-color: #ffffff;
   backdrop-filter: blur(10px);
@@ -17,27 +15,26 @@
 .card.shadow-sm.rounded-4 .card-body {
   background-color: transparent !important;
   position: relative;
-  z-index: 2; 
+  z-index: 2;
 }
 
-/* Dekorációs érrendszer kép a szűrőpanel alá/mögé */
 .card.shadow-sm.rounded-4::before {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -15px;
   right: -15px;
   width: 180px;
   height: 180px;
-  background-image: url('/images/invert.png'); 
+  background-image: url('/images/invert.png');
   background-size: contain;
   background-repeat: no-repeat;
-  opacity: 0.1; /* Csak halványan sejlenek fel az erek */
+  opacity: 0.1;
   z-index: 1;
   pointer-events: none;
 }
 
-/* Inputok és Select-ek finomítása */
-.form-control, .form-select {
+.form-control,
+.form-select {
   border-radius: 12px !important;
   border: 1px solid #eee !important;
   padding: 0.6rem 1rem;
@@ -46,16 +43,16 @@
   transition: all 0.3s ease;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
   background-color: #ffffff;
   border-color: #007bff !important;
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.05) !important;
 }
 
-/* Keresés gomb */
 .btn-elit {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
+  color: #ffffff;
   border: none;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -67,19 +64,45 @@
   box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25);
 }
 
-/* --- IDŐPONT KÁRTYÁK (Jobb oldal) --- */
-/* Itt használjuk a korábban megbeszélt slot-card stílust */
+.slots-scroll-area {
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.time-group-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f3d75;
+  margin-bottom: 0.9rem;
+}
+
+.time-group-empty {
+  margin: 0;
+  color: #7d8793;
+  font-size: 0.92rem;
+  background: #f8fbff;
+  border: 1px dashed #d7e6fa;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+}
+
+.slot-grid-row > [class*='col-'] {
+  display: flex;
+}
+
 .slot-card {
-  border: 1px solid #f5f5f5 !important;
-  border-radius: 20px !important;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid #eaf1fb !important;
+  border-radius: 18px !important;
+  transition: all 0.25s ease;
   background: #ffffff;
+  min-height: 230px;
 }
 
 .slot-card:hover:not(.disabled) {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.05) !important;
-  border-color: #007bff !important;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 63, 136, 0.1) !important;
+  border-color: #7eb0f0 !important;
 }
 
 .slot-card.border-primary {
@@ -87,31 +110,49 @@
   background-color: #f8fbff;
 }
 
+.slot-card.disabled {
+  opacity: 0.72;
+}
+
+.slot-clock-icon {
+  font-size: 1.85rem;
+}
+
+.slot-time {
+  font-size: 1.08rem;
+  letter-spacing: 0.2px;
+}
+
+.slot-date {
+  color: #7c8796;
+  font-size: 0.9rem;
+}
+
 .slot-button {
-  border: 1px solid #eee;
-  background: #fcfcfc;
-  color: #007bff;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.slot-card:hover:not(.disabled) .slot-button {
+  border: none;
   background: #007bff;
-  color: #fff;
-  border-color: #007bff;
+  color: #ffffff;
+  font-weight: 700;
+  transition: all 0.2s ease;
 }
 
-/* Animáció a kártyák megjelenéséhez */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.slot-button:hover:not(:disabled) {
+  background: #005fc5;
 }
 
-.col-md-6 {
-  animation: fadeInUp 0.5s ease backwards;
+.slot-book-btn {
+  min-height: 44px;
+  font-size: 0.98rem;
 }
 
-/* Sorban úsznak be a kártyák */
-@for $i from 1 through 20 {
-  .col-md-6:nth-child(#{$i}) { animation-delay: #{$i * 0.05}s; }
+.slot-button:disabled {
+  opacity: 0.7;
+  background: #b9c7da;
+}
+
+@media (max-width: 991.98px) {
+  .slots-scroll-area {
+    max-height: none;
+    overflow-y: visible;
+  }
 }

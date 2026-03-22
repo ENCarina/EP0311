@@ -52,6 +52,12 @@ const StaffController = {
                     model: User,
                     as: 'user', 
                     attributes: ['name', 'email', 'roleId']
+                },
+                {
+                    model: Consultation,
+                    as: 'treatments',
+                    attributes: ['id', 'name', 'price'],
+                    through: { attributes: [] }
                 }]
             });
             res.status(200).json({ success: true, data: staff });
@@ -65,6 +71,12 @@ const StaffController = {
                 model: User,
                 as: 'user',
                 attributes:['name', 'email','roleId']
+            },
+            {
+                model: Consultation,
+                as: 'treatments',
+                attributes: ['id', 'name', 'price'],
+                through: { attributes: [] }
             }]
         })
         res.status(200)

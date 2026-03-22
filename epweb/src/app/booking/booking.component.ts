@@ -30,11 +30,35 @@ export class BookingComponent implements OnInit {
   protected errorMessage = '';
 
   protected selectedStaffId: number | null = null;
-  protected selectedDate: string = new Date().toISOString().split('T')[0];
+  protected selectedDate: string = this.getInitialBookingDate();
   protected selectedConsultationId: number | null = null; 
   protected filteredConsultations: Consultation[] = [];
   protected consultations: Consultation[] = [];
   protected readonly today = new Date().toISOString().split('T')[0];
+
+  protected get selectedStaff(): any | undefined {
+    return this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
+  }
+
+  protected get selectedStaffName(): string {
+    const staff = this.selectedStaff;
+    if (!staff) return '';
+    return staff.name || staff.user?.name || 'Ismeretlen szakember';
+  }
+
+  protected getStaffLabel(staff: any): string {
+    const staffName = staff?.name || staff?.user?.name || 'Névtelen szakember';
+    const specialty = staff?.specialty || 'Szakember';
+    return `${staffName} - ${specialty}`;
+  }
+
+  private getInitialBookingDate(): string {
+    const now = new Date();
+    if (now.getDay() === 0) {
+      now.setDate(now.getDate() + 1);
+    }
+    return now.toISOString().split('T')[0];
+  }
 
   ngOnInit(): void {
     // Query paraméterek figyelése
@@ -79,7 +103,7 @@ export class BookingComponent implements OnInit {
    * Szolgáltatások szűrése az orvos alapján
    */
   protected updateFilteredConsultations(): void {
-    const selectedStaff = this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
+    const selectedStaff = this.selectedStaff;
     
     if (selectedStaff && selectedStaff.treatments && selectedStaff.treatments.length > 0) {
       const allowedIds = selectedStaff.treatments.map((t: any) => Number(t.id));
@@ -108,6 +132,35 @@ export class BookingComponent implements OnInit {
 
   protected onFilterChange(): void {
     this.loadSlots();
+  }
+
+  private getSlotHour(slot: Slot): number {
+    return Number(slot.startTime.split(':')[0]);
+  }
+
+  protected get morningSlots(): Slot[] {
+    return this.availableSlots.filter(slot => {
+      const hour = this.getSlotHour(slot);
+      return hour >= 8 && hour < 12;
+    });
+  }
+
+  protected get afternoonSlots(): Slot[] {
+    return this.availableSlots.filter(slot => {
+      const hour = this.getSlotHour(slot);
+      return hour >= 12 && hour < 17;
+    });
+  }
+
+  protected get eveningSlots(): Slot[] {
+    return this.availableSlots.filter(slot => {
+      const hour = this.getSlotHour(slot);
+      return hour >= 17;
+    });
+  }
+
+  protected formatSlotDate(date: string): string {
+    return date.replace(/-/g, '.');
   }
 
   /**
