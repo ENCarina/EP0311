@@ -1,5 +1,6 @@
 <div class="container py-5 animate-fade-in">
   <div class="row">
+    
     <div class="col-lg-4">
       <div class="card shadow-sm border-0 mb-4 rounded-4">
         <div class="card-body p-4">
@@ -73,18 +74,21 @@
                  (click)="slot.isAvailable && onReserve(slot)">
               
               <div class="card-body text-center p-4">
-                <div class="text-primary mb-3">
+                <div class="text-primary mb-2">
                   <i class="bi bi-clock-fill fs-3"></i>
                 </div>
                 
-                <h5 class="mb-1 fw-bold text-dark">
+                <h5 class="mb-1 fw-bold text-dark" style="letter-spacing: -0.5px;">
                   {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
                 </h5>
-                <p class="text-muted small mb-4">{{ slot.date }}</p>
                 
-                <button class="btn slot-button btn-sm rounded-pill w-100 py-2"
+                <div class="badge bg-light text-muted mb-4 border border-light-subtle px-3 py-2">
+                  {{ slot.date }}
+                </div>
+                
+                <button class="btn slot-button btn-sm rounded-pill w-100 py-2 shadow-sm"
                         [disabled]="!slot.isAvailable">
-                  {{ slot.isAvailable ? 'Lefoglalom' : 'Foglalt' }}
+                  {{ slot.isAvailable ? 'Időpont foglalása' : 'Már foglalt' }}
                 </button>
               </div>
             </div>
@@ -94,12 +98,10 @@
             <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
             <h5 class="text-muted">Nincs szabad időpont</h5>
             <p class="text-muted small">Próbálj meg másik dátumot vagy orvost választani.</p>
-            <button class="btn btn-link text-primary text-decoration-none fw-bold" (click)="loadInitialData()">
-              Adatok frissítése
-            </button>
           </div>
         }
       </div>
     </div>
+
   </div>
 </div>

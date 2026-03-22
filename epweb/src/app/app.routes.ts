@@ -10,6 +10,7 @@ import { StaffCardComponent } from './staffCard/staffCard.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { authGuard } from './auth-guard';
 import { UserListComponent } from './admin/user-list/user-list.component';
+import { MyBookingComponent } from './my-booking/my-booking.component';
 
 
 export const routes: Routes = [
@@ -20,6 +21,9 @@ export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'verify-email/:token', component: VerifyEmailComponent},
     { path: 'about', component:AboutComponent},
+
+    { path: 'my-bookings', component: MyBookingComponent, canActivate: [authGuard]},
+
     //publikus kártya
     { path: 'staffCard', component: StaffCardComponent }, 
     //{ path: 'staff/:id', component: StaffDetailComponent }, 

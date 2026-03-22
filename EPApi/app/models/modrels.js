@@ -32,7 +32,7 @@ db.Booking.belongsTo(db.User, { foreignKey: 'patientId', as: 'patient' });
 
 // Consultation - Booking (1:N)
 db.Consultation.hasMany(db.Booking, { foreignKey: 'consultationId', as: 'bookings' });
-db.Booking.belongsTo(db.Consultation, { foreignKey: 'consultationId', as: 'type' });
+db.Booking.belongsTo(db.Consultation, { foreignKey: 'consultationId', as: 'treatment' });
 
 db.Staff.hasMany(db.Booking, { foreignKey: 'staffId', as: 'bookings' });
 db.Booking.belongsTo(db.Staff, { foreignKey: 'staffId', as: 'doctor' });

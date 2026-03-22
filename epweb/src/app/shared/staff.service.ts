@@ -18,9 +18,9 @@ export class StaffService {
     getTreatmentsForStaff(staffId: number) {
         return this.http.get(`${this.baseUrl}/staff/${staffId}/treatments`);
     }
-    assignTreatments(staffId: number, consultationsId: number[]) {
+    assignTreatments(staffId: number, treatmentIds: number[]) {
         if (!staffId) throw new Error("Staff ID kötelező!");
-        return this.http.post<any>(`${this.baseUrl}/staff/${staffId}/treatments`, { consultationsId });
+        return this.http.post<any>(`${this.baseUrl}/staff/${staffId}/treatments`, { treatmentIds});
     }
     addStaff(staff: any) {
         return this.http.post(`${this.baseUrl}/staff`, staff);

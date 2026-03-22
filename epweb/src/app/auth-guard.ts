@@ -7,8 +7,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   const loggedIn = authService.isAuthenticated();
+  const userRole = authService.currentUserRole()
 
-  const isAdmin = authService.currentUserRole() === 2;
 
   // 1. User nincs belépve, akkor login
   if (!loggedIn) {
@@ -19,14 +19,23 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
   // 2. Admin, mehet mindenre is
   if (state.url.startsWith('/admin')) {
-    if (isAdmin) {
+    if (userRole === 2) {
       return true;
     } else {
       router.navigate(['/booking']); 
       return false;
     }
   }
-  // 3. Minden más esetben (pl. /booking), ha be van lépve, go!
+
+  if (state.url.startsWith('/dashboard')) {
+    if (userRole === 1 || userRole === 2) {
+      return true;
+    } else {
+      router.navigate(['/my-bookings']);
+      return false;
+    }
+  }
+  // Minden más (pl. /booking, /my-bookings, /profile) -> Mehet!
   return true;
 };
- 
+

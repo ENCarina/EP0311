@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { StaffService } from '../shared/staff.service';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../shared/auth.service';
 
 @Component({
@@ -14,6 +14,7 @@ import { AuthService } from '../shared/auth.service';
 export class StaffCardComponent implements OnInit {
   private staffService = inject(StaffService);
   public auth = inject(AuthService);
+  private router = inject(Router);
 
   staffs: any[] = [];
   selectedStaff: any = null;
@@ -52,19 +53,34 @@ export class StaffCardComponent implements OnInit {
               finalUrl = fallbackImg;
             }
 
-            return {
+            const processedStaff = {
               ...s,
               name: s.user?.name || s.name || 'Névtelen',
               specialty: s.specialty || 'Szakorvos',
               imageUrl: finalUrl,
-              fallbackImg: fallbackImg
+              fallbackImg: fallbackImg,
+              treatments: []
             };
+            this.staffService.getTreatmentsForStaff(s.id).subscribe({
+            next: (tRes: any) => {
+              if (tRes && tRes.data) {
+                processedStaff.treatments = tRes.data;
+              } else if (Array.isArray(tRes)) {
+                processedStaff.treatments = tRes;
+              }
+            }
           });
-      },
+          return processedStaff;
+        });
+    },
       error: (err) => console.error('Hiba:', err)
     });
   }
-
+  goToBooking(staffId: number): void {
+    this.router.navigate(['/booking'], { 
+      queryParams: { staffId: staffId } 
+    });
+  }
   public handleImageError(staffMember: any): void {
     const absoluteDefault = '/images/default_doctor.png';
 
@@ -77,21 +93,26 @@ export class StaffCardComponent implements OnInit {
     }
   }
   selectStaff(staff: any): void {
-    this.selectedStaff = staff;
+    this.selectedStaff = { ...staff , treatments: []};
 
     this.staffService.getTreatmentsForStaff(staff.id).subscribe({
         next: (res: any) => {
+          const incomingData = res?.data || res;
+          if (Array.isArray(incomingData)) {
 
-            if (res && res.success && res.data) {
-              this.selectedStaff = { 
-              ...this.selectedStaff, 
-              treatments: res.data 
+            this.selectedStaff = { 
+            ...this.selectedStaff, 
+              treatments: incomingData 
             };
-            
-                console.log('Sikeres mentés! Tartalom:', this.selectedStaff.treatments);
+            console.log(`Sikeres betöltés (${staff.name}):`, incomingData);
+            } else {
+            console.warn('A kapott adat nem tömb formátumú:', res);
             }
           },
-          error: (err) => console.error('Hiba:', err)
+          error: (err) => {
+            console.error('Hiba:', err);
+            this.selectedStaff.treatments = [];
+          }
         });
         
     window.scrollTo({ top: 0, behavior: 'smooth' });

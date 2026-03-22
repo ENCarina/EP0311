@@ -1,7 +1,6 @@
 import { Op } from 'sequelize';
 import Slot from '../models/slot.js'
 
-
 const SlotController = {
     // Segédfüggv a hibakezeléshez
     handleError(res, error) {
@@ -18,7 +17,8 @@ const SlotController = {
             const { staffId, consultationId, date } = req.query;
 
             const whereClause = {
-                isAvailable: true
+                isAvailable: true,
+                date: { [Op.gte]: new Date().setHours(0,0,0,0) }
             };
 
             if (staffId) {
@@ -54,7 +54,14 @@ const SlotController = {
 
     async store(req, res) {
         try {
-            const { date } = req.body;
+            const { date, staffId } = req.body;
+            const requester = req.user;
+            // Csak admin hozhat létre slotot másnak, az orvos csak magának
+            if (req.user.roleId !== 2){
+                if (!requester.staffId || Number(requester.staffId) !== Number(staffId)) {
+                    return res.status(403).json({ success: false, message: "Csak a saját naptáradat kezelheted!" });
+                }
+            }
             if (new Date(date) < new Date().setHours(0, 0, 0, 0)) {
                 return res.status(400).json({ 
                     success: false, 

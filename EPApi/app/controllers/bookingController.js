@@ -1,51 +1,78 @@
 import { BookingService } from '../services/bookingService.js';
-import db from '../models/modrels.js';
+import db from '../models/modrels.js'; 
 import { EmailService } from '../services/emailService.js';
 
 const BookingController = {
     async index(req, res) {
         try {
+            console.log('Lekérés indul a felhasználónak:', req.user.id);
+
             const bookings = await db.Booking.findAll({
+                where: { patientId: req.user.id },
                 include: [
-                    { model: db.User, as: 'patient', attributes: ['name', 'email'] },
-                    { model: db.Staff, as: 'doctor', attributes: ['id', 'specialty'], include: [{ model: db.User, as: 'staffProfile', attributes: ['name'] }] },
-                    { model: db.Slot, attributes: ['date', 'startTime', 'endTime', 'duration'] },
-                    { model: db.Consultation, attributes: ['id', 'name', 'price'] }
+                    { model: db.User, as: 'patient', attributes: ['id','name', 'email'] },
+                    { 
+                        model: db.Staff, 
+                        as: 'doctor', 
+                        attributes: ['id', 'specialty'], 
+                        include: [{ model: db.User, as: 'user', attributes: ['name'] }] 
+                    },
+                    { 
+                        model: db.Slot, 
+                        as: 'timeSlot', 
+                        attributes: ['date', 'startTime', 'endTime'] 
+                    },
+                    { 
+                        model: db.Consultation, 
+                        as: 'treatment', 
+                        attributes: ['id', 'name', 'price'] 
+                    }
                 ],
                 order: [['createdAt', 'DESC']]
             });
-            res.status(200).json({ success: true, data: bookings });
+            console.log(`Sikeres lekérés! Találatok száma: ${bookings.length}`);
+            return res.status(200).json({ success: true, data: bookings });
+
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            console.error('BACKEND HIBA (index):', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Hiba történt a foglalások lekérésekor.',
+                error: error.message
+            });
         }
     },
 
     async tryIndex(req, res) {
-        const bookings = await db.Booking.findAll()
-        res.status(200).json({
+        const bookings = await db.Booking.findAll();
+        return res.status(200).json({
             success: true,
             data: bookings
-        })
+        });
     },
 
     async show(req, res) {
         try {
-            await BookingController.tryShow(req, res)
+            const booking = await db.Booking.findByPk(req.params.id, {
+                include: ['patient', 'doctor', 'timeSlot', 'treatment']
+            });
+            if (!booking) return res.status(404).json({ success: false, message: 'Nincs ilyen foglalás.' });
+            return res.status(200).json({ success: true, data: booking });
         } catch (error) {
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
-                message: 'Error! The query is failed!',
+                message: 'Error! The query failed!',
                 error: error.message
-            })
+            });
         }
     },
 
     async tryShow(req, res) {
-        const booking = await db.Booking.findByPk(req.params.id)
-        res.status(200).json({
+        const booking = await db.Booking.findByPk(req.params.id);
+        return res.status(200).json({
             success: true,
             data: booking
-        })
+        });
     },
 
     async store(req, res) {
@@ -58,7 +85,8 @@ const BookingController = {
 
             const bookingData = {
                 ...req.body,
-                duration: req.body.duration || 30,
+                patientId: currentUserId,
+                //duration: req.body.duration || 30,
                 status: req.body.status || 'Confirmed'
             };
 
@@ -79,52 +107,63 @@ const BookingController = {
     },
 
     async tryStore(req, res) {
-        const booking = await db.Booking.create(req.body)
-        res.status(201).json({
+        const booking = await db.Booking.create(req.body);
+        return res.status(201).json({
             success: true,
             data: booking
-        })
+        });
     },
 
     async update(req, res) {
         try {
-            await BookingController.tryUpdate(req, res)
+            await BookingController.tryUpdate(req, res);
         } catch (error) {
-            let actualMessage = '';
-            if (error.message == 'Fail! Record not found!') {
-                actualMessage = error.message
-                res.status(404)
-            } else {
-                res.status(500)
-                actualMessage = 'Fail! The query is failed!'
+            let status = 500;
+            let message = 'Fail! The query failed!';
+            
+            if (error.message === 'Fail! Record not found!') {
+                status = 404;
+                message = error.message;
             }
 
-            res.json({
+            return res.status(status).json({
                 success: false,
-                message: actualMessage
-            })
+                message: message
+            });
         }
     },
 
     async tryUpdate(req, res) {
-        const recordNumber = await db.Booking.update(req.body, {
+        const [recordNumber] = await db.Booking.update(req.body, {
             where: { id: req.params.id }
-        })
-        if (recordNumber == 0) {
-            throw new Error('Fail! Record not found!')
+        });
+        
+        if (recordNumber === 0) {
+            throw new Error('Fail! Record not found!');
         }
-        const booking = await db.Booking.findByPk(req.params.id)
-        res.status(200).json({
+        
+        const booking = await db.Booking.findByPk(req.params.id);
+        return res.status(200).json({
             success: true,
             data: booking
-        })
+        });
     },
 
     async destroy(req, res) {
         const t = await db.sequelize.transaction();
         try {
             const booking = await db.Booking.findByPk(req.params.id);
-            if (!booking) throw new Error("Foglalás nem található!");
+            
+            if (!booking) {
+                await t.rollback();
+                return res.status(404).json({ success: false, message: "Foglalás nem található!" });
+            }
+
+            // Jogosultság ellenőrzése (laza összehasonlítás a típuseltérés miatt)
+            if (req.user.roleId !== 2 && booking.patientId != req.user.id) {
+                await t.rollback();
+                return res.status(403).json({ success: false, message: "Nincs jogosultsága a törléshez!" });
+            }
 
             await db.Slot.update(
                 { isAvailable: true },
@@ -134,15 +173,13 @@ const BookingController = {
             await booking.destroy({ transaction: t });
             await t.commit();
 
-            res.status(200).json({
-                success: true,
-                message: 'Törölve és felszabadítva.'
-            });
+            return res.status(200).json({ success: true, message: 'Törölve.' });
         } catch (error) {
             if (t) await t.rollback();
-            res.status(500).json({ success: false, error: error.message });
+            return res.status(500).json({ success: false, error: error.message });
         }
     }
 };
+    
 
 export default BookingController;

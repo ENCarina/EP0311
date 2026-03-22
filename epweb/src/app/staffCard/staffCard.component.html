@@ -26,8 +26,7 @@
 
           <div class="services-section p-4 bg-light rounded-4 shadow-sm">
             <h5 class="fw-bold mb-4">Elérhető szolgáltatások</h5>
-            <div class="list-group list-group-flush bg-transparent">
-              
+            <div class="list-group list-group-flush bg-transparent"> 
               @for (treatment of selectedStaff.treatments; track treatment.id) {
                 <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom px-0">
                   <div>
@@ -35,6 +34,9 @@
                     <small class="text-muted">Szakorvosi ellátás</small>
                   </div>
                   <div class="text-end">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">
+                        {{ treatment.duration || '30' }} perc
+                    </span>
                     <span class="d-block fw-bold text-elit mb-2">
                       {{ treatment.price | number:'1.0-0' }} Ft
                     </span>
@@ -81,10 +83,10 @@
                 Profil megtekintése
               </button>
               
-              <button class="btn btn-elit rounded-pill px-4 w-100" 
+              <button class="btn btn-elit btn-sm rounded-pill px-4" 
                       [routerLink]="auth.isAuthenticated() ? ['/booking'] : ['/login']" 
                       [queryParams]="{ staffId: staff.id, returnUrl: '/booking' }">
-                {{ auth.isAuthenticated() ? 'Időpontfoglalás' : 'Bejelentkezés' }}
+                {{ auth.isAuthenticated() ? 'Időpontfoglalás' : 'Bejelentkezés a foglaláshoz' }}
               </button>
             </div>
           </div>

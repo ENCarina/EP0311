@@ -37,18 +37,18 @@ export class BookingComponent implements OnInit {
   protected readonly today = new Date().toISOString().split('T')[0];
 
   ngOnInit(): void {
-    // Query paraméterek figyelése
-    this.route.queryParams.subscribe(params => {
-      if (params['staffId']) {
-        this.selectedStaffId = Number(params['staffId']);
-      }
-    });
-    this.loadInitialData();
-  }
+  this.loadInitialData(); 
 
-  /**
-   * Kezdeti adatok betöltése
-   */
+  this.route.queryParams.subscribe(params => {
+    if (params['staffId']) {
+      this.selectedStaffId = Number(params['staffId']);
+      if (this.staffs.length > 0) {
+        this.onStaffChange();
+      }
+    }
+  });
+}
+
   loadInitialData(): void {
     this.isLoading = true;
     forkJoin({
@@ -59,9 +59,12 @@ export class BookingComponent implements OnInit {
         this.staffs = res.staffs.data || res.staffs;
         this.consultations = res.consultations.data || res.consultations;
 
-        if (!this.selectedStaffId && this.staffs.length > 0) {
-          this.selectedStaffId = this.staffs[0].id;
-        }
+        const urlStaffId = this.route.snapshot.queryParams['staffId'];
+      if (urlStaffId) {
+        this.selectedStaffId = Number(urlStaffId);
+      } else if (!this.selectedStaffId && this.staffs.length > 0) {
+        this.selectedStaffId = this.staffs[0].id;
+      }
         
         this.updateFilteredConsultations();
         this.isLoading = false;
@@ -74,7 +77,6 @@ export class BookingComponent implements OnInit {
       }
     });
   }
-
   /**
    * Szolgáltatások szűrése az orvos alapján
    */
@@ -89,7 +91,6 @@ export class BookingComponent implements OnInit {
     } else {
       this.filteredConsultations = [];
     }
-
     const isStillAvailable = this.filteredConsultations.some(
       c => Number(c.id) === Number(this.selectedConsultationId)
     );
@@ -100,16 +101,13 @@ export class BookingComponent implements OnInit {
       this.selectedConsultationId = null;
     }
   }
-
   protected onStaffChange(): void {
     this.updateFilteredConsultations();
     this.loadSlots();
   }
-
   protected onFilterChange(): void {
     this.loadSlots();
   }
-
   /**
    * Szabad időpontok lekérése
    */
@@ -154,7 +152,6 @@ export class BookingComponent implements OnInit {
       }
     });
   }
-
   /**
    * A tényleges foglalás végrehajtása - Összehangolva a Backend Service-szel
    */
@@ -166,7 +163,6 @@ export class BookingComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-
     // Megkeressük a kiválasztott szolgáltatást az adatok kinyeréséhez
     const selectedType = this.consultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
 
@@ -177,7 +173,7 @@ export class BookingComponent implements OnInit {
       staffId: Number(slot.staffId || this.selectedStaffId), 
       consultationId: Number(this.selectedConsultationId),
       
-      // Itt küldjük a hiányolt duration-t és az árat
+      // Itt küldjük duration-t és az árat
       duration: Number(selectedType?.duration || 30),
       name: selectedType?.name || 'Konzultáció',
       price: Number(selectedType?.price || 0),
@@ -193,16 +189,19 @@ export class BookingComponent implements OnInit {
       next: (res: any) => {
         Swal.fire({
           title: 'Sikeres foglalás!',
-          text: 'Időpontod rögzítettük. Hamarosan kapsz egy e-mailt.',
+          html: `
+            <p>Időpontod rögzítettük: <b>${slot.date} ${slot.startTime.slice(0, 5)}</b></p>
+            <p class="small text-muted">A visszaigazolást elküldtük e-mailben. Lemondás esetén kérjük, hívja a klinikát!</p>
+          `,
           icon: 'success',
-          confirmButtonColor: '#003366'
+          confirmButtonColor: '#003366',
+          confirmButtonText: 'Rendben'
         }).then(() => {
-          this.loadSlots(); // Frissítés, hogy a lefoglalt eltűnjön
+          this.loadSlots(); 
         });
       },
       error: (err) => {
         console.error('Szerver hiba válasz:', err.error);
-        // Próbáljuk kinyerni a legpontosabb hibaüzenetet a backendtől
         const msg = err.error?.error || err.error?.message || 'A foglalás nem sikerült.';
         Swal.fire('Hiba', msg, 'error');
       }

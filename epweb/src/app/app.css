@@ -1,9 +1,9 @@
 /* 1. Alapbeállítások*/
 :host {
-  display: flex;
+  display: block;
   flex-direction: column;
   min-height: 100vh; /* A kijelző teljes magasságát kitölti */
-  background-color: #ffffff; /* Itt állítjuk vissza a tiszta fehéret */
+  background-color: #ffffff; 
 }
 
 /* 2. A fő tartalom (main) kiterjesztése */
@@ -29,7 +29,8 @@ footer {
 
 
 .home-bg-stones {
-  background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
-               url('/images/medical-bg1.jpg') no-repeat center center;
+  background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), 
+              url('/images/medical-bg2.jpg') no-repeat center center fixed; 
   background-size: cover;
+  border-radius: 15px; 
 }

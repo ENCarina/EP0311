@@ -1,5 +1,5 @@
 import db from '../models/modrels.js'
-const { User, Staff, Role, Consultation, Op } = db;
+const { User, Staff, Role, Consultation, Booking, Slot, Op } = db;
 import bcrypt from 'bcryptjs';
 
 const UserController = {
@@ -342,7 +342,65 @@ const UserController = {
             message: 'Sikeres archiválás.',
             data: { id: user.id, isActive: user.isActive, name: user.name }
         });
+    },
+  // --- SAJÁT PROFIL LEKÉRÉSE --- 
+async getMyProfile(req, res) {
+        try {
+            const userId = req.user.id; 
+
+            const user = await User.findByPk(userId, {
+                attributes: { exclude: ['password', 'verificationToken'] },
+                include: [
+                    { model: Role, as: 'role', attributes: ['name'] },
+                    {
+                        model: Booking, 
+                        as: 'bookings',
+                        include: [
+                            { 
+                                model: Staff, 
+                                as: 'doctor', 
+                                include: [{ model: User, as: 'user', attributes: ['name'] }] 
+                            },
+                            { model: Slot, as: 'timeSlot', attributes: ['id', 'date', 'startTime', 'endTime'] },
+                            { model: Consultation, as: 'treatment', attributes: ['name', 'price'] }
+                        ]
+                    },
+                    {
+                        model: Staff,
+                        as: 'staffProfile', 
+                        required: false
+                    }
+                ],
+                order: [[ { model: Booking, as: 'bookings' }, 'id', 'DESC' ]]
+            });
+
+            if (!user) return res.status(404).json({ success: false, message: 'Felhasználó nem található' });
+
+            res.status(200).json({ success: true, data: user });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Hiba a saját profil lekérésekor', error: error.message });
+        }
+    },
+
+    // --- SAJÁT PROFIL FRISSÍTÉSE  ---
+    async updateMyProfile(req, res) {
+        try {
+            const userId = req.user.id;
+            const { name, email } = req.body;
+
+            const user = await User.findByPk(userId);
+            if (!user) return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
+
+            // csak alap adatokat frissíthet a user, roleId-t NEM!
+            await user.update({
+                name: name || user.name,
+                email: email || user.email
+            });
+
+            res.status(200).json({ success: true, message: 'Adatok sikeresen frissítve!', data: user });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
     }
 };
-
 export default UserController;

@@ -10,31 +10,33 @@ import SlotController from '../controllers/slotController.js';
 import ConsultationController from '../controllers/consultationController.js';
 import checkRole from '../middleware/checkRole.js';
 
- 
 router.post('/register', AuthController.register)
 router.post('/login', AuthController.login)
 router.get('/verify-email/:token', AuthController.verifyEmail)
 
+// --- MY PROFILE (Saját profil műveletek) ---
+router.get('/profile/me', [verifyToken], UserController.getMyProfile); 
+router.put('/profile/update', [verifyToken], UserController.updateMyProfile);
 router.post('/users/:id/password', [verifyToken, checkRole(2)], UserController.updatePassword);
 
 router.get('/users', [verifyToken, checkRole(2)], UserController.index);
 router.get('/users/:id', [verifyToken], UserController.show);
-//router.post('/profile/password', [verifyToken], UserController.updateMyPassword);
 
 // Archiválás (Soft delete)
 router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy);
-// ÚJ: Státusz váltás (Az isActive switch-hez a táblázatban)
+// Státusz váltás (Az isActive switch-hez a táblázatban)
 router.post('/users/:id/status', [verifyToken, checkRole(2)], UserController.updateStatus);
-// ÚJ: Általános adatok (név, email) módosítása
+// Általános adatok (név, email) módosítása
 router.put('/users/:id/', [verifyToken, checkRole(2)], UserController.update);
+
 // --- STAFF (Szakemberek) ---
 router.get('/staff', [verifyToken], StaffController.index);
 router.post('/staff/promote', [verifyToken, checkRole(2)], StaffController.promoteToStaff);
 router.post('/staff', [verifyToken, checkRole(2)], StaffController.store);
 router.get('/staff/:id/treatments', StaffController.getTreatmentsForStaff);
+
 // KEZELÉSEK
 router.post('/staff/:id/treatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
-
 router.post('/staff/assignTreatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
 
 // Egyedi szakember műveletek
@@ -54,7 +56,7 @@ router.delete('/consultations/:id',[verifyToken, checkRole(2)], ConsultationCont
 
 router.get('/slots', [verifyToken], SlotController.index);
 router.get('/slots/:id', [verifyToken], SlotController.show);
-router.post('/slots', [verifyToken], SlotController.store);
+router.post('/slots', [verifyToken, checkRole(1)], SlotController.store);
 router.post('/slots/:id', [verifyToken], SlotController.update);
 router.delete('/slots/:id', [verifyToken], SlotController.destroy);
 
@@ -65,4 +67,5 @@ router.post('/bookings', [verifyToken], BookingController.store);
 router.post('/bookings/:id', [verifyToken], BookingController.update);
 router.delete('/bookings/:id', [verifyToken], BookingController.destroy);
  
+
 export default router
