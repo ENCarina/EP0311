@@ -26,6 +26,7 @@ export class BookingComponent implements OnInit {
 
   protected staffs: any[] = [];
   protected availableSlots: Slot[] = [];
+
   protected isLoading = false;
   protected errorMessage = '';
 
@@ -37,17 +38,26 @@ export class BookingComponent implements OnInit {
   protected readonly today = new Date().toISOString().split('T')[0];
 
   ngOnInit(): void {
-  this.loadInitialData(); 
+    this.loadInitialData();
 
-  this.route.queryParams.subscribe(params => {
-    if (params['staffId']) {
-      this.selectedStaffId = Number(params['staffId']);
-      if (this.staffs.length > 0) {
+    this.route.queryParams.subscribe(params => {
+      let hasChange = false;
+
+      if (params['staffId']) {
+        this.selectedStaffId = Number(params['staffId']);
+        hasChange = true;
+      }
+      
+      if (params['treatmentId']) {
+        this.selectedConsultationId = Number(params['treatmentId']);
+        hasChange = true;
+      }
+
+      if (hasChange && this.staffs.length > 0) {
         this.onStaffChange();
       }
-    }
-  });
-}
+    });
+  }
 
   loadInitialData(): void {
     this.isLoading = true;
@@ -60,12 +70,18 @@ export class BookingComponent implements OnInit {
         this.consultations = res.consultations.data || res.consultations;
 
         const urlStaffId = this.route.snapshot.queryParams['staffId'];
-      if (urlStaffId) {
-        this.selectedStaffId = Number(urlStaffId);
-      } else if (!this.selectedStaffId && this.staffs.length > 0) {
-        this.selectedStaffId = this.staffs[0].id;
-      }
-        
+        const urlTreatmentId = this.route.snapshot.queryParams['treatmentId'];
+
+        if (urlStaffId) {
+          this.selectedStaffId = Number(urlStaffId);
+        } else if (this.staffs.length > 0 && !this.selectedStaffId) {
+          this.selectedStaffId = Number(this.staffs[0].userId || this.staffs[0].id);
+        }
+
+        if (urlTreatmentId) {
+          this.selectedConsultationId = Number(urlTreatmentId);
+        }
+
         this.updateFilteredConsultations();
         this.isLoading = false;
         this.loadSlots();
@@ -77,13 +93,16 @@ export class BookingComponent implements OnInit {
       }
     });
   }
-  /**
-   * Szolgáltatások szűrése az orvos alapján
-   */
+
   protected updateFilteredConsultations(): void {
-    const selectedStaff = this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
+    if (!this.selectedStaffId) return;
+
+    const selectedStaff = this.staffs.find(s => 
+      Number(s.userId) === Number(this.selectedStaffId) || 
+      Number(s.id) === Number(this.selectedStaffId)
+    );
     
-    if (selectedStaff && selectedStaff.treatments && selectedStaff.treatments.length > 0) {
+    if (selectedStaff && selectedStaff.treatments) {
       const allowedIds = selectedStaff.treatments.map((t: any) => Number(t.id));
       this.filteredConsultations = this.consultations.filter(c => 
         allowedIds.includes(Number(c.id))
@@ -91,26 +110,27 @@ export class BookingComponent implements OnInit {
     } else {
       this.filteredConsultations = [];
     }
-    const isStillAvailable = this.filteredConsultations.some(
+
+    const isValid = this.filteredConsultations.some(
       c => Number(c.id) === Number(this.selectedConsultationId)
     );
 
-    if (!isStillAvailable && this.filteredConsultations.length > 0) {
+    if (!isValid && this.filteredConsultations.length > 0) {
       this.selectedConsultationId = Number(this.filteredConsultations[0].id);
     } else if (this.filteredConsultations.length === 0) {
       this.selectedConsultationId = null;
     }
   }
+
   protected onStaffChange(): void {
     this.updateFilteredConsultations();
     this.loadSlots();
   }
+
   protected onFilterChange(): void {
     this.loadSlots();
   }
-  /**
-   * Szabad időpontok lekérése
-   */
+
   loadSlots(): void {
     if (!this.selectedStaffId || !this.selectedConsultationId) {
       this.availableSlots = [];
@@ -125,9 +145,8 @@ export class BookingComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         const allData = res.data || res;
-        this.availableSlots = allData.filter((slot: Slot) => slot.date === this.selectedDate);
+        this.availableSlots = allData.filter((slot: any) => slot.date === this.selectedDate);
         this.isLoading = false;
-        this.errorMessage = '';
       },
       error: (err: any) => {
         this.isLoading = false;
@@ -137,7 +156,7 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  onReserve(slot: Slot): void {
+  onReserve(slot: any): void {
     Swal.fire({
       title: 'Foglalás megerősítése',
       text: `Időpont: ${slot.date} ${slot.startTime.slice(0, 5)}`,
@@ -152,10 +171,8 @@ export class BookingComponent implements OnInit {
       }
     });
   }
-  /**
-   * A tényleges foglalás végrehajtása - Összehangolva a Backend Service-szel
-   */
-  private executeBooking(slot: Slot): void {
+
+  private executeBooking(slot: any): void {
     const userId = this.auth.getUserId();
 
     if (!userId) {
@@ -163,46 +180,35 @@ export class BookingComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-    // Megkeressük a kiválasztott szolgáltatást az adatok kinyeréséhez
-    const selectedType = this.consultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
 
-    // Az objektum felépítése a Backend igényei szerint
+    const selectedTreatment = this.consultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
+
+    if (!selectedTreatment) {
+    Swal.fire('Hiba', 'A kiválasztott vizsgálat nem érhető el ennél az orvosnál!', 'error');
+    return;
+    }
+
     const bookingData = {
       slotId: Number(slot.id),
       patientId: Number(userId),
-      staffId: Number(slot.staffId || this.selectedStaffId), 
+      staffId: Number(this.selectedStaffId), 
       consultationId: Number(this.selectedConsultationId),
-      
-      // Itt küldjük duration-t és az árat
-      duration: Number(selectedType?.duration || 30),
-      name: selectedType?.name || 'Konzultáció',
-      price: Number(selectedType?.price || 0),
-      
-      // Segédadatok a backendnek/emailnek
+      duration: Number(selectedTreatment?.duration || 30),
+      name: selectedTreatment?.name || 'Konzultáció',
+      price: Number(selectedTreatment?.price || 0),
       startTime: slot.startTime, 
-      date: slot.date
+      date: slot.date,
+      status: 'pending', 
+      isPublic: true
     };
 
-    console.log('Foglalási adatok küldése:', bookingData);
-
     this.bookingApi.createBooking(bookingData as any).subscribe({
-      next: (res: any) => {
-        Swal.fire({
-          title: 'Sikeres foglalás!',
-          html: `
-            <p>Időpontod rögzítettük: <b>${slot.date} ${slot.startTime.slice(0, 5)}</b></p>
-            <p class="small text-muted">A visszaigazolást elküldtük e-mailben. Lemondás esetén kérjük, hívja a klinikát!</p>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#003366',
-          confirmButtonText: 'Rendben'
-        }).then(() => {
-          this.loadSlots(); 
-        });
+      next: () => {
+        Swal.fire('Sikeres foglalás!', 'Az időpontot rögzítettük.', 'success')
+          .then(() => this.loadSlots());
       },
       error: (err) => {
-        console.error('Szerver hiba válasz:', err.error);
-        const msg = err.error?.error || err.error?.message || 'A foglalás nem sikerült.';
+        const msg = err.error?.message || 'A foglalás nem sikerült.';
         Swal.fire('Hiba', msg, 'error');
       }
     });

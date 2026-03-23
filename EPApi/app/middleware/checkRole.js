@@ -9,16 +9,13 @@ const checkRole = (requiredRole) => {
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Felhasználó nem található!' });
             }
-
-            // Csak az isActive-et nézzük 
+ 
             if (user.isActive === false) {
                 return res.status(403).json({ success: false, message: 'A fiókod inaktív.' });
             }
 
-            // Jogosultság ellenőrzés (A >= jel jó, mert az Admin (2) láthatja a Staff (1) dolgait is)
+            // Jogosultság ellenőrzés 
             if (user.roleId >= requiredRole) {
-                // Átadjuk a teljes user objektumot a következő lépésnek (Controllernek), 
-                // így ott már nem kell findByPk-t hívni!
                 req.user = user; 
                 next();
             } else {

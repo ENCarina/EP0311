@@ -167,59 +167,62 @@ import { Router } from '@angular/router';
     save() {
       if (this.staffForm.invalid) {
         alert('Tölts ki minden kötelező mezőt!');
-        //this.staffForm.markAllAsTouched();
         return;
       }
       this.addMode ? this.addStaff() : this.updateStaff();
     }
   
     updateStaff() {
-      const staffId = this.selectedStaffId; 
-      if (!staffId) {
-        Swal.fire('Hiba', 'Nem azonosítható a szakember!', 'error');
-        return;
-      }
+  const staffId = this.selectedStaffId; // Ez a Staff tábla ID-ja (pl. 6)
+  if (!staffId) {
+    Swal.fire('Hiba', 'Nem azonosítható a szakember!', 'error');
+    return;
+  }
+  // 1. Megkeressük a valódi USER ID-t
+  const currentStaff = this.staffs.find(s => s.id === staffId);
+  const targetUserId = currentStaff?.userId; 
 
-      // 1. Megkeressük az eredeti userId-t a listából
-      const currentStaff = this.staffs.find(s => s.id === staffId);
-      const userIdFromList = currentStaff?.userId;
+  if (!targetUserId) {
+    Swal.fire('Hiba', 'A felhasználói azonosító hiányzik!', 'error');
+    return;
+  }
 
-      // 2. Kérjük le a form adatait
-      const rawData = this.staffForm.getRawValue();
+  // 2. Adatok előkészítése
+  const rawData = this.staffForm.getRawValue();
+  const { id, role, password, ...rest } = rawData;
 
-      // 3. Destrukturálás (A 'user'-t kivéve, mert nincs a formban)
-      const { id, role, password, ...rest } = rawData;
+  const updateData: any = { 
+    ...rest, 
+    userId: targetUserId, 
+    roleId: Number(role),
+    treatmentIds: this.selectedTreatments 
+  };
 
-      // 4. Az objektum összeállítása 
-      const updateData: any = { 
-        ...rest, 
-        userId: userIdFromList, 
-        roleId: Number(role),
-        treatmentIds: this.selectedTreatments 
-      };
+  if (password && password.trim() !== '') {
+    updateData.password = password;
+  }
 
-      // 5. Jelszó kezelése (Ha van beírva, hozzáadjuk)
-      if (password && password.trim() !== '') {
-        updateData.password = password;
-      }
-
-      // 6. API hívás (az updateData-t küldjük)
-      this.api.updateStaff(staffId, updateData).subscribe({
+  // 3. API hívás 
+  this.api.updateStaff(targetUserId, updateData).subscribe({
+    next: () => {
+      // 4. Kezelések frissítése 
+      this.api.assignTreatments(targetUserId, this.selectedTreatments).subscribe({
         next: () => {
-          // Kezelések frissítése
-          this.api.assignTreatments(staffId, this.selectedTreatments).subscribe({
-            next: () => this.completeAction('Adatok és kezelések frissítve!'),
-            error: (err) => {
-              console.error("Kezelések hiba:", err);
-              this.completeAction('Adatok frissítve, de a kezelések nem.');
-            }
-          });
+          this.completeAction('Sikeres mentés: Adatok és kezelések frissítve!');
+          this.getStaffs(); // Lista frissítése
         },
-        error: (err: any) => {
-          Swal.fire('Hiba', err.error?.message || 'Sikertelen frissítés.', 'error');
+        error: (err) => {
+          console.error("Kezelések hiba:", err);
+          this.completeAction('Adatok frissítve, de a kezelések mentése sikertelen (404).');
         }
       });
+    },
+    error: (err: any) => {
+      console.error("Frissítési hiba:", err);
+      Swal.fire('Hiba', err.error?.message || 'Sikertelen frissítés.', 'error');
     }
+  });
+}
 
     viewBookings(staffId: number): void {
       this.router.navigate(['/booking'], { queryParams: { staffId: staffId } });
@@ -261,32 +264,28 @@ import { Router } from '@angular/router';
         } 
       });
     }
+
     restoreStaff(staff: any) {
-      const staffId = staff.id;
-      const userId = staff.userId || staff.id;
-      
-      this.api.updateStaff(staff.id, { isActive: true }).subscribe({
-      next: () => {
-        this.getStaffs();
-        Swal.fire('Visszaállítva', 'A szakember újra aktív.', 'success');
-      },
-      error: (err) => {
-          console.error("Visszaállítási hiba (404-es szál):", err);
-          if (err.status === 404) {
-            // Ha a Staff API nem találja, megpróbáljuk a User-en keresztül "elvarrni"
-            Swal.fire({
-              title: '404 - Nem található',
-              text: 'A Staff rekord nem elérhető. Megpróbáljuk a User szintű visszaállítást?',
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonText: 'Igen'
-            }).then((res) => {
-              if (res.isConfirmed) {
-                // Ide jöhet az az API hívás, ami a Dashboard-on is visszaállítja (pl. updateStaff helyett archiveUser párja)
-                this.api.updateStaff(userId, { isActive: true }).subscribe(() => this.getStaffs());
-              }
-            });
-          }
+      const targetId = staff.userId;
+
+      this.api.updateStaff(targetId, { isActive: true }).subscribe({
+        next: () => {
+          staff.isActive = true;
+          staff.isAvailable = true;
+          this.getStaffs(); 
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Sikeres visszaállítás',
+            toast: true,
+            position: 'top-end',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        },
+        error: (err) => {
+          console.error("Hiba:", err);
+          Swal.fire('Hiba', 'A szerver elutasította a kérést. Ellenőrizd a jogosultságokat!', 'error');
         }
       });
     }

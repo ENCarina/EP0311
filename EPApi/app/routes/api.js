@@ -1,5 +1,5 @@
-import Router from 'express'
-const router = Router()
+import { Router } from 'express'; 
+const router = Router();
 
 import AuthController from '../controllers/authController.js';
 import UserController from '../controllers/userController.js';
@@ -10,62 +10,54 @@ import SlotController from '../controllers/slotController.js';
 import ConsultationController from '../controllers/consultationController.js';
 import checkRole from '../middleware/checkRole.js';
 
-router.post('/register', AuthController.register)
-router.post('/login', AuthController.login)
-router.get('/verify-email/:token', AuthController.verifyEmail)
+// --- AUTH ---
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.get('/verify-email/:token', AuthController.verifyEmail);
 
-// --- MY PROFILE (Saját profil műveletek) ---
+// --- MY PROFILE ---
 router.get('/profile/me', [verifyToken], UserController.getMyProfile); 
 router.put('/profile/update', [verifyToken], UserController.updateMyProfile);
-router.post('/users/:id/password', [verifyToken, checkRole(2)], UserController.updatePassword);
 
+// --- USERS (Admin) ---
 router.get('/users', [verifyToken, checkRole(2)], UserController.index);
 router.get('/users/:id', [verifyToken], UserController.show);
-
-// Archiválás (Soft delete)
-router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy);
-// Státusz váltás (Az isActive switch-hez a táblázatban)
+// Fontos: Itt 'update', 'updatePassword', stb. kell, nem 'tryUpdate'!
+router.post('/users/:id/password', [verifyToken, checkRole(2)], UserController.updatePassword);
 router.post('/users/:id/status', [verifyToken, checkRole(2)], UserController.updateStatus);
-// Általános adatok (név, email) módosítása
-router.put('/users/:id/', [verifyToken, checkRole(2)], UserController.update);
+router.put('/users/:id', [verifyToken, checkRole(2)], UserController.update);
+router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy);
 
 // --- STAFF (Szakemberek) ---
-router.get('/staff', [verifyToken], StaffController.index);
-router.post('/staff/promote', [verifyToken, checkRole(2)], StaffController.promoteToStaff);
-router.post('/staff', [verifyToken, checkRole(2)], StaffController.store);
-router.get('/staff/:id/treatments', StaffController.getTreatmentsForStaff);
-
-// KEZELÉSEK
-router.post('/staff/:id/treatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
-router.post('/staff/assignTreatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
-
-// Egyedi szakember műveletek
+router.get('/staff', StaffController.index); 
+router.get('/staff/public', StaffController.getPublicProfiles); // Publikus lista
 router.get('/staff/:id', StaffController.show);
-router.post('/staff/:id', [verifyToken, checkRole(2)], StaffController.update);
+router.post('/staff', [verifyToken, checkRole(2)], StaffController.store);
 router.put('/staff/:id', [verifyToken, checkRole(2)], StaffController.update);
 router.delete('/staff/:id', [verifyToken, checkRole(2)], StaffController.destroy);
 
-router.get('/admin/all-users', [verifyToken, checkRole(2)], StaffController.index);
+router.post('/staff/promote', [verifyToken, checkRole(2)], StaffController.promoteToStaff);
+router.get('/staff/:id/treatments', StaffController.getTreatmentsForStaff); 
+router.post('/staff/:id/treatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
+ 
 
+// --- CONSULTATIONS, SLOTS, BOOKINGS (Maradnak változatlanul) ---
 router.get('/consultations', ConsultationController.index);
 router.get('/consultations/:id', ConsultationController.show);
 router.post('/consultations', [verifyToken, checkRole(2)], ConsultationController.store);
-router.post('/consultations/:id',[verifyToken, checkRole(2)], ConsultationController.update);
 router.put('/consultations/:id', [verifyToken, checkRole(2)], ConsultationController.update);
-router.delete('/consultations/:id',[verifyToken, checkRole(2)], ConsultationController.destroy);
+router.delete('/consultations/:id', [verifyToken, checkRole(2)], ConsultationController.destroy);
 
-router.get('/slots', [verifyToken], SlotController.index);
+router.get('/slots', SlotController.index);
 router.get('/slots/:id', [verifyToken], SlotController.show);
 router.post('/slots', [verifyToken, checkRole(1)], SlotController.store);
-router.post('/slots/:id', [verifyToken], SlotController.update);
+router.put('/slots/:id', [verifyToken], SlotController.update);
 router.delete('/slots/:id', [verifyToken], SlotController.destroy);
 
 router.get('/bookings', [verifyToken], BookingController.index);
-router.get('/bookings/:id', BookingController.show);
-//router.get('/my-bookings', [verifyToken], BookingController.myBookings);
+router.get('/bookings/:id', [verifyToken], BookingController.show);
 router.post('/bookings', [verifyToken], BookingController.store);
-router.post('/bookings/:id', [verifyToken], BookingController.update);
+router.put('/bookings/:id', [verifyToken], BookingController.update);
 router.delete('/bookings/:id', [verifyToken], BookingController.destroy);
- 
 
-export default router
+export default router;

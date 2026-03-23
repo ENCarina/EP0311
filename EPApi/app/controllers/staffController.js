@@ -1,365 +1,158 @@
-import db from '../models/modrels.js'
+import db from '../models/modrels.js';
 import dotenv from 'dotenv';
 dotenv.config();
 import { Op } from 'sequelize';
 
-const { Staff, User, Consultation } = db;
-const APP_URL = process.env.APP_URL || 'http://localhost:8000';
-
+const { Staff, User, Consultation, Slot } = db;
 
 const StaffController = {
-    // 1. Publikus profilok az UI-ra
-    async getPublicProfiles(req, res) {
-        try {
-            const profiles = await Staff.findAll({
-                where: { isAvailable: true, isActive:true }, 
-                attributes: ['id', 'specialty', 'bio', 'imageUrl'], 
-                include: [
-                    {
-                        model: User,
-                        as: 'user', 
-                        attributes: ['name', 'email', 'roleId' ],
-                        where: { isActive: true}
-                    },
-                    {
-                        model: Consultation,
-                        as: 'treatments', 
-                        attributes: ['id', 'name', 'price'],
-                        through: { attributes: [] } 
-                    }
-                ]
-            });
-
-            const formattedProfiles = profiles.map(staff => ({
-                id: staff.id,
-                name: staff.user ? staff.user.name : 'Névtelen szakember',
-                specialty: staff.specialty,
-                bio: staff.bio,
-                imageUrl: staff.imageUrl 
-                    ? `${APP_URL}${staff.imageUrl}` 
-                    : `${APP_URL}/images/default-avatar.png`,
-                treatments: staff.treatments   
-            }));
-
-            res.json({ success: true, data: formattedProfiles });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
-    // 2. Összes staff listázása (Adminnak)
+    // 1. Admin lista (Mindenki)
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
-                include: [
-                    { model: User, as: 'user', attributes: ['name', 'email', 'roleId'] },
-                    { model: Consultation, as: 'treatments', attributes: ['id', 'name'] }
-            ]
+                include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
             });
-            res.status(200).json({ success: true, data: staff });
+            res.json({ success: true, data: staff });
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     },
-    async tryIndex(req, res) {
-        const staff = await Staff.findAll({
-            include: [{
-                model: User,
-                as: 'user',
-                attributes:['name', 'email','roleId']
-            }]
-        })
-        res.status(200)
-        res.json({
-            success: true,
-            data: staff
-        })
+
+    // 2. Publikus profilok (Csak az aktívak)
+    async getPublicProfiles(req, res) {
+        try {
+            const staff = await Staff.findAll({
+                where: { isActive: true },
+                include: [{ model: User, as: 'user', attributes: ['name'] }]
+            });
+            res.json({ success: true, data: staff });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
     },
-// 3. Egy szakember adatlapja
+
+    // 3. Egy szakember adatai
     async show(req, res) {
         try {
-            const staff = await Staff.findByPk(req.params.id,{
-                include: [{ model: User, as: 'user', attributes:['name', 'email','roleId'] },
-                    {
-                        model: Consultation,
-                        as: 'treatments',
-                        attributes: ['id', 'name', 'price'],
-                        through: { attributes: [] }
-                    }
-                ]
+            const staff = await Staff.findByPk(req.params.id, {
+                include: [{ model: User, as: 'user' }]
             });
-
-            if(!staff) { return res.status(404).json({ success: false, message: 'Szakember nem található' }) }
-            
-            res.status(200).json({ success: true, data: staff });
-        }catch(error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
-    async tryShow(req, res) {
-        const staff = await Staff.findByPk(req.params.id,{
-            include: [{
-                model: User,
-                as: 'user',
-                attributes:['name', 'email','roleId']
-            }]
-        })
-        res.status(200)
-        res.json({
-            success: true,
-            data: staff
-        })
-    },
-     // 4. Kezelések hozzárendelése orvoshoz
-    async assignTreatments(req, res) {
-        try {
-            const staffId = req.params.id; 
-            let { treatmentIds } = req.body;
-
-            const staffMember = await db.Staff.findByPk(staffId);
-
-            if (!staffMember) {
-            return res.status(404).json({ success: false, message: 'Orvos nem található' });
-            }
-            const idsToSave = Array.isArray(treatmentIds) 
-            ? treatmentIds.map(Number) 
-            : (treatmentIds ? [Number(treatmentIds)] : []);
-
-            await staffMember.setTreatments(idsToSave);
-
-            return res.status(200).json({ 
-                success: true, 
-                message: 'Kezelések sikeresen frissítve!',
-                count: idsToSave.length 
-            });
-
+            if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
+            res.json({ success: true, data: staff });
         } catch (error) {
-            console.error("AssignTreatments Hiba:", error);
-            return res.status(500).json({ success: false, error: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 5. Adott orvos kezeléseinek lekérése
+    // 4. KEZELÉSEK LEKÉRÉSE
     async getTreatmentsForStaff(req, res) {
         try {
-            const staffWithTreatments = await db.Staff.findOne({
-            where: {
-                [Op.or]: [
-                    { id: req.params.id },
-                    { userId: req.params.id }
-                ]
-            },
-            include: [{
-                model: db.Consultation,
-                as: 'treatments', 
-                attributes: ['id', 'name', 'price'],
-                through: { attributes: [] } 
-            }]
-        });
-
-        if (!staffWithTreatments) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Szakember nem található." 
+            const { id } = req.params;
+            const staff = await Staff.findByPk(id, {
+                include: [{ model: Consultation, as: 'treatments', through: { attributes: [] } }]
             });
-        }
-        res.json({ success: true, data: staffWithTreatments.treatments || [] });
-
-    } catch (error) {
-        console.error("SQL hiba:", error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-},
-    // 6. Új szakember felvétele
-    async store(req, res) {
-        const t = await db.sequelize.transaction();
-        try {
-            const { name, email, password, role, specialty, bio, imageUrl, treatmentIds } = req.body;
-
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) {
-                await t.rollback(); 
-                return res.status(400).json({ success: false, message: 'Ez az email cím már foglalt!' });
-            }
-
-            const newUser = await User.create({
-                name: name,
-                email: email,
-                password: password || 'doctor123', 
-                roleId: role || 1,
-                verified: true,
-                isActive: true 
-        }, { transaction: t});
-
-            const newStaff = await Staff.create({
-                userId: newUser.id,
-                specialty: specialty || 'Általános',
-                bio: bio || '',
-                imageUrl: imageUrl || '',
-                isAvailable: true,
-                isActive: true 
-            }, { transaction: t});
-
-            if (treatmentIds && Array.isArray(treatmentIds) && treatmentIds.length > 0) {
-            await newStaff.setTreatments(treatmentIds.map(Number), { transaction: t });
-            }
-
-            await t.commit();
-
-            const result = await Staff.findByPk(newStaff.id, {
-            include: [
-                { model: User, as: 'user', attributes: ['name', 'email'] },
-                { model: Consultation, as: 'treatments', attributes: ['id', 'name', 'price'] }
-            ]
-        });
-
-            res.status(201).json({ success: true, data: result, message: 'Szakember sikeresen létrehozva!' });
-
-        }catch(error) {
-            if (t) await t.rollback();
-            console.error("Update hiba:", error);
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
-    async tryStore(req, res) {
-        const staff = await Staff.create(req.body)
-        res.status(201)
-        res.json({
-            success: true,
-            data: staff
-        })
-    },
-    // 7. Adatok frissítése
-    async update(req, res) {
-        const t = await db.sequelize.transaction();
-        try {
-            const idFromUrl = req.params.id;
-            const { name, email, roleId, user, ...staffData } = req.body;
-            // const userId = req.body.userId || idFromUrl;
-
-            // const user = await User.findByPk(userId);
-            // if (!user) {
-            //     await t.rollback();
-            //     return res.status(404).json({ success: false, message: 'Szakember nem található!' });
-            // }
-            // await User.update({ name, email, roleId }, { where: { id: userId }, transaction: t });
-
-            const staffMember = await Staff.findOne({ 
-                where: { 
-                    [Op.or]: [{ id: idFromUrl }, { userId: idFromUrl }]
-                }
-            });
-
-            // if (staffMember) {
-            // // Ha már orvos, csak frissítjük az adatait (pl. specialization)
-            //     await Staff.update(staffData, { 
-            //         where: { userId: userId }, 
-            //         transaction: t 
-            //     });
-            //  } else {
-            // // HA MOST LESZ ORVOS: Létrehozzuk az új Staff rekordot
-            //     staffMember = await Staff.create({
-            //         ...staffData,
-            //         userId: userId
-            //     }, { transaction: t });
-            // }
-            if (!staffMember) {
-            await t.rollback();
-            return res.status(404).json({ success: false, message: 'Szakember nem található!' });
-            }
-            // User adatok frissítése
-            await User.update(
-                { name, email, roleId, isActive:true }, 
-                { where: { id: staffMember.userId}, transaction: t }
-            );
-
-            // Staff adatok frissítése 
-            await staffMember.update({...staffData, isActive: true, isAvailable: true}, { transaction: t });
-
-            await t.commit();
-
-            // Frissített adatok visszakérése a válaszhoz
-            const result = await Staff.findByPk(staffMember.id, {
-                include: [{ model: User, as: 'user', attributes: ['name', 'email', 'roleId'] }]
-            });
-            // // 3. Visszaküldjük a teljes, frissített profilt
-            // const result = await Staff.findOne({
-            //     where: { userId: userId },
-            //     include: [{ model: User, as: 'user', attributes: ['name', 'email', 'roleId'] }]
-            // });
-            if (!result) {
-            return res.status(200).json({ success: true, message: 'Frissítve, de a nézet frissítéséhez töltsd újra az oldalt.' });
-        }
-            res.status(200).json({ success: true, data: result });
-
+            if (!staff) return res.status(404).json({ success: false, message: 'Nincs ilyen szakember' });
+            res.json({ success: true, data: staff.treatments || [] });
         } catch (error) {
-            if (t && !t.finished) { await t.rollback();
-            console.error("Update hiba:", error);
-            res.status(500).json({ success: false, error: error.message });
-            }
+            res.status(500).json({ success: false, message: error.message });
         }
-        },
-       
-    async tryUpdate(req, res) {
-        const [recordNumber] = await Staff.update(req.body, {
-            where: { id: req.params.id }
-        })
-        if(recordNumber == 0) {
-            throw new Error('Fail! Record not found!')
-        }
-        const staff = await Staff.findByPk(req.params.id)
-        res.status(200)
-        res.json({
-            success: true,
-            as: 'user',
-            data: staff
-        })
     },
-    // 8. Törlés (Inaktiválás)
-    async destroy(req, res) {
-        const t = await db.sequelize.transaction();
+
+    // 5. KEZELÉSEK HOZZÁADÁSA
+    async assignTreatments(req, res) {
         try {
-            const staffMember = await Staff.findByPk(req.params.id);
-            if (!staffMember) {
-                await t.rollback();
-                return res.status(404).json({ success: false, message: "Személyzet nem található" });
-            }
-            await Staff.update(
-            { isActive: false, isAvailable: false },
-            { where: { id: req.params.id }, transaction: t }
-            );
-            await User.update(
-            { isActive: false },
-            { where: { id: staffMember.userId }, transaction: t }
-            );
-            await t.commit();
-            res.status(200).json({ success: true, message: "Profil és felhasználó inaktiválva."});
-        }catch (error) {
-            if (t) await t.rollback();
-            res.status(500).json({ success: false, error: error.message });
+            const { id } = req.params;
+            const { treatmentIds } = req.body;
+            const staff = await Staff.findOne({ where: { userId: id } });
+            if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
+            // Hozzárendelt vizsgálat
+            await staff.setTreatments(treatmentIds);
+            
+            res.json({ success: true, message: 'Kezelések frissítve' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
         }
     },
-    // 9. Felhasználó előléptetése orvossá
+
+    // 6. ELŐLÉPTETÉS
     async promoteToStaff(req, res) {
         try {
-    const { userId, specialty } = req.body; 
+            const { userId, specialty } = req.body;
+            const newStaff = await Staff.create({ userId, specialty, isActive: true });
+            res.json({ success: true, data: newStaff });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
 
-    let staff = await Staff.findOne({ where: { userId } });
+    // 7. Mentés (Új szakember közvetlen létrehozása)
+    async store(req, res) {
+        try {
+            const staff = await Staff.create(req.body);
+            res.status(201).json({ success: true, data: staff });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
 
-    if (staff) {
-      await staff.update({ specialty, isActive: true });
-    } else {
-      staff = await Staff.create({
-        userId,
-        specialty,
-        isActive: true
-      });
+    // 8. Frissítés
+    async update(req, res) {
+        try {
+            const staff = await Staff.findByPk(req.params.id);
+            if (staff) {
+                await staff.update(req.body);
+                res.json({ success: true, data: staff });
+            } else {
+                res.status(404).json({ success: false, message: 'Nem található' });
+            }
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    // 9. Törlés (Fizikai törlés)
+    async destroy(req, res) {
+        try {
+            const staff = await Staff.findByPk(req.params.id);
+            if (staff) {
+                await staff.destroy();
+                res.json({ success: true, message: 'Szakember profil törölve' });
+            } else {
+                res.status(404).json({ success: false, message: 'Nem található' });
+            }
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    // 10. STÁTUSZ KEZELÉS (Archiválás és Visszaállítás)
+    async updateStatus(req, res) {
+        try {
+            const { id } = req.params; // Itt a userId-t kapjuk az Angulartól
+            const { isActive } = req.body;
+
+            // Keresés userId alapján, hogy elkerüljük a 404-et
+            const staffProfile = await Staff.findOne({ where: { userId: id } });
+
+            if (!staffProfile) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Ehhez a felhasználóhoz nem tartozik szakmai profil.' 
+                });
+            }
+
+            staffProfile.isActive = isActive;
+            await staffProfile.save();
+
+            res.json({ 
+                success: true, 
+                message: isActive ? 'Szakember aktiválva' : 'Szakember archiválva', 
+                data: staffProfile 
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
     }
-    await User.update({ roleId: 2 }, { where: { id: userId } });
+};
 
-    res.status(200).json({ success: true, message: 'Sikeres előléptetés!' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-}
-}
-export default StaffController
+export default StaffController;

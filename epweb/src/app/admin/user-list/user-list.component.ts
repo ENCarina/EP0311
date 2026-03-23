@@ -22,17 +22,24 @@ export class UserListComponent implements OnInit {
   loadUsers() {
    this.adminService.getAllUsers().subscribe({
     next: (res: any) => {
-      console.log('Megérkezett adatok:', res);
+     
       const data = Array.isArray(res) ? res : (res.data || []);
        
       this.users = data.map((u: any) => {
-        const status = u.staff ? u.staff.isActive : u.isActive;
+        const hasStaffProfile = !!u.staffProfile;
+        let activeStatus: boolean;
+        if (hasStaffProfile) {
+          activeStatus = u.staffProfile.isActive === true || u.staffProfile.isActive === 1;
+        } else {
+          // Sima felhasználóknál (vagy Adminnál staff profil nélkül)
+          activeStatus = u.isActive !== undefined ? Boolean(u.isActive) : true;
+        }
         return{
           ...u,
-          isActive:(status === undefined || status === null) ? true : Boolean(status)
+          isActive: activeStatus
         };
     }),
-    console.log('Feldogozott user adatok:', this.users)
+    console.log('Sikeresen feldolgozott felhasználók:', this.users)
   },
     error: (err) => {
       console.error('Hiba a betöltésnél:', err);
@@ -40,24 +47,49 @@ export class UserListComponent implements OnInit {
     }
   });
 }
-  onToggleActive(user: any) {
-    const newStatus = !user.isActive;
-    this.adminService.updateUserStatus(user.id, newStatus).subscribe({
+onToggleActive(user: any) {
+  // 1. Meghatározzuk az új státuszt 
+  const newStatus = !user.isActive;
+  const userId = user.id;
+
+  this.adminService.updateUserStatus(userId, newStatus).subscribe({
     next: () => {
-      user.isActive = newStatus; 
+      user.isActive = newStatus;
+      
+      if (user.staffProfile) {
+        user.staffProfile.isActive = newStatus;
+      }
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 2000
+        timer: 2000,
+        timerProgressBar: true
       });
+
       Toast.fire({
         icon: 'success',
-        title: `Felhasználó ${newStatus ? 'aktiválva' : 'inaktiválva'}`
+        title: `Felhasználó ${newStatus ? 'aktiválva' : 'archiválva'}`
       });
     },
-    error: (err) => Swal.fire('Hiba', 'Státusz módosítása sikertelen', 'error')
-    });
+    error: (err) => {
+      console.error('Státuszmódosítási hiba:', err);
+      if (err.status === 404) {
+        Swal.fire({
+          title: 'Hiba',
+          text: 'A rendszer nem találta a felhasználóhoz tartozó szakmai profilt.',
+          icon: 'error'
+        });
+      } else {
+        Swal.fire({
+          title: 'Hiba',
+          text: 'A státusz módosítása sikertelen volt a szerver oldalon.',
+          icon: 'error',
+          confirmButtonColor: '#001f3f'
+        });
+      }
+    }
+  });
 }
 
 onResetPassword(user: any) {

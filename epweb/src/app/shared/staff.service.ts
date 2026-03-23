@@ -27,7 +27,7 @@ export class StaffService {
     }
 
     updateStaff(id: number, data: any) {
-        return this.http.post(`${this.baseUrl}/staff/${id}`, data);
+        return this.http.put(`${this.baseUrl}/users/${id}`, data);
     }
 
     getAllUsers() {

@@ -1,162 +1,125 @@
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import User from '../models/user.js'
-import dotenvFlow from 'dotenv-flow'
-import crypto from 'crypto'
-import {EmailService} from '../services/emailService.js'
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
+import dotenvFlow from 'dotenv-flow';
+import crypto from 'crypto';
+import { EmailService } from '../services/emailService.js';
 
-dotenvFlow.config() 
+dotenvFlow.config();
 
 const AuthController = {
-    async register(req, res) {        
-        var clientError = false;
+    // 1. REGISZTRÁCIÓ
+    async register(req, res) {
         try {
-            if(!req.body.name || !req.body.email || !req.body.password || !req.body.confirmPassword) {
-                clientError = true
-                throw new Error('Error! Bad request data!')
-            }
-            if(req.body.password != req.body.confirmPassword) {
-                clientError = true
-                throw new Error('Error! The two password is not same!')
-            }
-            const userExists = await User.findOne({
-                where: { email: req.body.email }
-            })
-            if(userExists) {
-                clientError = true
-                throw new Error('Error! User already exists with this email! ')
-            }
-            await AuthController.tryRegister(req, res)
+            const { name, email, password, confirmPassword } = req.body;
 
-        } catch (error) {
-           res.status(clientError ? 400 : 500).json({
-                success: false,
-                message: 'Error! User creation failed!',
-                error: error.message
-            })
-        }
-    },
-    async tryRegister(req, res) {
-        try {
-            const verificationToken = crypto.randomBytes(32).toString('hex')
-            const verifyUrl = `${process.env.APP_URL}verify-email/${verificationToken}`
-        
-            const user = {
-                name: req.body.name,
-                email: req.body.email,
-                password: bcrypt.hashSync(req.body.password, 10),
-                roleId:0, 
-                verificationToken: verificationToken,
+            // Alapvető validációk
+            if (!name || !email || !password || !confirmPassword) {
+                return res.status(400).json({ success: false, message: 'Minden mező kitöltése kötelező!' });
+            }
+
+            if (password !== confirmPassword) {
+                return res.status(400).json({ success: false, message: 'A két jelszó nem egyezik!' });
+            }
+
+            const userExists = await User.findOne({ where: { email } });
+            if (userExists) {
+                return res.status(400).json({ success: false, message: 'Ez az email cím már foglalt!' });
+            }
+
+            // Token generálás az email megerősítéshez
+            const verificationToken = crypto.randomBytes(32).toString('hex');
+            const verifyUrl = `${process.env.APP_URL}verify-email/${verificationToken}`;
+
+            // Felhasználó létrehozása
+            const newUser = await User.create({
+                name,
+                email,
+                password: bcrypt.hashSync(password, 10),
+                roleId: 0, // Alapértelmezett páciens role
+                verificationToken,
                 verified: false,
                 isActive: true
-            }
-            const result = await User.create(user)
-
-        // Üdv email küldés
-            try {
-                await EmailService.sendWelcomeEmail(
-                    user.email, 
-                    user.name, 
-                    verifyUrl
-                );
-             } catch (emailErr) {
-                console.error("Email küldési hiba:", emailErr.message);
-            }
-            return res.status(201).json({
-                success: true,
-                message: 'Registration successful! Please check your email.',
-                data: result
             });
 
+            // Email küldés (nem blokkolja a választ, ha elbukik, a user már létrejött)
+            EmailService.sendWelcomeEmail(newUser.email, newUser.name, verifyUrl)
+                .catch(err => console.error("Email küldési hiba a regisztrációnál:", err.message));
+
+            return res.status(201).json({
+                success: true,
+                message: 'Regisztráció sikeres! Kérjük, igazolja vissza email címét.',
+                data: { id: newUser.id, name: newUser.name, email: newUser.email }
+            });
+
+        } catch (error) {
+            return res.status(500).json({ success: false, message: 'Hiba a regisztráció során!', error: error.message });
+        }
+    },
+
+    // 2. EMAIL VISSZAIGAZOLÁS
+    async verifyEmail(req, res) {
+        try {
+            const user = await User.findOne({ where: { verificationToken: req.params.token } });
+            
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Érvénytelen vagy lejárt megerősítő token!' });
+            }
+
+            user.verified = true;
+            user.verificationToken = null;
+            await user.save();
+
+            return res.status(200).json({ success: true, message: 'Email cím sikeresen visszaigazolva!' });
         } catch (error) {
             return res.status(500).json({ success: false, error: error.message });
         }
     },
 
-    async verifyEmail(req, res) {
-        try {
-            const user = await User.findOne({
-            where: { verificationToken: req.params.token }
-            })
-            if(!user) {
-                return res.status(404).json({success: false, message: 'Error! User not found!'});
-            }
-        user.verified = true
-        user.verificationToken = null
-        await user.save()
-
-        res.status(200).json({
-            success: true,
-            message: 'The email is verified!',
-        })
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-},
+    // 3. BEJELENTKEZÉS
     async login(req, res) {
-        
         try {
             const { email, password } = req.body;
 
-            if(!email || !password) {
-               return res.status(400).json({ 
-                success: false, 
-                message: 'Hiányzó email vagy jelszó!' });
+            if (!email || !password) {
+                return res.status(400).json({ success: false, message: 'Hiányzó email vagy jelszó!' });
             }
 
             const user = await User.findOne({ where: { email } });
-            if(!user || user.isActive === false) {
-                return res.status(401).json({
-                success: false,
-                message: 'Érvénytelen e-mail vagy inaktív fiók!'
-                });
-            }
-            if (user.verified === false || user.verified == 0) {
-                /*return res.status(401).json({
-                success: false,
-                message: 'Kérjük, igazolja vissza email címét a bejelentkezéshez!'
-                });
-                */
-               console.log("Figy!: A felhasználó nincs aktiválva, de a fejlesztés miatt átengedve.");
+            
+            if (!user || !user.isActive) {
+                return res.status(401).json({ success: false, message: 'Érvénytelen e-mail vagy inaktív fiók!' });
             }
 
+            // Jelszó ellenőrzés
             const passwordIsValid = await bcrypt.compare(password, user.password);
-            if(!passwordIsValid) {
-                return res.status(401).json({
-                success: false,
-                message: 'Érvénytelen jelszó!'
-                });
+            if (!passwordIsValid) {
+                return res.status(401).json({ success: false, message: 'Érvénytelen jelszó!' });
             }
-            return AuthController.tryLogin(req, res, user);
+
+            // Token generálás
+            const secretKey = process.env.APP_KEY || 'default_secret_key';
+            const token = jwt.sign(
+                { id: user.id, roleId: user.roleId },
+                secretKey,
+                { expiresIn: '24h' }
+            );
+
+            return res.status(200).json({
+                success: true,
+                accessToken: token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    roleId: user.roleId
+                }
+            });
 
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message })
+            return res.status(500).json({ success: false, message: 'Hiba a bejelentkezés során!', error: error.message });
         }
-    },
-    async tryLogin(req, res, user) {
-        try {
-        const secretKey = process.env.APP_KEY || 'default_secret_key';
-        var token = jwt.sign(
-            { id: user.id , roleId: user.roleId}, 
-            secretKey, {
-            expiresIn: 86400 //24 óra
-        })
-        res.status(200).json({
-            success: true,
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            roleId: user.roleId,
-            accessToken: token
-        });
-    } catch (jwtError) {
-        console.error("JWT hiba:", jwtError);
-        return res.status(500).json({ 
-            success: false, 
-            message: "Hiba a token generálása közben!" 
-        });
-    }           
-}
-}
+    }
+};
 
-export default AuthController
+export default AuthController;
