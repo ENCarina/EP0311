@@ -45,7 +45,7 @@
       </article>
     </div>
 
-    <div class="dashboard-grid two-column mb-4">
+    <div class="dashboard-grid booking-panels mb-4">
       <article class="dashboard-card">
         <h3>Leggyakoribb szolgáltatásai</h3>
         @if (topServices.length > 0) {
@@ -81,6 +81,36 @@
           </div>
         } @else {
           <p class="empty-state">Nincs közelgő időpont.</p>
+        }
+      </article>
+
+      <article class="dashboard-card" id="allBookingsBlock">
+        <h3>Összes foglalásom</h3>
+        @if (allBookings.length > 0) {
+          <div class="booking-list">
+            @for (booking of allBookings; track booking.id) {
+              <div class="booking-row">
+                <div class="booking-main">
+                  <strong>{{ getBookingServiceName(booking) }}</strong>
+                  <span>{{ formatDate(getBookingSlot(booking)?.date || booking.date) }} {{ formatTime(getBookingSlot(booking)?.startTime || booking.startTime) }}</span>
+                  <small>{{ getDoctorName(booking) }}</small>
+                </div>
+                <div class="booking-meta">
+                  <span>{{ getBookingPrice(booking) }} Ft</span>
+                  <button
+                    type="button"
+                    class="cancel-inline-btn"
+                    [disabled]="!canCancelBooking(booking) || cancellingBooking"
+                    (click)="cancelBooking(booking)">
+                    Lemondás
+                  </button>
+                  <small>{{ getCancellationHint(booking) }}</small>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-state">Még nincs foglalása.</p>
         }
       </article>
     </div>

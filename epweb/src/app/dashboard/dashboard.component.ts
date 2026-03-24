@@ -17,12 +17,14 @@ import { StaffService } from '../shared/staff.service';
 })
 export class DashboardComponent implements OnInit {
   protected loadingDashboard = false;
+  protected cancellingBooking = false;
   protected dashboardError = '';
 
   protected totalBookings = 0;
   protected upcomingBookingsCount = 0;
   protected latestBookingDateLabel = '';
   protected favoriteServiceName = '';
+  protected allBookings: any[] = [];
 
   protected topServices: Array<{ name: string; count: number }> = [];
   protected upcomingAppointments: Array<{
@@ -133,6 +135,7 @@ export class DashboardComponent implements OnInit {
         const bookingsData = Array.isArray(bookings) ? bookings : bookings?.data || [];
         const consultationsData = Array.isArray(consultations) ? consultations : consultations?.data || [];
 
+        this.allBookings = bookingsData;
         this.totalBookings = bookingsData.length;
         this.upcomingAppointments = this.computeUpcomingAppointments(bookingsData);
         this.upcomingBookingsCount = this.upcomingAppointments.length;
@@ -151,6 +154,78 @@ export class DashboardComponent implements OnInit {
         this.dashboardError = 'A vezérlőpult adatainak betöltése sikertelen.';
       }
     });
+  }
+
+  protected cancelBooking(booking: any): void {
+    const bookingId = Number(booking?.id);
+    if (!bookingId) {
+      return;
+    }
+
+    if (!this.canCancelBooking(booking)) {
+      this.dashboardError = 'Az időpontot csak legalább 24 órával korábban lehet lemondani.';
+      return;
+    }
+
+    Swal.fire({
+      title: 'Időpont lemondása',
+      text: 'Biztosan le szeretné mondani ezt az időpontot?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Igen, lemondom',
+      cancelButtonText: 'Mégse'
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cancellingBooking = true;
+      this.dashboardError = '';
+
+      this.bookingService.cancelBooking(bookingId).subscribe({
+        next: () => {
+          this.cancellingBooking = false;
+          this.loadDashboardData();
+        },
+        error: (error) => {
+          this.cancellingBooking = false;
+          this.dashboardError = error?.error?.error || error?.error?.message || 'Hiba történt a lemondás során.';
+        }
+      });
+    });
+  }
+
+  protected canCancelBooking(booking: any): boolean {
+    const slotData = this.getBookingSlot(booking);
+    const bookingDate = slotData?.date || booking?.date;
+    const bookingTime = slotData?.startTime || booking?.startTime;
+
+    if (!bookingDate || !bookingTime) {
+      return false;
+    }
+
+    const appointmentDate = this.buildDateTime(bookingDate, bookingTime);
+    if (isNaN(appointmentDate.getTime())) {
+      return false;
+    }
+
+    const hoursDiff = (appointmentDate.getTime() - Date.now()) / (1000 * 60 * 60);
+    return hoursDiff >= 24;
+  }
+
+  protected getCancellationHint(booking: any): string {
+    return this.canCancelBooking(booking)
+      ? 'Az időpont még online lemondható.'
+      : '24 órán belül csak telefonon mondható le.';
+  }
+
+  protected getBookingServiceName(booking: any): string {
+    return booking.treatment?.name || booking.type?.name || booking.name || 'Konzultáció';
+  }
+
+  protected getBookingPrice(booking: any): string {
+    const price = booking.treatment?.price || booking.type?.price || booking.price || 0;
+    return this.formatPrice(Number(price));
   }
 
   private computeTopServices(bookingsData: any[]): Array<{ name: string; count: number }> {
@@ -242,7 +317,7 @@ export class DashboardComponent implements OnInit {
     this.updateConsultationFilter();
   }
 
-  private formatDate(date: string): string {
+  protected formatDate(date: string): string {
     if (!date) return '';
     const dateObj = this.buildDateTime(date, '00:00:00');
     if (isNaN(dateObj.getTime())) return date;
@@ -253,7 +328,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  private formatTime(time: string): string {
+  protected formatTime(time: string): string {
     if (!time) return '';
     const timeObj = new Date(time);
     if (!isNaN(timeObj.getTime())) {
@@ -262,11 +337,11 @@ export class DashboardComponent implements OnInit {
     return time.substring(0, 5);
   }
 
-  private getBookingSlot(booking: any): any {
+  protected getBookingSlot(booking: any): any {
     return booking?.slot || booking?.timeSlot || booking?.Slot || null;
   }
 
-  private getDoctorName(booking: any): string {
+  protected getDoctorName(booking: any): string {
     return booking?.doctor?.user?.name
       || booking?.doctor?.staffProfile?.name
       || booking?.staff?.name
