@@ -2,11 +2,50 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('slots', null, {});
 
-    const staffConsultationMap = {
-      1: [1, 4, 5],
-      2: [2, 4, 5],
-      3: [3, 4, 5]
+    const [staffRows] = await queryInterface.sequelize.query(`
+      SELECT staff.id, staff.specialty
+      FROM staff
+      INNER JOIN users ON users.id = staff.userId
+      WHERE users.roleId = 1
+      ORDER BY staff.id ASC
+    `);
+
+    const [consultationRows] = await queryInterface.sequelize.query(
+      'SELECT id, specialty FROM consultations ORDER BY id ASC'
+    );
+
+    const specialtyMap = {
+      'Kardiológus': 'Kardiológia',
+      'Fogorvos': 'Fogászat',
+      'Pszichiáter': 'Pszichiátria',
+      'Szemész': 'Szemészet',
+      'Nőgyógyász': 'Nőgyógyászat',
+      'Bőrgyógyász': 'Bőrgyógyászat',
+      'Neurológus': 'Neurológia',
+      'Ortopéd': 'Ortopédia',
+      'Urológus': 'Urológia',
+      'Endokrinológus': 'Endokrinológia',
+      'Pulmonológus': 'Pulmonológia',
+      'Fül-orr-gégész': 'Fül-orr-gégészet',
+      'Gasztroenterológus': 'Gasztroenterológia',
+      'Reumatológus': 'Reumatológia',
+      'Diabetológus': 'Diabetológia'
     };
+
+    const generalConsultationIds = consultationRows
+      .filter((consultation) => consultation.specialty === 'Általános')
+      .map((consultation) => consultation.id);
+
+    const staffConsultationMap = staffRows.reduce((accumulator, staff) => {
+      const specialtyName = specialtyMap[staff.specialty] || staff.specialty;
+      const specialtyConsultationIds = consultationRows
+        .filter((consultation) => consultation.specialty === specialtyName)
+        .map((consultation) => consultation.id);
+
+      accumulator[staff.id] = [...specialtyConsultationIds, ...generalConsultationIds];
+      return accumulator;
+    }, {});
+
     const startHour = 8;
     const endHour = 21;
     const slotDurationMinutes = 30;
@@ -51,6 +90,10 @@ module.exports = {
 
       for (const [staffIdRaw, allowedConsultations] of Object.entries(staffConsultationMap)) {
         const staffId = Number(staffIdRaw);
+        if (!allowedConsultations.length) {
+          continue;
+        }
+
         let slotIndex = 0;
 
         for (let minutes = startHour * 60; minutes < endHour * 60; minutes += slotDurationMinutes) {

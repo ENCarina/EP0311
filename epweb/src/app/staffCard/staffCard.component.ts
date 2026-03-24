@@ -15,6 +15,7 @@ export class StaffCardComponent implements OnInit {
   private staffService = inject(StaffService);
   public auth = inject(AuthService);
   private router = inject(Router);
+  private readonly fallbackImageCount = 4;
 
   staffs: any[] = [];
   selectedStaff: any = null;
@@ -32,32 +33,16 @@ export class StaffCardComponent implements OnInit {
         this.staffs = rawData
           .filter((s: any) => s.isActive === true || s.isActive === 1)
           .map((s: any, i: number) => {
-          const idForRotation = s.id || Math.floor(Math.random() * 100);
-          const rotationNumber = (i % 5) + 1;
-          const fallbackImg = `/images/doctor${rotationNumber}.png`;
-
-          const dbImage = s.imageUrl && s.imageUrl !== 'null' ? s.imageUrl.trim() : null;
-
-          let finalUrl: string;
-          
-          if (dbImage && dbImage.length > 2) {
-
-            if (dbImage.startsWith('http')) {
-
-              finalUrl=dbImage;
-            } else {
-              const cleanPath = dbImage.startsWith('/') ? dbImage : '/' + dbImage;
-              finalUrl = cleanPath.includes('/images/') ? cleanPath : `/images${cleanPath}`;
-            }
-            } else {
-              finalUrl = fallbackImg;
-            }
+          const fallbackImg = this.getFallbackImage(i);
+          const originalImageUrl = this.normalizeImageUrl(s.imageUrl);
 
             const processedStaff = {
               ...s,
               name: s.user?.name || s.name || 'Névtelen',
               specialty: s.specialty || 'Szakorvos',
-              imageUrl: finalUrl,
+              imageUrl: fallbackImg,
+              originalImageUrl,
+              assignedFallback: fallbackImg,
               fallbackImg: fallbackImg,
               treatments: []
             };
@@ -76,6 +61,27 @@ export class StaffCardComponent implements OnInit {
       error: (err) => console.error('Hiba:', err)
     });
   }
+
+  private getFallbackImage(index: number): string {
+    const rotationNumber = (index % this.fallbackImageCount) + 1;
+    return `/images/doctor${rotationNumber}.png`;
+  }
+
+  private normalizeImageUrl(imageUrl: string | null | undefined): string | null {
+    const dbImage = imageUrl && imageUrl !== 'null' ? imageUrl.trim() : null;
+
+    if (!dbImage || dbImage.length <= 2) {
+      return null;
+    }
+
+    if (dbImage.startsWith('http')) {
+      return dbImage;
+    }
+
+    const cleanPath = dbImage.startsWith('/') ? dbImage : '/' + dbImage;
+    return cleanPath.includes('/images/') ? cleanPath : `/images${cleanPath}`;
+  }
+
   goToBooking(staffId: number): void {
     this.router.navigate(['/booking'], { 
       queryParams: { staffId: staffId } 
@@ -86,8 +92,8 @@ export class StaffCardComponent implements OnInit {
 
     if (staffMember.imageUrl === absoluteDefault) return;
 
-    if (staffMember.imageUrl !== staffMember.assignedFallback) {
-      staffMember.imageUrl = staffMember.assignedFallback;
+    if (staffMember.imageUrl !== staffMember.fallbackImg) {
+      staffMember.imageUrl = staffMember.fallbackImg;
     } else {
       staffMember.imageUrl = absoluteDefault;
     }

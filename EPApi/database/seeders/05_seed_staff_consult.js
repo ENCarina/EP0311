@@ -1,16 +1,51 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const pivotData = [
-      { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 1, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 1, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 2, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 2, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 3, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
-      { staffId: 3, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
-    ];
+    await queryInterface.bulkDelete('staff_consult', null, {});
+
+    const [staffRows] = await queryInterface.sequelize.query(`
+      SELECT staff.id, staff.specialty
+      FROM staff
+      INNER JOIN users ON users.id = staff.userId
+      WHERE users.roleId = 1
+      ORDER BY staff.id ASC
+    `);
+    const [consultationRows] = await queryInterface.sequelize.query('SELECT id, specialty, name FROM consultations ORDER BY id ASC');
+
+    const specialtyMap = {
+      'Kardiológus': 'Kardiológia',
+      'Fogorvos': 'Fogászat',
+      'Pszichiáter': 'Pszichiátria',
+      'Szemész': 'Szemészet',
+      'Nőgyógyász': 'Nőgyógyászat',
+      'Bőrgyógyász': 'Bőrgyógyászat',
+      'Neurológus': 'Neurológia',
+      'Ortopéd': 'Ortopédia',
+      'Urológus': 'Urológia',
+      'Endokrinológus': 'Endokrinológia',
+      'Pulmonológus': 'Pulmonológia',
+      'Fül-orr-gégész': 'Fül-orr-gégészet',
+      'Gasztroenterológus': 'Gasztroenterológia',
+      'Reumatológus': 'Reumatológia',
+      'Diabetológus': 'Diabetológia'
+    };
+
+    const generalConsultations = consultationRows.filter((consultation) => consultation.specialty === 'Általános');
+    const pivotData = [];
+
+    for (const staff of staffRows) {
+      const specialtyName = specialtyMap[staff.specialty] || staff.specialty;
+      const specialtyConsultations = consultationRows.filter((consultation) => consultation.specialty === specialtyName);
+
+      for (const consultation of [...specialtyConsultations, ...generalConsultations]) {
+        pivotData.push({
+          staffId: staff.id,
+          consultationId: consultation.id,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+    }
+
     await queryInterface.bulkInsert('staff_consult', pivotData);
   },
   down: async (queryInterface, Sequelize) => {

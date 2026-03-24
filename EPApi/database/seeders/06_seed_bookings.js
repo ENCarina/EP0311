@@ -1,62 +1,50 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Lekérdezzük a szükséges id-kat
-    const [users] = await queryInterface.sequelize.query("SELECT id, name FROM users");
-    const [staff] = await queryInterface.sequelize.query("SELECT id FROM staff ORDER BY id ASC");
-    const [consultations] = await queryInterface.sequelize.query("SELECT id FROM consultations ORDER BY id ASC");
-    const [slots] = await queryInterface.sequelize.query("SELECT id FROM slots ORDER BY id ASC");
+    await queryInterface.bulkDelete('bookings', null, {});
 
-    // Keresünk egy patientId-t (pl. User1)
-    const patient = users.find(u => u.name === 'User1' || u.name === 'User');
-    const patientId = patient ? patient.id : users[0].id;
+    const [users] = await queryInterface.sequelize.query("SELECT id, name FROM users WHERE roleId = (SELECT id FROM roles WHERE name = 'user') ORDER BY id ASC");
+    const [consultations] = await queryInterface.sequelize.query('SELECT id, name, duration, price FROM consultations ORDER BY id ASC');
+    const [slots] = await queryInterface.sequelize.query('SELECT id, staffId, consultationId, date, startTime, endTime FROM slots ORDER BY date ASC, startTime ASC, staffId ASC');
 
-    const bookingData = [
-      {
-        name: 'Kardiológiai vizsgálat',
-        patientId: patientId,
-        staffId: staff[0]?.id,
-        consultationId: consultations[0]?.id,
-        slotId: slots[0]?.id,
-        status: 'Confirmed',
-        duration: 30,
-        startTime: '2026-03-10T08:00:00.000Z',
-        endTime: '2026-03-10T08:30:00.000Z',
-        price: 25000,
-        isPublic: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        name: 'Parandontológiai kiműtét',
-        patientId: patientId,
-        staffId: staff[1]?.id,
-        consultationId: consultations[1]?.id,
-        slotId: slots[1]?.id,
-        status: 'Confirmed',
-        duration: 60,
-        startTime: '2026-03-11T09:00:00.000Z',
-        endTime: '2026-03-11T10:00:00.000Z',
-        price: 15000,
-        isPublic: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        name: 'Pszichiátriai első konzultáció',
-        patientId: patientId,
-        staffId: staff[2]?.id,
-        consultationId: consultations[2]?.id,
-        slotId: slots[2]?.id,
-        status: 'Confirmed',
-        duration: 60,
-        startTime: '2026-03-10T10:00:00.000Z',
-        endTime: '2026-03-10T11:00:00.000Z',
-        price: 35000,
-        isPublic: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
+    const patients = users.slice(0, 4);
+    const bookedStaff = new Set();
+    const bookingData = [];
+
+    for (const slot of slots) {
+      if (bookedStaff.has(slot.staffId)) {
+        continue;
       }
-    ];
+
+      const consultation = consultations.find((item) => Number(item.id) === Number(slot.consultationId));
+      const patient = patients[bookingData.length % patients.length];
+
+      if (!consultation || !patient) {
+        continue;
+      }
+
+      bookingData.push({
+        name: consultation.name,
+        patientId: patient.id,
+        staffId: slot.staffId,
+        consultationId: slot.consultationId,
+        slotId: slot.id,
+        status: 'Confirmed',
+        duration: consultation.duration,
+        startTime: `${slot.date}T${slot.startTime}`,
+        endTime: `${slot.date}T${slot.endTime}`,
+        price: consultation.price,
+        isPublic: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      bookedStaff.add(slot.staffId);
+
+      if (bookingData.length >= 8) {
+        break;
+      }
+    }
+
     await queryInterface.bulkInsert('bookings', bookingData);
     // Frissítjük a slotokat
     const slotIds = bookingData.map(b => b.slotId).filter(Boolean);
