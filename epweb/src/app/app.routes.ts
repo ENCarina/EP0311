@@ -11,6 +11,7 @@ import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { authGuard } from './auth-guard';
 import { UserListComponent } from './admin/user-list/user-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { DoctorCalendarComponent } from './doctor-calendar/doctor-calendar.component';
 
 
 export const routes: Routes = [
@@ -19,6 +20,7 @@ export const routes: Routes = [
     { path: 'home', component:HomeComponent },
     { path: 'dashboard', redirectTo: 'sajat-foglalasaim', pathMatch: 'full' },
     { path: 'sajat-foglalasaim', component: DashboardComponent, canActivate: [authGuard] },
+    { path: 'naptaram', component: DoctorCalendarComponent, canActivate: [authGuard] },
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent },
     { path: 'verify-email/:token', component: VerifyEmailComponent},
