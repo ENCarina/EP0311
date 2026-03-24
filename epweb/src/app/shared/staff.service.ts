@@ -33,6 +33,11 @@ export class StaffService {
     getAllUsers() {
         return this.http.get(`${this.baseUrl}/users`);
     }
+
+    getPatients() {
+        return this.http.get(`${this.baseUrl}/patients`);
+    }
+
     archiveUser(id: number) {
         return this.http.delete(`${this.baseUrl}/users/${id}`);
     }

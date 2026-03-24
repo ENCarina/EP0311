@@ -8,6 +8,38 @@ export const BookingService = {
         try {
             t = await db.sequelize.transaction();
 
+            let patientId = bookingData.patientId || (user ? user.id : null);
+            let bookingStaffId = Number(bookingData.staffId);
+
+            if (user?.roleId === 0) {
+                patientId = user.id;
+            }
+
+            if (user?.roleId === 1) {
+                const ownStaffProfile = await db.Staff.findOne({
+                    where: { userId: user.id },
+                    transaction: t
+                });
+
+                if (!ownStaffProfile) {
+                    throw new Error('Az orvos profil nem található!');
+                }
+
+                if (!patientId) {
+                    throw new Error('Páciens kiválasztása kötelező!');
+                }
+
+                bookingStaffId = ownStaffProfile.id;
+            }
+
+            const patient = patientId
+                ? await db.User.findByPk(patientId, { transaction: t })
+                : null;
+
+            if (!patient || patient.roleId !== 0 || patient.isActive === false) {
+                throw new Error('A kiválasztott páciens nem foglalható!');
+            }
+
             const slot = await db.Slot.findByPk(bookingData.slotId, { transaction: t });
 
             if (!slot) {
@@ -17,9 +49,14 @@ export const BookingService = {
                 throw new Error('Ez az időpont már foglalt!');
             }
 
+            if (bookingStaffId && Number(slot.staffId) !== Number(bookingStaffId)) {
+                throw new Error('A kiválasztott időpont nem ehhez a szakemberhez tartozik!');
+            }
+
             const newBooking = await db.Booking.create({
                 ...bookingData,
-                patientId: bookingData.patientId || (user ? user.id : null),
+                patientId,
+                staffId: Number(slot.staffId),
                 startTime: bookingData.startTime || slot.startTime,
                 date: bookingData.date || slot.date,
                 duration: bookingData.duration || slot.duration || 30,
@@ -44,8 +81,10 @@ export const BookingService = {
                 emailData.appointment_date = "Időpont visszaigazolás alatt";
             }
 
-            if (EmailService && user?.email) {
-                EmailService.sendBookingConfirmation(user.email, emailData).catch(err => {
+            const confirmationEmail = patient?.email || user?.email;
+
+            if (EmailService && confirmationEmail) {
+                EmailService.sendBookingConfirmation(confirmationEmail, emailData).catch(err => {
                     console.error('E-mail hiba:', err);
                 });
             }

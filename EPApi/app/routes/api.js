@@ -21,6 +21,7 @@ router.put('/profile/update', [verifyToken], UserController.updateMyProfile);
 
 // --- USERS (Admin) ---
 router.get('/users', [verifyToken, checkRole(2)], UserController.index);
+router.get('/patients', [verifyToken, checkRole(1)], UserController.listPatients);
 router.get('/users/:id', [verifyToken], UserController.show);
 // Fontos: Itt 'update', 'updatePassword', stb. kell, nem 'tryUpdate'!
 router.post('/users/:id/password', [verifyToken, checkRole(2)], UserController.updatePassword);

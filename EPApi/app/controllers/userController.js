@@ -20,6 +20,23 @@ const UserController = {
         }
     },
 
+    async listPatients(req, res) {
+        try {
+            const patients = await User.findAll({
+                where: {
+                    roleId: 0,
+                    isActive: true
+                },
+                attributes: ['id', 'name', 'email'],
+                order: [['name', 'ASC']]
+            });
+
+            res.status(200).json({ success: true, data: patients });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Hiba a páciensek lekérdezésekor!', details: error.message });
+        }
+    },
+
     // --- EGY FELHASZNÁLÓ RÉSZLETEI ---
     async show(req, res) {
         try {

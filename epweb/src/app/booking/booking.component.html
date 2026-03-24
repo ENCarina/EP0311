@@ -25,19 +25,44 @@
             <label class="form-label small fw-semibold text-muted">
               <i class="bi bi-person-badge me-1"></i>Szakember
             </label>
-            <select class="form-select border-light-subtle shadow-sm"
-                    [(ngModel)]="selectedStaffId"
-                    (change)="onStaffChange()"
-                    name="staffSelector">
-              <option [ngValue]="null" disabled>— Válasszon orvost —</option>
-              @for (staff of staffs; track staff.id) {
-                <option [ngValue]="staff.id">{{ getStaffLabel(staff) }}</option>
-              }
-            </select>
+            @if (isDoctorBooking) {
+              <input
+                type="text"
+                class="form-control border-light-subtle shadow-sm"
+                [value]="selectedStaffName"
+                readonly>
+            } @else {
+              <select class="form-select border-light-subtle shadow-sm"
+                      [(ngModel)]="selectedStaffId"
+                      (change)="onStaffChange()"
+                      name="staffSelector">
+                <option [ngValue]="null" disabled>— Válasszon orvost —</option>
+                @for (staff of staffs; track staff.id) {
+                  <option [ngValue]="staff.id">{{ getStaffLabel(staff) }}</option>
+                }
+              </select>
+            }
             @if (selectedStaffId && selectedStaffName) {
               <div class="form-text">Kiválasztott: <strong>{{ selectedStaffName }}</strong></div>
             }
           </div>
+
+          @if (isDoctorBooking) {
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">
+                <i class="bi bi-person me-1"></i>Páciens
+              </label>
+              <select class="form-select border-light-subtle shadow-sm"
+                      [(ngModel)]="selectedPatientId"
+                      name="patientSelector">
+                <option [ngValue]="null" disabled>— Válasszon pácienst —</option>
+                @for (patient of patients; track patient.id) {
+                  <option [ngValue]="patient.id">{{ patient.name }} - {{ patient.email }}</option>
+                }
+              </select>
+              <div class="form-text">Az időpont a kiválasztott regisztrált pácienshez lesz rögzítve.</div>
+            </div>
+          }
 
           <div class="mb-3">
             <label class="form-label small fw-semibold text-muted">
@@ -55,7 +80,7 @@
 
           <button class="btn btn-elit w-100 mt-3 rounded-pill py-2 shadow-sm"
                   (click)="loadSlots()"
-                  [disabled]="isLoading || !selectedStaffId || !selectedConsultationId">
+                  [disabled]="isLoading || !selectedStaffId || !selectedConsultationId || (isDoctorBooking && !selectedPatientId)">
             @if (isLoading) {
               <span class="spinner-border spinner-border-sm me-2"></span>Frissítés...
             } @else {

@@ -1,7 +1,7 @@
 <section class="dashboard-wrapper py-4">
   <div class="container">
     <div class="dashboard-header mb-4">
-      <h1 class="fw-bold mb-1">Saját foglalásaim</h1>
+      <h1 class="fw-bold mb-1">{{ getDashboardTitle() }}</h1>
       <p class="text-muted mb-0">Üdvözöljük, {{ authService.getUserName() }}!</p>
     </div>
 
@@ -11,59 +11,73 @@
 
     <div class="dashboard-grid stats-grid mb-4">
       <article class="dashboard-card stat-card">
-        <h3>Saját foglalások száma</h3>
+        <h3>{{ getTotalBookingsLabel() }}</h3>
         <p class="dashboard-number">{{ totalBookings }}</p>
         @if (totalBookings === 0) {
-          <p class="empty-hint">Még nincs foglalása.</p>
+          <p class="empty-hint">{{ isDoctorView() ? 'Még nincs hozzád foglalt időpont.' : 'Még nincs foglalása.' }}</p>
         }
       </article>
 
       <article class="dashboard-card stat-card">
-        <h3>Közelgő időpontok száma</h3>
+        <h3>{{ getUpcomingBookingsLabel() }}</h3>
         <p class="dashboard-number">{{ upcomingBookingsCount }}</p>
         @if (upcomingBookingsCount === 0) {
-          <p class="empty-hint">Nincs közelgő időpont.</p>
+          <p class="empty-hint">{{ isDoctorView() ? 'Nincs közelgő foglalás hozzád.' : 'Nincs közelgő időpont.' }}</p>
         }
       </article>
 
       <article class="dashboard-card stat-card">
-        <h3>Legutóbbi foglalás dátuma</h3>
-        @if (latestBookingDateLabel) {
-          <p class="dashboard-number dashboard-number-small">{{ latestBookingDateLabel }}</p>
+        <h3>{{ getThirdStatLabel() }}</h3>
+        @if (isDoctorView()) {
+          <p class="dashboard-number">{{ uniquePatientsCount }}</p>
         } @else {
-          <p class="empty-hint">Még nincs foglalása.</p>
+          @if (latestBookingDateLabel) {
+            <p class="dashboard-number dashboard-number-small">{{ latestBookingDateLabel }}</p>
+          } @else {
+            <p class="empty-hint">Még nincs foglalása.</p>
+          }
         }
       </article>
 
       <article class="dashboard-card stat-card">
-        <h3>Kedvenc szolgáltatás</h3>
-        @if (favoriteServiceName) {
-          <p class="dashboard-number dashboard-number-small">{{ favoriteServiceName }}</p>
+        <h3>{{ isDoctorView() ? 'Legutóbbi foglalás dátuma' : 'Kedvenc szolgáltatás' }}</h3>
+        @if (isDoctorView()) {
+          @if (latestBookingDateLabel) {
+            <p class="dashboard-number dashboard-number-small">{{ latestBookingDateLabel }}</p>
+          } @else {
+            <p class="empty-hint">Még nincs foglalás hozzád.</p>
+          }
         } @else {
-          <p class="empty-hint">Még nincs elég adat a statisztikához.</p>
+          @if (favoriteServiceName) {
+            <p class="dashboard-number dashboard-number-small">{{ favoriteServiceName }}</p>
+          } @else {
+            <p class="empty-hint">Még nincs elég adat a statisztikához.</p>
+          }
         }
       </article>
     </div>
 
     <div class="dashboard-grid booking-panels mb-4">
-      <article class="dashboard-card">
-        <h3>Leggyakoribb szolgáltatásai</h3>
-        @if (topServices.length > 0) {
-          <div class="ranking-list">
-            @for (item of topServices; track item.name) {
-              <div class="ranking-row">
-                <span>{{ item.name }}</span>
-                <strong>{{ item.count }}</strong>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="empty-state">Még nincs elég adat a statisztikához.</p>
-        }
-      </article>
+      @if (isPatientView()) {
+        <article class="dashboard-card">
+          <h3>Leggyakoribb szolgáltatásai</h3>
+          @if (topServices.length > 0) {
+            <div class="ranking-list">
+              @for (item of topServices; track item.name) {
+                <div class="ranking-row">
+                  <span>{{ item.name }}</span>
+                  <strong>{{ item.count }}</strong>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">Még nincs elég adat a statisztikához.</p>
+          }
+        </article>
+      }
 
       <article class="dashboard-card" id="upcomingAppointmentsBlock">
-        <h3>Közelgő időpontjaim</h3>
+        <h3>{{ getUpcomingSectionTitle() }}</h3>
         @if (upcomingAppointments.length > 0) {
           <div class="upcoming-list">
             @for (item of upcomingAppointments; track item.dateLabel + item.timeLabel + item.serviceName) {
@@ -80,12 +94,12 @@
             }
           </div>
         } @else {
-          <p class="empty-state">Nincs közelgő időpont.</p>
+          <p class="empty-state">{{ isDoctorView() ? 'Nincs közelgő foglalás hozzád.' : 'Nincs közelgő időpont.' }}</p>
         }
       </article>
 
       <article class="dashboard-card" id="allBookingsBlock">
-        <h3>Összes foglalásom</h3>
+        <h3>{{ getAllBookingsTitle() }}</h3>
         @if (allBookings.length > 0) {
           <div class="booking-list">
             @for (booking of allBookings; track booking.id) {
@@ -93,76 +107,85 @@
                 <div class="booking-main">
                   <strong>{{ getBookingServiceName(booking) }}</strong>
                   <span>{{ formatDate(getBookingSlot(booking)?.date || booking.date) }} {{ formatTime(getBookingSlot(booking)?.startTime || booking.startTime) }}</span>
-                  <small>{{ getDoctorName(booking) }}</small>
+                  <small>{{ getBookingPersonLabel(booking) }}</small>
+                  @if (isDoctorView() && getPatientEmail(booking)) {
+                    <small>{{ getPatientEmail(booking) }}</small>
+                  }
                 </div>
                 <div class="booking-meta">
                   <span>{{ getBookingPrice(booking) }} Ft</span>
-                  <button
-                    type="button"
-                    class="cancel-inline-btn"
-                    [disabled]="!canCancelBooking(booking) || cancellingBooking"
-                    (click)="cancelBooking(booking)">
-                    Lemondás
-                  </button>
-                  <small>{{ getCancellationHint(booking) }}</small>
+                  @if (isPatientView()) {
+                    <button
+                      type="button"
+                      class="cancel-inline-btn"
+                      [disabled]="!canCancelBooking(booking) || cancellingBooking"
+                      (click)="cancelBooking(booking)">
+                      Lemondás
+                    </button>
+                    <small>{{ getCancellationHint(booking) }}</small>
+                  }
                 </div>
               </div>
             }
           </div>
         } @else {
-          <p class="empty-state">Még nincs foglalása.</p>
+          <p class="empty-state">{{ isDoctorView() ? 'Még nincs hozzád foglalás.' : 'Még nincs foglalása.' }}</p>
         }
       </article>
     </div>
 
-    <article class="dashboard-card mb-4">
-      <h3>Szolgáltatáslista gyors foglaláshoz</h3>
-      <p class="text-muted small mb-3">Keresés név vagy szakterület szerint, majd egy kattintással tovább a foglaláshoz.</p>
+    @if (isPatientView()) {
+      <article class="dashboard-card mb-4">
+        <h3>Szolgáltatáslista gyors foglaláshoz</h3>
+        <p class="text-muted small mb-3">Keresés név vagy szakterület szerint, majd egy kattintással tovább a foglaláshoz.</p>
 
-      <div class="filter-row mb-3">
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="serviceSearchTerm"
-          (ngModelChange)="updateConsultationFilter()"
-          placeholder="Keresés szolgáltatás vagy szakterület szerint">
+        <div class="filter-row mb-3">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="serviceSearchTerm"
+            (ngModelChange)="updateConsultationFilter()"
+            placeholder="Keresés szolgáltatás vagy szakterület szerint">
 
-        <select
-          class="form-select"
-          [(ngModel)]="selectedSpecialty"
-          (ngModelChange)="updateConsultationFilter()">
-          <option value="">Minden szakterület</option>
-          @for (specialty of consultationSpecialties; track specialty) {
-            <option [value]="specialty">{{ specialty }}</option>
-          }
-        </select>
-      </div>
-
-      @if (filteredConsultations.length > 0) {
-        <div class="service-list">
-          @for (service of filteredConsultations; track service.id) {
-            <button type="button" class="service-item" (click)="startQuickBooking(service.id)">
-              <div class="service-main">
-                <strong>{{ service.name }}</strong>
-                <span>{{ service.specialty }}</span>
-              </div>
-              <div class="service-meta">
-                <span>{{ service.duration }} perc</span>
-                <span>{{ formatPrice(service.price) }} Ft</span>
-              </div>
-            </button>
-          }
+          <select
+            class="form-select"
+            [(ngModel)]="selectedSpecialty"
+            (ngModelChange)="updateConsultationFilter()">
+            <option value="">Minden szakterület</option>
+            @for (specialty of consultationSpecialties; track specialty) {
+              <option [value]="specialty">{{ specialty }}</option>
+            }
+          </select>
         </div>
-      } @else {
-        <p class="empty-state">Nincs találat a keresési feltételekre.</p>
-      }
-    </article>
+
+        @if (filteredConsultations.length > 0) {
+          <div class="service-list">
+            @for (service of filteredConsultations; track service.id) {
+              <button type="button" class="service-item" (click)="startQuickBooking(service.id)">
+                <div class="service-main">
+                  <strong>{{ service.name }}</strong>
+                  <span>{{ service.specialty }}</span>
+                </div>
+                <div class="service-meta">
+                  <span>{{ service.duration }} perc</span>
+                  <span>{{ formatPrice(service.price) }} Ft</span>
+                </div>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="empty-state">Nincs találat a keresési feltételekre.</p>
+        }
+      </article>
+    }
 
     <article class="dashboard-card">
-      <h3>Gyors műveletek</h3>
+      <h3>{{ isDoctorView() ? 'Gyors áttekintés' : 'Gyors műveletek' }}</h3>
       <div class="quick-actions">
-        <button type="button" class="quick-btn" (click)="onStartBooking()">Új időpont foglalása</button>
-        <button type="button" class="quick-btn" (click)="scrollToUpcoming()">Időpontjaim megtekintése</button>
+        @if (isPatientView()) {
+          <button type="button" class="quick-btn" (click)="onStartBooking()">Új időpont foglalása</button>
+        }
+        <button type="button" class="quick-btn" (click)="scrollToUpcoming()">{{ isDoctorView() ? 'Közelgő páciensek' : 'Időpontjaim megtekintése' }}</button>
         <button type="button" class="quick-btn" (click)="openProfileQuickView()">Profil megnyitása</button>
         <button type="button" class="quick-btn secondary" (click)="refreshDashboard()">Frissítés</button>
       </div>

@@ -22,6 +22,7 @@ export class DashboardComponent implements OnInit {
 
   protected totalBookings = 0;
   protected upcomingBookingsCount = 0;
+  protected uniquePatientsCount = 0;
   protected latestBookingDateLabel = '';
   protected favoriteServiceName = '';
   protected allBookings: any[] = [];
@@ -111,6 +112,50 @@ export class DashboardComponent implements OnInit {
     return new Intl.NumberFormat('hu-HU', { maximumFractionDigits: 0 }).format(value || 0);
   }
 
+  protected isDoctorView(): boolean {
+    return this.authService.getRoleId() === 1;
+  }
+
+  protected isPatientView(): boolean {
+    return this.authService.getRoleId() === 0;
+  }
+
+  protected getDashboardTitle(): string {
+    return this.isDoctorView() ? 'Saját pácienseim' : 'Saját foglalásaim';
+  }
+
+  protected getTotalBookingsLabel(): string {
+    return this.isDoctorView() ? 'Hozzám foglalt időpontok száma' : 'Saját foglalások száma';
+  }
+
+  protected getUpcomingBookingsLabel(): string {
+    return this.isDoctorView() ? 'Közelgő páciensek száma' : 'Közelgő időpontok száma';
+  }
+
+  protected getThirdStatLabel(): string {
+    return this.isDoctorView() ? 'Pácienseim száma' : 'Legutóbbi foglalás dátuma';
+  }
+
+  protected getUpcomingSectionTitle(): string {
+    return this.isDoctorView() ? 'Hozzám foglalt közelgő időpontok' : 'Közelgő időpontjaim';
+  }
+
+  protected getAllBookingsTitle(): string {
+    return this.isDoctorView() ? 'Összes hozzám foglalt időpont' : 'Összes foglalásom';
+  }
+
+  protected getBookingPersonLabel(booking: any): string {
+    return this.isDoctorView() ? this.getPatientName(booking) : this.getDoctorName(booking);
+  }
+
+  protected getPatientName(booking: any): string {
+    return booking?.patient?.name || booking?.patient?.email || 'Páciens';
+  }
+
+  protected getPatientEmail(booking: any): string {
+    return booking?.patient?.email || '';
+  }
+
   private loadDashboardData(): void {
     this.loadingDashboard = true;
     this.dashboardError = '';
@@ -139,6 +184,7 @@ export class DashboardComponent implements OnInit {
         this.totalBookings = bookingsData.length;
         this.upcomingAppointments = this.computeUpcomingAppointments(bookingsData);
         this.upcomingBookingsCount = this.upcomingAppointments.length;
+  this.uniquePatientsCount = this.computeUniquePatientsCount(bookingsData);
         this.latestBookingDateLabel = this.computeLatestBookingDate(bookingsData);
 
         this.topServices = this.computeTopServices(bookingsData);
@@ -157,6 +203,10 @@ export class DashboardComponent implements OnInit {
   }
 
   protected cancelBooking(booking: any): void {
+    if (this.isDoctorView()) {
+      return;
+    }
+
     const bookingId = Number(booking?.id);
     if (!bookingId) {
       return;
@@ -226,6 +276,16 @@ export class DashboardComponent implements OnInit {
   protected getBookingPrice(booking: any): string {
     const price = booking.treatment?.price || booking.type?.price || booking.price || 0;
     return this.formatPrice(Number(price));
+  }
+
+  private computeUniquePatientsCount(bookingsData: any[]): number {
+    const uniquePatients = new Set(
+      bookingsData
+        .map((booking: any) => booking?.patient?.email || booking?.patient?.name || '')
+        .filter((value: string) => !!value)
+    );
+
+    return uniquePatients.size;
   }
 
   private computeTopServices(bookingsData: any[]): Array<{ name: string; count: number }> {
