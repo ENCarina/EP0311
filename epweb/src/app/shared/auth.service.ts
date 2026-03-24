@@ -44,7 +44,7 @@ export class AuthService {
     const url = this.host + 'login'
     return this.http.post(url, user).pipe(
       tap((response: any) => {
-        const token = response.accessToken || response.token;
+        const token = response.token;
         const userId = response.id || (response.user ? response.user.id : null) || (response.data ? response.data.id : null);
         const roleId = response.roleId !== undefined ? response.roleId : (response.user ? response.user.roleId : null);      
 
@@ -91,7 +91,7 @@ export class AuthService {
   if (!userData) return null;
   try {
     const user = JSON.parse(userData);
-    return user.id || user.userId || null;
+    return user.id || user.userId || user.user?.id || user.data?.id || null;
   } catch (e) {
     return null;
   }
@@ -102,9 +102,23 @@ export class AuthService {
     return role !== null ? role : 0; 
     } 
   getUserName(): string {
-    const userJson = localStorage.getItem('user');
     if (this.isBrowser) {
-      return localStorage.getItem('userName') || 'Nincs bejelentkezve';
+      const storedUserName = localStorage.getItem('userName');
+      if (storedUserName) {
+        return storedUserName;
+      }
+
+      const userJson = localStorage.getItem('user');
+      if (!userJson) {
+        return 'Nincs bejelentkezve';
+      }
+
+      try {
+        const user = JSON.parse(userJson);
+        return user.name || user.user?.name || user.data?.name || 'Nincs bejelentkezve';
+      } catch {
+        return 'Nincs bejelentkezve';
+      }
     }
     return 'Betöltés...';
   }
@@ -113,7 +127,7 @@ export class AuthService {
 
     return this.http.post(url, user).pipe(
       tap((response: any) => {
-        const token = response.token || response.accessToken;
+        const token = response.token;
 
           if (this.isBrowser && response.success && token) {
             localStorage.setItem('token', token);

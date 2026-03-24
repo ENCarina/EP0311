@@ -39,11 +39,6 @@ export class LoginComponent {
 
   this.auth.login(loginPayload).subscribe({
     next: (res: any) => {
-      if (res.accessToken) {
-        localStorage.setItem('token', res.accessToken);
-        localStorage.setItem('user', JSON.stringify(res)); 
-
-      }
       const role = res.roleId !== undefined ? res.roleId : (res.user?.roleId);
       const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/booking';
       const staffId = this.route.snapshot.queryParams['staffId'];

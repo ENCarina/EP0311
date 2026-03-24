@@ -5,15 +5,16 @@ import fs from 'fs'
 import router from './routes/api.js'
 import './models/modrels.js'
 import { UPLOAD_PATH } from './utils/paths.js'
-import sequelize from './database/database.js'
+import sequelize, { ensureSqliteCompatibility } from './database/database.js'
 
 
 const app = express()
 
-// Adatbázis szinkronizálása
-sequelize.sync({ force: false})
-  .then(() => console.log('db kész'))
-  .catch(err => console.log('Hiba a sync során: ', err));
+export async function initializeDatabase() {
+    await sequelize.sync({ force: false });
+    await ensureSqliteCompatibility();
+    console.log('db kész');
+}
 
 const logfile = 'access.log'
 var accessLogStream = fs.createWriteStream(logfile, { flags: 'a' })

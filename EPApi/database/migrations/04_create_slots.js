@@ -1,62 +1,55 @@
-import { DataTypes } from 'sequelize';
 
-async function up({context: QueryInterface}) {
-  await QueryInterface.createTable('slots', {
-    id: {
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-      type: DataTypes.INTEGER
-    },
-    staffId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'staff', 
-        key: 'id'
+
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('slots', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
       },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE'
-    },
-
-  consultationId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'consultations',
-      key: 'id'
+      staffId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'staff', 
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      consultationId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'consultations',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
+      date: {
+        type: Sequelize.DATEONLY,
+        allowNull: false
+      },
+      startTime: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      endTime: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      isAvailable: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
+      },
+      createdAt: { type: Sequelize.DATE },
+      updatedAt: { type: Sequelize.DATE }
+    });
   },
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('slots');
   },
-
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
-    },
-   
-  startTime: {
-    type: DataTypes.STRING,
-    allowNull: false
-    },
-    
-  endTime: {
-    type: DataTypes.STRING,
-    allowNull: false
-    },
-
-  isAvailable: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-    },
-    
-  createdAt: { type: DataTypes.DATE },
-  updatedAt: { type: DataTypes.DATE }    
-  });
-}
-
-async function down({context: QueryInterface}) {
-  await QueryInterface.dropTable('slots');
-}
-
-export { up, down }
+};

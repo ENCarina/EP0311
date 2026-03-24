@@ -19,6 +19,7 @@ const User = sequelize.define('user', {
     },
     verificationToken: { type: DataTypes.STRING, allowNull: true },
     verified: { type: DataTypes.BOOLEAN, defaultValue: false },
+    isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 }, {
     timestamps: true,    
     freezeTableName: true,

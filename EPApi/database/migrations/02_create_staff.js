@@ -1,64 +1,58 @@
-import { DataTypes, Sequelize } from 'sequelize';
+"use strict";
 
-async function up({ context: QueryInterface }) { 
-  await QueryInterface.createTable('staff', {
-    id: {
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-      type: DataTypes.INTEGER
-    }, 
-
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users', 
-        key: 'id'
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('staff', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
       },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE'
-    },
-    
-    role: {
-      type: DataTypes.ENUM('admin', 'doctor', 'staff', 'user'),
-      defaultValue: 'staff'
-    }, 
-
-    specialty: {
-      type: DataTypes.STRING,
-      allowNull: true 
-    },
-    isAvailable: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-    
-    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
-
-    bio: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    imageUrl: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    createdAt: { 
-      allowNull: false, 
-      type: DataTypes.DATE,
-      defaultValue: new Date() 
-    },
-    updatedAt: { 
-      allowNull: false, 
-      type: DataTypes.DATE,
-      defaultValue: new Date() 
-    }    
-  });
-}
-
-async function down({ context: QueryInterface }) {
-  await QueryInterface.dropTable('staff');
-}
-
-export { up, down };
+      userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      role: {
+        type: Sequelize.ENUM('admin', 'doctor', 'staff', 'user'),
+        defaultValue: 'staff'
+      },
+      specialty: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      isAvailable: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
+      },
+      isActive: { type: Sequelize.BOOLEAN, defaultValue: true },
+      bio: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
+      imageUrl: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      }
+    });
+  },
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('staff');
+  },
+};

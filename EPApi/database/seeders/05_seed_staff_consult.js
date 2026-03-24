@@ -1,21 +1,22 @@
-import db from '../../app/models/modrels.js';
-
-async function up({context: QueryInterface}) {
-  const pivotData = [
-    { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() }, // Dr. Kovács - Kardiológia
-    { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() }, // Dr. Tóth - Fogászat
-    { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() }, // Dr. House - Pszichiátria
-  ];
-
-  if(db && db.staff_consult) {
-    await db.staff_consult.bulkCreate(pivotData);
-  } else {
-    await QueryInterface.bulkInsert('staff_consult', pivotData);
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    // Lekérdezzük a staff és consultation id-kat
+    const [staff] = await queryInterface.sequelize.query('SELECT id FROM staff ORDER BY id ASC');
+    const [consultations] = await queryInterface.sequelize.query('SELECT id FROM consultations ORDER BY id ASC');
+    // Feltételezzük, hogy 1:1 hozzárendelés (mint az eredeti seedben)
+    const minLen = Math.min(staff.length, consultations.length);
+    const pivotData = [];
+    for (let i = 0; i < minLen; i++) {
+      pivotData.push({
+        staffId: staff[i].id,
+        consultationId: consultations[i].id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+    await queryInterface.bulkInsert('staff_consult', pivotData);
+  },
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete('staff_consult', null, {});
   }
-}
-
-async function down({context: QueryInterface}) {
-  await QueryInterface.bulkDelete('staff_consult', null, {});
-}
-
-export { up, down }
+};

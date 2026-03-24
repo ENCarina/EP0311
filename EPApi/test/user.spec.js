@@ -29,7 +29,7 @@ describe('/api/register and /api/login', () => {
         })
         .expect('Content-Type', restype)
         .expect(200)
-        token = res.body.accessToken
+        token = res.body.token
         if(!token) {
           throw new Error('No token')
         }        

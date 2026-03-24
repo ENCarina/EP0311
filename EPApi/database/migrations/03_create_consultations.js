@@ -1,42 +1,41 @@
-import { DataTypes, Sequelize } from 'sequelize';
+"use strict";
 
-async function up({context: QueryInterface}) {
-  await QueryInterface.createTable('consultations', {
-    id: {
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-      type: DataTypes.INTEGER
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-     specialty: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 30
-    },
-    price: {
-      type: DataTypes.DECIMAL(10,2),
-      allowNull: false,
-      defaultValue: 0.00
-    },
-    createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')},
-    updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }    
-  });
-}
-
-async function down({context: QueryInterface}) {
-  await QueryInterface.dropTable('consultations');
-}
-
-export { up, down }
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('consultations', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      specialty: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      duration: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 30
+      },
+      price: {
+        type: Sequelize.DECIMAL(10,2),
+        allowNull: false,
+        defaultValue: 0.00
+      },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')},
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
+    });
+  },
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('consultations');
+  },
+};

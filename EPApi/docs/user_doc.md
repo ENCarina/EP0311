@@ -74,7 +74,7 @@ All endpoint have a /api prefix.
 }
 ```
 
-You receive the bearear token with accessToken key.
+You receive the bearer token with token key.
 
 ## The users endpoint
 

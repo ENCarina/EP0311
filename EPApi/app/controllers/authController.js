@@ -86,8 +86,7 @@ const AuthController = {
             }
 
             const user = await User.findOne({ where: { email } });
-            
-            if (!user || !user.isActive) {
+            if (!user || user.isActive === false) {
                 return res.status(401).json({ success: false, message: 'Érvénytelen e-mail vagy inaktív fiók!' });
             }
 
@@ -107,7 +106,7 @@ const AuthController = {
 
             return res.status(200).json({
                 success: true,
-                accessToken: token,
+                token: token,
                 user: {
                     id: user.id,
                     name: user.name,
