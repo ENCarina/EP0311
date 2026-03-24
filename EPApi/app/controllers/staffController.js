@@ -1,16 +1,27 @@
 import db from '../models/modrels.js';
 import dotenv from 'dotenv';
-dotenv.config();
-import { Op } from 'sequelize';
 
-const { Staff, User, Consultation, Slot } = db;
+dotenv.config();
+
+const { Staff, User, Consultation } = db;
 
 const StaffController = {
-    // 1. Admin lista (Mindenki)
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
-                include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['name', 'email', 'roleId']
+                    },
+                    {
+                        model: Consultation,
+                        as: 'treatments',
+                        attributes: ['id', 'name', 'price'],
+                        through: { attributes: [] }
+                    }
+                ]
             });
             res.json({ success: true, data: staff });
         } catch (error) {
@@ -18,12 +29,14 @@ const StaffController = {
         }
     },
 
-    // 2. Publikus profilok (Csak az aktívak)
     async getPublicProfiles(req, res) {
         try {
             const staff = await Staff.findAll({
                 where: { isActive: true },
-                include: [{ model: User, as: 'user', attributes: ['name'] }]
+                include: [
+                    { model: User, as: 'user', attributes: ['name'] },
+                    { model: Consultation, as: 'treatments', attributes: ['id', 'name', 'price'], through: { attributes: [] } }
+                ]
             });
             res.json({ success: true, data: staff });
         } catch (error) {
@@ -31,11 +44,13 @@ const StaffController = {
         }
     },
 
-    // 3. Egy szakember adatai
     async show(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id, {
-                include: [{ model: User, as: 'user' }]
+                include: [
+                    { model: User, as: 'user' },
+                    { model: Consultation, as: 'treatments', through: { attributes: [] } }
+                ]
             });
             if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
             res.json({ success: true, data: staff });
@@ -44,7 +59,6 @@ const StaffController = {
         }
     },
 
-    // 4. KEZELÉSEK LEKÉRÉSE
     async getTreatmentsForStaff(req, res) {
         try {
             const { id } = req.params;
@@ -58,23 +72,19 @@ const StaffController = {
         }
     },
 
-    // 5. KEZELÉSEK HOZZÁADÁSA
     async assignTreatments(req, res) {
         try {
             const { id } = req.params;
             const { treatmentIds } = req.body;
             const staff = await Staff.findOne({ where: { userId: id } });
             if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
-            // Hozzárendelt vizsgálat
             await staff.setTreatments(treatmentIds);
-            
             res.json({ success: true, message: 'Kezelések frissítve' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 6. ELŐLÉPTETÉS
     async promoteToStaff(req, res) {
         try {
             const { userId, specialty } = req.body;
@@ -85,7 +95,6 @@ const StaffController = {
         }
     },
 
-    // 7. Mentés (Új szakember közvetlen létrehozása)
     async store(req, res) {
         try {
             const staff = await Staff.create(req.body);
@@ -95,7 +104,6 @@ const StaffController = {
         }
     },
 
-    // 8. Frissítés
     async update(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id);
@@ -110,7 +118,6 @@ const StaffController = {
         }
     },
 
-    // 9. Törlés (Fizikai törlés)
     async destroy(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id);
@@ -125,29 +132,27 @@ const StaffController = {
         }
     },
 
-    // 10. STÁTUSZ KEZELÉS (Archiválás és Visszaállítás)
     async updateStatus(req, res) {
         try {
-            const { id } = req.params; // Itt a userId-t kapjuk az Angulartól
+            const { id } = req.params;
             const { isActive } = req.body;
 
-            // Keresés userId alapján, hogy elkerüljük a 404-et
             const staffProfile = await Staff.findOne({ where: { userId: id } });
 
             if (!staffProfile) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: 'Ehhez a felhasználóhoz nem tartozik szakmai profil.' 
+                return res.status(404).json({
+                    success: false,
+                    message: 'Ehhez a felhasználóhoz nem tartozik szakmai profil.'
                 });
             }
 
             staffProfile.isActive = isActive;
             await staffProfile.save();
 
-            res.json({ 
-                success: true, 
-                message: isActive ? 'Szakember aktiválva' : 'Szakember archiválva', 
-                data: staffProfile 
+            res.json({
+                success: true,
+                message: isActive ? 'Szakember aktiválva' : 'Szakember archiválva',
+                data: staffProfile
             });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

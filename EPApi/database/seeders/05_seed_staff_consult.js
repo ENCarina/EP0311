@@ -1,19 +1,16 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Lekérdezzük a staff és consultation id-kat
-    const [staff] = await queryInterface.sequelize.query('SELECT id FROM staff ORDER BY id ASC');
-    const [consultations] = await queryInterface.sequelize.query('SELECT id FROM consultations ORDER BY id ASC');
-    // Feltételezzük, hogy 1:1 hozzárendelés (mint az eredeti seedben)
-    const minLen = Math.min(staff.length, consultations.length);
-    const pivotData = [];
-    for (let i = 0; i < minLen; i++) {
-      pivotData.push({
-        staffId: staff[i].id,
-        consultationId: consultations[i].id,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-    }
+    const pivotData = [
+      { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 1, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 1, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 2, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 2, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 3, consultationId: 4, createdAt: new Date(), updatedAt: new Date() },
+      { staffId: 3, consultationId: 5, createdAt: new Date(), updatedAt: new Date() },
+    ];
     await queryInterface.bulkInsert('staff_consult', pivotData);
   },
   down: async (queryInterface, Sequelize) => {

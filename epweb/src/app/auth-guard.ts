@@ -27,11 +27,11 @@ export const authGuard: CanActivateFn = (route, state) => {
     }
   }
 
-  if (state.url.startsWith('/dashboard')) {
-    if (userRole === 1 || userRole === 2) {
+  if (state.url.startsWith('/dashboard') || state.url.startsWith('/sajat-foglalasaim')) {
+    if (loggedIn) {
       return true;
     } else {
-      router.navigate(['/my-bookings']);
+      router.navigate(['/booking']);
       return false;
     }
   }

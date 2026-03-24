@@ -1,59 +1,85 @@
-const db = require('../../app/models/modrels.js');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('slots', null, {});
 
-    const slotsData = [];
-    const daysToGenerate = 14; // 2 hét
+    const staffConsultationMap = {
+      1: [1, 4, 5],
+      2: [2, 4, 5],
+      3: [3, 4, 5]
+    };
     const startHour = 8;
-    const endHour = 16;
+    const endHour = 21;
+    const slotDurationMinutes = 30;
 
-    // staff és consultation id-k lekérdezése
-    const [staff] = await queryInterface.sequelize.query('SELECT id FROM staff');
-    const [consultations] = await queryInterface.sequelize.query('SELECT id FROM consultations');
-    const staffConfigs = staff.map((s, i) => ({ staffId: s.id, consultationId: consultations[i % consultations.length].id }));
+    const getDaysToEndOfAugust = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    const now = new Date();
+      const endOfAugust = new Date(today.getFullYear(), 7, 31);
+      if (today > endOfAugust) {
+        endOfAugust.setFullYear(endOfAugust.getFullYear() + 1);
+      }
 
-    for (let i = 0; i < daysToGenerate; i++) {
-      const currentDate = new Date();
-      currentDate.setDate(now.getDate() + i);
-      // Hétvégéket kihagyva
+      const diffMs = endOfAugust.getTime() - today.getTime();
+      return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+    };
+
+    const toDateOnly = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const toTime = (hours, minutes) => `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+
+    const slotsData = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysToGenerate = getDaysToEndOfAugust();
+
+    for (let offset = 0; offset < daysToGenerate; offset++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + offset);
       const dayOfWeek = currentDate.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
-      // Óránkénti slotok generálása
-      for (let hour = startHour; hour < endHour; hour++) {
-        const config = staffConfigs[Math.floor(Math.random() * staffConfigs.length)];
-        const startTime = `${hour.toString().padStart(2, '0')}:00:00`;
-        const endTime = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
-        slotsData.push({
-          staffId: config.staffId,
-          consultationId: config.consultationId,
-          date: dateString,
-          startTime: startTime,
-          endTime: endTime,
-          isAvailable: true,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
+
+      if (dayOfWeek === 0) {
+        continue;
+      }
+
+      const dateValue = toDateOnly(currentDate);
+
+      for (const [staffIdRaw, allowedConsultations] of Object.entries(staffConsultationMap)) {
+        const staffId = Number(staffIdRaw);
+        let slotIndex = 0;
+
+        for (let minutes = startHour * 60; minutes < endHour * 60; minutes += slotDurationMinutes) {
+          const startHours = Math.floor(minutes / 60);
+          const startMinutes = minutes % 60;
+          const endTotalMinutes = minutes + slotDurationMinutes;
+          const endHours = Math.floor(endTotalMinutes / 60);
+          const endMinutes = endTotalMinutes % 60;
+          const consultationId = allowedConsultations[slotIndex % allowedConsultations.length];
+
+          slotsData.push({
+            staffId,
+            consultationId,
+            date: dateValue,
+            startTime: toTime(startHours, startMinutes),
+            endTime: toTime(endHours, endMinutes),
+            isAvailable: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+
+          slotIndex++;
+        }
       }
     }
+
     await queryInterface.bulkInsert('slots', slotsData);
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('slots', null, {});
   }
 };
-
-  // const slotsData = [
-  //         { staffId: 1, consultationId: 1, date: '2026-03-19', startTime: '08:00:00', endTime: '09:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-  //         { staffId: 1, consultationId: 1, date: '2026-03-19', startTime: '09:00:00', endTime: '10:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},
-  //         { staffId: 1, consultationId: 1, date: '2026-03-19', startTime: '10:00:00', endTime: '11:00:00', isAvailable: true, createdAt: new Date(), updatedAt: new Date()},      
-                
-  // ];  
-
-

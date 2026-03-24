@@ -54,7 +54,7 @@ export class AuthService {
         const userObj = {
           id: userId,
           roleId: roleId,
-          name: response.name || response.userName || 'Felhasználó'
+          name: response.name || response.user?.name || response.userName || 'Felhasználó'
         };
           localStorage.setItem('user', JSON.stringify(userObj));
         if (userId) {

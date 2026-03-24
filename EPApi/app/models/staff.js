@@ -13,7 +13,7 @@ const Staff = sequelize.define('staff', {
         allowNull: false,
         unique: true, 
         references: {
-            model: 'user',
+            model: 'users',
             key: 'id'
         }
     },

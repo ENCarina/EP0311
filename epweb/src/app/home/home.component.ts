@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 })
 export class HomeComponent {
   constructor(
-    public authService: AuthService, // bejelentkezési állapotot
+    public authService: AuthService,
     private router: Router
   ) {}
 
@@ -32,4 +32,5 @@ export class HomeComponent {
     });
   }
 }
+
 }
