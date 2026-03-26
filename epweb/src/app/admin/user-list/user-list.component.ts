@@ -12,6 +12,24 @@ import { CommonModule } from '@angular/common';
 export class UserListComponent implements OnInit {
   users: any[] = [];
   private readonly navyColor = '#001f3f';
+  private readonly specialtyOptions: Record<string, string> = {
+    Kardiológus: 'Kardiológus',
+    Fogorvos: 'Fogorvos',
+    Pszichiáter: 'Pszichiáter',
+    Szemész: 'Szemész',
+    Nőgyógyász: 'Nőgyógyász',
+    Bőrgyógyász: 'Bőrgyógyász',
+    Neurológus: 'Neurológus',
+    Ortopéd: 'Ortopéd',
+    Urológus: 'Urológus',
+    Endokrinológus: 'Endokrinológus',
+    Pulmonológus: 'Pulmonológus',
+    'Fül-orr-gégész': 'Fül-orr-gégész',
+    Gasztroenterológus: 'Gasztroenterológus',
+    Reumatológus: 'Reumatológus',
+    Diabetológus: 'Diabetológus',
+    Asszisztens: 'Asszisztens'
+  };
 
   constructor(private adminService: AdminService) {}
 
@@ -123,10 +141,11 @@ onResetPassword(user: any) {
 onPromoteToStaff(user: any) {
   Swal.fire({
     title: 'Szakember kinevezése',
-    text: `Adja meg a munkakört (pl. Asszisztens vagy Orvos) a következőhöz: ${user.name}`,
-    input: 'text',
-    inputLabel: 'Szakterület (pl. Fogorvos)',
-    inputPlaceholder: 'Munkakör megnevezése...',
+    text: `Válasszon szakterületet a következőhöz: ${user.name}`,
+    input: 'select',
+    inputOptions: this.specialtyOptions,
+    inputLabel: 'Szakterület',
+    inputPlaceholder: 'Válasszon szakterületet',
     showCancelButton: true,
     confirmButtonText: 'Kinevezés',
     cancelButtonText: 'Mégse',
@@ -137,7 +156,7 @@ onPromoteToStaff(user: any) {
       }
   }).then((result) => {
     if (result.isConfirmed) {
-      this.adminService.promoteUser(user.id, { specialty: result.value }).subscribe({
+      this.adminService.promoteUser(user.id, { specialty: String(result.value).trim() }).subscribe({
         next: () => {
           Swal.fire('Siker!', 'A státusz módosítva.', 'success');
           this.loadUsers(); // Lista frissítése
