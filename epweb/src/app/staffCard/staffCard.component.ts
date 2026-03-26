@@ -15,7 +15,28 @@ export class StaffCardComponent implements OnInit {
   private staffService = inject(StaffService);
   public auth = inject(AuthService);
   private router = inject(Router);
-  private readonly fallbackImageCount = 4;
+  private readonly femaleDoctorImage = '/images/female_doctor.webp';
+  private readonly maleDoctorImage = '/images/male_doctor.webp';
+  private readonly defaultDoctorImage = '/images/default_doctor.png';
+  private readonly femaleNameMarkers = new Set([
+    'anna',
+    'emese',
+    'tunde',
+    'tünde',
+    'eszter',
+    'julia',
+    'júlia',
+    'maria',
+    'mária',
+    'zsofia',
+    'zsófia',
+    'dora',
+    'dóra',
+    'reka',
+    'réka',
+    'noemi',
+    'noémi'
+  ]);
 
   staffs: any[] = [];
   selectedStaff: any = null;
@@ -32,8 +53,8 @@ export class StaffCardComponent implements OnInit {
 
         this.staffs = rawData
           .filter((s: any) => s.isActive === true || s.isActive === 1)
-          .map((s: any, i: number) => {
-          const fallbackImg = this.getFallbackImage(i);
+          .map((s: any) => {
+          const fallbackImg = this.getFallbackImage(s);
           const originalImageUrl = this.normalizeImageUrl(s.imageUrl);
 
             const processedStaff = {
@@ -62,9 +83,16 @@ export class StaffCardComponent implements OnInit {
     });
   }
 
-  private getFallbackImage(index: number): string {
-    const rotationNumber = (index % this.fallbackImageCount) + 1;
-    return `/images/doctor${rotationNumber}.png`;
+  private getFallbackImage(staffMember: any): string {
+    const fullName = (staffMember?.user?.name || staffMember?.name || '').toString().toLocaleLowerCase('hu-HU');
+    const normalizedName = fullName
+      .replace(/^dr\.\s*/i, '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const nameParts = normalizedName.split(/\s+/).filter(Boolean);
+    const isFemale = nameParts.some((part: string) => this.femaleNameMarkers.has(part));
+
+    return isFemale ? this.femaleDoctorImage : this.maleDoctorImage;
   }
 
   private normalizeImageUrl(imageUrl: string | null | undefined): string | null {
@@ -88,7 +116,7 @@ export class StaffCardComponent implements OnInit {
     });
   }
   public handleImageError(staffMember: any): void {
-    const absoluteDefault = '/images/default_doctor.png';
+    const absoluteDefault = this.defaultDoctorImage;
 
     if (staffMember.imageUrl === absoluteDefault) return;
 
