@@ -101,6 +101,20 @@
         <form [formGroup]="staffForm">
           <div class="row g-3">
             
+            @if (addMode) {
+            <div class="col-12">
+              <label class="form-label small fw-bold text-muted">Regisztrált felhasználó</label>
+              <select class="form-select bg-light border-0 py-2" formControlName="userId">
+                <option value="0">Válassz felhasználót</option>
+                @for (user of eligibleUsers; track user.id) {
+                  <option [value]="user.id">{{ user.name }} - {{ user.email }}</option>
+                }
+              </select>
+              @if (!eligibleUsers.length) {
+                <small class="text-muted d-block mt-2">Nincs kinevezhető regisztrált felhasználó.</small>
+              }
+            </div>
+            } @else {
             <div class="col-md-6">
               <label class="form-label small fw-bold text-muted">Teljes név</label>
               <input type="text" class="form-control bg-light border-0 py-2" formControlName="name">
@@ -110,7 +124,9 @@
               <label class="form-label small fw-bold text-muted">Email cím</label>
               <input type="email" class="form-control bg-light border-0 py-2" formControlName="email">
             </div>
+            }
 
+            @if (!addMode) {
             <div class="col-md-6">
               <label class="form-label small fw-bold text-muted">Szerepkör</label>
               <select class="form-select bg-light border-0 py-2" formControlName="role">
@@ -119,16 +135,19 @@
                 <option value="2">Adminisztrátor</option>
               </select>
             </div>
+            }
 
             <div class="col-md-6">
               <label class="form-label small fw-bold text-muted">Szakterület</label>
               <input type="text" class="form-control bg-light border-0 py-2" formControlName="specialty">
             </div>
 
+            @if (!addMode) {
             <div class="col-12">
               <label class="form-label small fw-bold text-muted">Jelszó {{ !addMode ? '(Hagyd üresen, ha nem változik)' : '' }}</label>
               <input type="password" class="form-control bg-light border-0 py-2" formControlName="password">
             </div>
+            }
 
             <div class="col-12 mt-3">
               <label class="form-label small fw-bold text-muted d-block mb-2">

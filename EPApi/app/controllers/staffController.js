@@ -86,19 +86,79 @@ const StaffController = {
     },
 
     async promoteToStaff(req, res) {
+        let transaction;
+
         try {
-            const { userId, specialty } = req.body;
-            const newStaff = await Staff.create({ userId, specialty, isActive: true });
-            res.json({ success: true, data: newStaff });
+            const normalizedUserId = Number(req.body?.userId);
+            const specialty = (req.body?.specialty || '').trim();
+
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return res.status(400).json({ success: false, message: 'Érvénytelen felhasználó azonosító.' });
+            }
+
+            if (!specialty) {
+                return res.status(400).json({ success: false, message: 'A szakterület megadása kötelező.' });
+            }
+
+            transaction = await db.sequelize.transaction();
+
+            const user = await User.findByPk(normalizedUserId, { transaction });
+            if (!user) {
+                await transaction.rollback();
+                return res.status(404).json({ success: false, message: 'A kiválasztott felhasználó nem található.' });
+            }
+
+            if (Number(user.roleId) === 2) {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, message: 'Admin felhasználó nem nevezhető ki szakemberré.' });
+            }
+
+            const existingStaff = await Staff.findOne({
+                where: { userId: normalizedUserId },
+                transaction
+            });
+
+            let staffProfile;
+            if (existingStaff) {
+                await existingStaff.update({
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+                staffProfile = existingStaff;
+            } else {
+                staffProfile = await Staff.create({
+                    userId: normalizedUserId,
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+            }
+
+            if (Number(user.roleId) !== 1) {
+                await user.update({ roleId: 1 }, { transaction });
+            }
+
+            await transaction.commit();
+            res.json({
+                success: true,
+                message: existingStaff ? 'A szakember profil frissítve lett.' : 'A szakember profil sikeresen létrejött.',
+                data: staffProfile
+            });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
     async store(req, res) {
         try {
-            const staff = await Staff.create(req.body);
-            res.status(201).json({ success: true, data: staff });
+            res.status(400).json({
+                success: false,
+                message: 'Kozvetlen szakember-letrehozas nem engedelyezett. Elobb regisztraljon egy felhasznalot, majd admin feluleten nevezze ki szakemberre.'
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
