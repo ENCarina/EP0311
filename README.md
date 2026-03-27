@@ -31,7 +31,7 @@ Telepítsd a backend függőségeit:
 npm install
 ```
 
-Ellenőrizd, hogy létezik a `.env` fájl. Ha nincs, hozz létre egyet az `.env.example` alapján.
+Ellenőrizd, hogy létezik a `.env` fájl. Ha nincs, hozz létre egyet az `.env.example` alapján. Elegendő, ha a fájlt átnevezed `.env`-re, hiszen csak általános default értékek vannak benne. Email felhasználónevet és jelszót át kell írni benne létező aktuális értékekre.
 
 Ezután hozd létre és seedeld az SQLite adatbázist:
 
