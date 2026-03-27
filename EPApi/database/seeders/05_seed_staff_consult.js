@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('staff_consult', null, {});
 
     const [staffRows] = await queryInterface.sequelize.query(`
@@ -48,7 +48,7 @@ module.exports = {
 
     await queryInterface.bulkInsert('staff_consult', pivotData);
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('staff_consult', null, {});
   }
 };

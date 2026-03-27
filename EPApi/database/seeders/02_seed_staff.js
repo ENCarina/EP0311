@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     // Lekérdezzük a users táblából a staff-hoz tartozó id-ket
     const [users] = await queryInterface.sequelize.query("SELECT id, name FROM users");
     const userMap = {};
@@ -25,7 +25,7 @@ module.exports = {
       { userId: userMap['Admin'], specialty: 'Vezető asszisztens', isAvailable: true, isActive:true, bio: 'Laborvizsgálatok és adminisztráció felelőse.', imageUrl: null, createdAt: new Date(),updatedAt: new Date()}
     ]);
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('staff',  null, {});
   }
 };

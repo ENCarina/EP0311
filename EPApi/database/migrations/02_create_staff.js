@@ -1,16 +1,18 @@
 "use strict";
 
+const { DataTypes, literal } = require('sequelize');
+
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.createTable('staff', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: DataTypes.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: 'users',
@@ -20,39 +22,39 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       role: {
-        type: Sequelize.ENUM('admin', 'doctor', 'staff', 'user'),
+        type: DataTypes.ENUM('admin', 'doctor', 'staff', 'user'),
         defaultValue: 'staff'
       },
       specialty: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: true
       },
       isAvailable: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: true
       },
-      isActive: { type: Sequelize.BOOLEAN, defaultValue: true },
+      isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
       bio: {
-        type: Sequelize.TEXT,
+        type: DataTypes.TEXT,
         allowNull: true
       },
       imageUrl: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: true
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        type: DataTypes.DATE,
+        defaultValue: literal('CURRENT_TIMESTAMP')
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        type: DataTypes.DATE,
+        defaultValue: literal('CURRENT_TIMESTAMP')
       }
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.dropTable('staff');
   },
 };

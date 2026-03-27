@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('bookings', null, {});
 
     const [users] = await queryInterface.sequelize.query("SELECT id, name FROM users WHERE roleId = (SELECT id FROM roles WHERE name = 'user') ORDER BY id ASC");
@@ -52,7 +52,7 @@ module.exports = {
       await queryInterface.sequelize.query(`UPDATE slots SET isAvailable = 0 WHERE id IN (${slotIds.join(',')})`);
     }
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('bookings', null, {});
   }
 };

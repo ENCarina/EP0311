@@ -1,16 +1,18 @@
 
 
+const { DataTypes } = require('sequelize');
+
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.createTable('slots', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: DataTypes.INTEGER
       },
       staffId: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: 'staff', 
@@ -20,7 +22,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       consultationId: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: {
           model: 'consultations',
@@ -30,26 +32,26 @@ module.exports = {
         onDelete: 'SET NULL'
       },
       date: {
-        type: Sequelize.DATEONLY,
+        type: DataTypes.DATEONLY,
         allowNull: false
       },
       startTime: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
       },
       endTime: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
       },
       isAvailable: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: true
       },
-      createdAt: { type: Sequelize.DATE },
-      updatedAt: { type: Sequelize.DATE }
+      createdAt: { type: DataTypes.DATE },
+      updatedAt: { type: DataTypes.DATE }
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.dropTable('slots');
   },
 };

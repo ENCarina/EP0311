@@ -1,5 +1,5 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('consultations', null, {});
 
     const consultationData = [
@@ -38,7 +38,7 @@ module.exports = {
     ];
     await queryInterface.bulkInsert('consultations', consultationData);
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('consultations', null, {});
   }
 };

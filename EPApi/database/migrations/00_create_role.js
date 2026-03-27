@@ -1,26 +1,28 @@
 "use strict";
 
+const { DataTypes } = require('sequelize');
+
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.createTable("roles", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
       },
       name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
       },
       updatedAt: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
       },
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     await queryInterface.dropTable("roles");
   },
 };

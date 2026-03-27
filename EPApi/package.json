@@ -8,7 +8,7 @@
     "dev": "nodemon app",
     "start": "node app",
     "db:reset": "rimraf database.sqlite && npm run db:init",
-    "db:init": "op db:migrate && op db:seed:all"
+    "db:init": "node op migrate && node op db:seed"
   },
   "keywords": [
     "express",

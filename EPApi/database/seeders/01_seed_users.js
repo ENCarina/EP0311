@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async ({ context: queryInterface }) => {
     await queryInterface.bulkDelete('users', null, {});
     await queryInterface.bulkDelete('roles', null, {});
     const now = new Date();
@@ -47,7 +47,7 @@ module.exports = {
       { name: 'Admin', email: 'admin@ep.com', password: adminPassword, roleId: roleMap['admin'], verified: true, verificationToken: null, isActive: true, createdAt: now, updatedAt: now },
     ]);
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async ({ context: queryInterface }) => {
     // Előbb töröljük a users-t, majd a roles-t
     await queryInterface.bulkDelete('users', null, {});
     await queryInterface.bulkDelete('roles', null, {});
