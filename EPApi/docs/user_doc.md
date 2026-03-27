@@ -1,340 +1,388 @@
-# User documentation
+# User Documentation
 
-## Install dependencies
+## Installation
 
-Dependencies must be installed before use.
+Install dependencies before starting the API.
 
 ```cmd
 npm install
 ```
 
-Or use your favorite package manager.
+## Environment
 
-## Generate config file
+The application reads its settings from a `.env` file.
 
-The settings are located in a file called:
+1. Duplicate or rename `.env.example` to `.env`.
+2. Review at least these values before running the API:
 
-* .env
+- `APP_KEY`
+- `EMAIL_USER`
+- `EMAIL_PASS`
+- `DB_STORAGE`
 
-To generate the .env file:
+The test suite uses `.env.test`.
 
-```cmd
-node op conf:generate
-```
+## Running the API
 
-### Test configurations file generate
-
-```cmd
-node op testconf:generate
-```
-
-Result: .env.test file.
-
-## App key generation
-
-Te generate the application key:
+Development mode:
 
 ```cmd
-node op key:generate
+npm run dev
 ```
 
-## Database setup
+Tests:
 
-Edit the .env file.
+```cmd
+npm test
+```
 
-## Endpoints
+Database reset and seeding:
 
-All endpoint have a /api prefix.
+```cmd
+npm run db:reset
+```
 
-| Endpoint | Method | Auth | Description |
-|-|-|-|-|
-| /register | POST  | no |  create user |
-| /login    | POST  | no |  login  |
-| /users    | GET   | yes |  read users |
-| /users/:id | GET  | yes | read user |
-| /users/:id/password | PUT  | yes | change password |
+## Authentication
 
-## The register endpoint
+Every API endpoint is mounted under the `/api` prefix.
+
+Protected endpoints expect a bearer token in the `Authorization` header.
+
+```http
+Authorization: Bearer <token>
+```
+
+Role model used by the backend:
+
+- `0`: patient
+- `1`: doctor or staff
+- `2`: admin
+
+The authorization middleware allows access when `user.roleId >= requiredRole`.
+
+## Auth endpoints
+
+### Register
+
+`POST /api/register`
 
 ```json
 {
-    "name": "joe",
-    "email": "joe@green.lan",
-    "password": "secret",
-    "password_confirmation": "secret"
+  "name": "Teszt Elek",
+  "email": "teszt@example.com",
+  "password": "secret123",
+  "confirmPassword": "secret123"
 }
 ```
 
-## The login endpoint
+Notes:
+
+- all four fields are required
+- the email must be unique
+- new users are created with patient role
+- email verification is supported through `GET /api/verify-email/:token`
+
+### Login
+
+`POST /api/login`
 
 ```json
 {
-    "name": "joe",
-    "password": "secret"
+  "email": "teszt@example.com",
+  "password": "secret123"
 }
 ```
 
-You receive the bearer token with token key.
+Successful login returns a JWT token and the basic user object.
 
-## The users endpoint
+## Profile endpoints
 
-To query users or user, send the bearer token to endpoint.
+### Get my profile
 
-## Model and controller generation
+`GET /api/profile/me`
 
-Use the following instructions to generate models and controllers:
+Returns the authenticated user's profile, role, bookings and optional staff profile.
 
-```cmd
-node op make:model thing
-node op make:controller thing
-```
+### Update my profile
 
-## Key generation
-
-You can generate the application key with the following command:
-
-```cmd
-node op key:generate
-```
-
-## Generate admin user
-
-You can create an admin user if it does not already exist in the database:
-
-```cmd
-node op admin:generate
-```
-
-## Database import
-
-It is possible to import data from JSON and CSV files.
-
-```cmd
-node op db:import thing things.json
-node op db:import thing things.csv
-node op db:import thing things.csv ,
-node op db:import thing things.csv ";"
-node op db:import thing things.csv :
-```
-
-The last option is the separator.
-
-For example JSON file:
-
-employees.json:
+`PUT /api/profile/update`
 
 ```json
-[
-    { "id": 1, "name": "Tom Large" },
-    { "id": 2, "name": "Jack Small" }
-]
-```
-
-The default separator is comma.
-
-```cmd
-node op db:import employee employees.json
-```
-
-For example CSV file:
-
-employees.csv:
-
-```csv
-id,name
-1,Joe Kitin
-2,Peter Fall
-```
-
-If you have colon separator, use sep parameter.
-
-```csv
-id:name
-1:Joe Kitin
-2:Peter Fall
-```
-
-```cmd
-node op db:import employee employees.csv --sep :
-```
-
-If the file has semicolon separator, use sep parameter, for example:
-
-```csv
-id;name
-1;Joe Kitin
-2;Peter Fall
-```
-
-Use next command:
-
-```cmd
-node op db:import employee employees.csv --sep ";"
-```
-
-## Database
-
-### Database synchronization
-
-Models and database tables can be synchronized, but this can be dangerous.
-
-Database synchronization can be set up in the app/models/modrels.js file. Default values are:
-
-```js
-{ alter: true }
-```
-
-This preserves the data and existing structure.
-
-Possible values:
-
-```js
-{ force: true }
-```
-
-The latter deletes the contents of the database table!
-
-If the value is false, there is no synchronization in either case.
-
-### Migration
-
-Generate a migration:
-
-```bash
-node op make/migration thing
-```
-
-For example migration for employee table:
-
-```bash
-node op make/migration employee
-```
-
-```javascript
-import { DataTypes } from 'sequelize';
-
-async function up({context: QueryInterface}) {
-  await QueryInterface.createTable('employees', {
-    id: {
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-      type: DataTypes.INTEGER
-    },
-    name: {
-      type: DataTypes.STRING
-    },
-    city: {
-      type: DataTypes.STRING
-    },
-    createdAt: { type: DataTypes.DATE },
-    updatedAt: { type: DataTypes.DATE }
-  });
+{
+  "name": "Új Név",
+  "email": "uj@example.com"
 }
+```
 
-async function down({context: QueryInterface}) {
-  await QueryInterface.dropTable('employees');
+Both fields are optional.
+
+## User management
+
+### List users
+
+`GET /api/users`
+
+Admin only.
+
+### List patients
+
+`GET /api/patients`
+
+Doctor or admin only.
+
+### Get user by id
+
+`GET /api/users/:id`
+
+Requires authentication.
+
+### Update user password
+
+`POST /api/users/:id/password`
+
+```json
+{
+  "password": "newSecret123"
 }
-
-export { up, down }
 ```
 
-Run all migration:
+Admin only.
 
-```bash
-node op migration:run
-node op migrate
-```
+### Update user status
 
-Run a migration:
+`POST /api/users/:id/status`
 
-```bash
-node op migration:run <migration_name>
-node op migrate <migration_name>
-```
-
-Rollback the last migration:
-
-```bash
-node op migration:rollback
-node op migrate:rollback
-```
-
-Rollback two migrations:
-
-```bash
-node op migration:rollback 2
-node op migrate:rollback 2
-```
-
-Reset the database:
-
-```bash
-node op migration:reset
-node op migrate:reset
-```
-
-This command also undoes seeder operations.
-
-Reset the database and run all migrations:
-
-```bash
-node op migration:fresh
-node op migrate:fresh
-```
-
-### Database seed
-
-Generate a seeder:
-
-```bash
-node op make/seeder ...
-```
-
-Example seeder for staff table:
-
-```bash
-node op make/seeder staff
-```
-
-```javascript
-
-async function up({context: QueryInterface}) {
-  if(db.Employee) {
-    await db.Employee.bulkCreate([
-      { id: 1, name: "John Smith" },
-      { id: 2, name: "Alice Johnson" }
-    ]);
-  }else {
-    const now = new Date()
-    await QueryInterface.bulkInsert('things', [
-      { 
-        id: 1, name: "John Smith", 
-        createdAt: now, updatedAt: now
-      },
-      { 
-        id: 2, name: "Alice Johnson", 
-        createdAt: now, updatedAt: now
-      }
-    ]);
-  }
+```json
+{
+  "isActive": false
 }
+```
 
-async function down({context: QueryInterface}) {
-  await QueryInterface.bulkDelete('things', null, {});
+Admin only.
+
+### Update user
+
+`PUT /api/users/:id`
+
+```json
+{
+  "name": "Minta Név",
+  "email": "minta@example.com",
+  "roleId": 1
 }
-
-export { up, down }
-````
-
-Run all seeders:
-
-```bash
-node op db:seed
 ```
 
-Run a seeder:
+Admin only.
 
-```bash
-node op db:seed path_...
+### Delete user
+
+`DELETE /api/users/:id`
+
+Admin only. The current implementation archives the related staff profile instead of deleting the user record.
+
+## Staff management
+
+### Public endpoints
+
+- `GET /api/staff`
+- `GET /api/staff/public`
+- `GET /api/staff/:id`
+- `GET /api/staff/:id/treatments`
+
+### Promote a user to staff
+
+`POST /api/staff/promote`
+
+```json
+{
+  "userId": 12,
+  "specialty": "Fogorvos",
+  "treatmentIds": [1, 2, 3]
+}
 ```
+
+Admin only.
+
+Notes:
+
+- `userId` and `specialty` are required
+- `treatmentIds` is optional
+- if `treatmentIds` is omitted, treatments are assigned from the staff specialty
+- future slots can be auto-generated for the promoted staff member
+
+### Direct staff creation
+
+`POST /api/staff`
+
+This endpoint currently returns an error by design. Staff records are expected to be created through `/api/staff/promote`.
+
+### Update staff profile
+
+`PUT /api/staff/:id`
+
+Possible fields include `specialty`, `bio`, `isActive`, `isAvailable`, `imageUrl`.
+
+### Delete staff profile
+
+`DELETE /api/staff/:id`
+
+Deletes the staff profile.
+
+### Update staff treatments
+
+`POST /api/staff/:id/treatments`
+
+```json
+{
+  "treatmentIds": [1, 2, 3]
+}
+```
+
+Admin only.
+
+## Consultations
+
+### Public endpoints
+
+- `GET /api/consultations`
+- `GET /api/consultations/:id`
+
+`GET /api/consultations` supports optional filtering with `?specialty=...`.
+
+### Create consultation
+
+`POST /api/consultations`
+
+```json
+{
+  "name": "Kardiológiai szakvizsgálat",
+  "description": "Teljes körű állapotfelmérés",
+  "specialty": "Kardiológia",
+  "duration": 30,
+  "price": 25000
+}
+```
+
+Admin only.
+
+### Update consultation
+
+`PUT /api/consultations/:id`
+
+Any subset of the consultation fields can be sent.
+
+### Delete consultation
+
+`DELETE /api/consultations/:id`
+
+Admin only.
+
+## Slots
+
+### Public listing
+
+`GET /api/slots`
+
+Supported query parameters:
+
+- `staffId`
+- `consultationId`
+- `date`
+
+Only future and available slots are returned.
+
+### Get slot by id
+
+`GET /api/slots/:id`
+
+Requires authentication.
+
+### Create slot
+
+`POST /api/slots`
+
+```json
+{
+  "date": "2026-04-10",
+  "staffId": 3,
+  "consultationId": 5,
+  "startTime": "08:00:00",
+  "endTime": "08:30:00",
+  "isAvailable": true
+}
+```
+
+Doctor or admin only.
+
+Notes:
+
+- non-admin users can manage only their own calendar
+- past dates are rejected
+
+### Update slot
+
+`PUT /api/slots/:id`
+
+Requires authentication.
+
+### Delete slot
+
+`DELETE /api/slots/:id`
+
+Requires authentication.
+
+## Bookings
+
+### List bookings
+
+`GET /api/bookings`
+
+Requires authentication.
+
+Returned data depends on the current user's role:
+
+- patient: own bookings
+- doctor: bookings assigned to the doctor's staff profile
+- admin: all bookings
+
+### Get booking by id
+
+`GET /api/bookings/:id`
+
+Requires authentication.
+
+### Create booking
+
+`POST /api/bookings`
+
+```json
+{
+  "slotId": 10,
+  "staffId": 3,
+  "consultationId": 5,
+  "duration": 30,
+  "status": "Confirmed"
+}
+```
+
+Requires authentication.
+
+The backend fills the patient from the logged-in user.
+
+### Update booking
+
+`PUT /api/bookings/:id`
+
+Requires authentication.
+
+### Cancel or delete booking
+
+`DELETE /api/bookings/:id`
+
+Requires authentication.
+
+Notes:
+
+- admins delete the booking and release the related slot
+- non-admin users go through the cancellation logic
+- cancellation inside 24 hours is rejected

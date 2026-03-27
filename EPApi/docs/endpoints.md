@@ -1,94 +1,139 @@
-# Végpontok _ EndPoints
+# API Endpoints
 
-## staffs - Személyzet - Dolgozók
+Every endpoint below is mounted under the `/api` prefix.
 
-| Végpont | Metódus | Auth | CRUD | Leírás |
+## Auth
+
+| Endpoint | Method | Auth | Role | Description |
 | - | - | - | - | - |
-|/staffs | GET | igen | read | Személyzet lekérése|
-|/staffs | POST | igen | create | Új személy felvétele|
-|/staffs/: id | PUT | igen | update | Személyzet frissítése|
-|/staffs/: id | DELETE | igen | delete | Személy/dolgozó törlése|
+| `/register` | POST | no | public | Register a new patient account |
+| `/login` | POST | no | public | Login with email and password |
+| `/verify-email/:token` | GET | no | public | Verify email address |
 
-### Személyzet lekérdezése 
+## Profile
 
-* /api/staffs GET
+| Endpoint | Method | Auth | Role | Description |
+| - | - | - | - | - |
+| `/profile/me` | GET | yes | any | Get current user's profile |
+| `/profile/update` | PUT | yes | any | Update current user's name or email |
 
-### Új Személy felvétele 
+## Users
 
-* /api/staffs POST
+| Endpoint | Method | Auth | Role | Description |
+| - | - | - | - | - |
+| `/users` | GET | yes | admin | List all users |
+| `/patients` | GET | yes | doctor or admin | List active patients |
+| `/users/:id` | GET | yes | any authenticated | Get one user |
+| `/users/:id/password` | POST | yes | admin | Change a user's password |
+| `/users/:id/status` | POST | yes | admin | Toggle a user's active status |
+| `/users/:id` | PUT | yes | admin | Update name, email or role |
+| `/users/:id` | DELETE | yes | admin | Archive related staff profile |
+
+## Staff
+
+| Endpoint | Method | Auth | Role | Description |
+| - | - | - | - | - |
+| `/staff` | GET | no | public | List staff profiles |
+| `/staff/public` | GET | no | public | List active public staff profiles |
+| `/staff/:id` | GET | no | public | Get one staff profile |
+| `/staff` | POST | yes | admin | Direct creation is intentionally blocked |
+| `/staff/:id` | PUT | yes | admin | Update staff profile |
+| `/staff/:id` | DELETE | yes | admin | Delete staff profile |
+| `/staff/promote` | POST | yes | admin | Promote an existing user to staff |
+| `/staff/:id/treatments` | GET | no | public | List treatments assigned to a staff member |
+| `/staff/:id/treatments` | POST | yes | admin | Replace assigned treatments |
+
+### Staff promote example
 
 ```json
-
 {
-    
-	"userId":"102",
-	"role":"doctor",
-	"specialty":"fogorvos",
-    "isAvailable":"true",
-    "bio":"15 éves nemzetközi tapasztalattal rendelkező...",
-    "imageUrl":"https://example.com/images/dr_toth.jpg",
-
+    "userId": 12,
+    "specialty": "Fogorvos",
+    "treatmentIds": [1, 2, 3]
 }
 ```
 
-### Személyzet frissítése 
+## Consultations
 
-* /api/staffs/5 PUT
-
-```json
-{
-	"specialty": "szakterület", 
-	"bio": "szakmai tapasztalat", 
-	"role": "Assistens"
-}
-```
-### Személy törlése 
-
-* /api/staffs/4 DELETE
-
-## consultations - Vizsgálat
-
-| Végpont | Metódus | Auth | CRUD | Leírás |
+| Endpoint | Method | Auth | Role | Description |
 | - | - | - | - | - |
-|/consultations | GET | igen | read | Vizsgálat lekérése|
-|/consultations | POST | igen | create | Új vizsgálatfelvétele|
-|/consultations/: id | PUT | igen | update | Vizsgálat frissítése|
-|/consultations/: id | DELETE | igen | delete | Vizsgálat törlése|
+| `/consultations` | GET | no | public | List consultations |
+| `/consultations/:id` | GET | no | public | Get one consultation |
+| `/consultations` | POST | yes | admin | Create consultation |
+| `/consultations/:id` | PUT | yes | admin | Update consultation |
+| `/consultations/:id` | DELETE | yes | admin | Delete consultation |
 
-### Vizsgálat lekérdezése 
+`GET /consultations` supports `?specialty=...` filtering.
 
-* /api/consultations GET
-
-### Új Vizsgálat felvétele 
-
-* /api/consultations POST
+### Consultation example
 
 ```json
 {
     "name": "Kardiológiai szakvizsgálat",
     "description": "Teljes körű szív- és érrendszeri állapotfelmérés",
     "specialty": "Kardiológia",
-    "duration":" 30",
-    "price":"25000"
+    "duration": 30,
+    "price": 25000
 }
 ```
 
-### Vizsgálat frissítése 
+## Slots
 
-* /api/consultations/5 PUT
+| Endpoint | Method | Auth | Role | Description |
+| - | - | - | - | - |
+| `/slots` | GET | no | public | List available future slots |
+| `/slots/:id` | GET | yes | any | Get one slot |
+| `/slots` | POST | yes | doctor or admin | Create a slot |
+| `/slots/:id` | PUT | yes | any | Update a slot |
+| `/slots/:id` | DELETE | yes | any | Delete a slot |
+
+Supported query parameters for `/slots`:
+
+- `staffId`
+- `consultationId`
+- `date`
+
+### Slot example
 
 ```json
- {
-      "name": "Fogászati kontroll",
-      "description": "Általános állapotfelmérés és tanácsadás",
-      "specialty": "Fogászat",
-      "duration": 20,
-      "price": 15000.00
-    }
+{
+    "date": "2026-04-10",
+    "staffId": 3,
+    "consultationId": 5,
+    "startTime": "08:00:00",
+    "endTime": "08:30:00",
+    "isAvailable": true
+}
 ```
 
-### Vizsgálat törlése 
+## Bookings
 
-* /api/consultations/7 DELETE
+| Endpoint | Method | Auth | Role | Description |
+| - | - | - | - | - |
+| `/bookings` | GET | yes | any | List bookings visible to current user |
+| `/bookings/:id` | GET | yes | any | Get one booking |
+| `/bookings` | POST | yes | any | Create booking |
+| `/bookings/:id` | PUT | yes | any | Update booking |
+| `/bookings/:id` | DELETE | yes | any | Cancel or delete booking |
+
+### Booking example
+
+```json
+{
+    "slotId": 10,
+    "staffId": 3,
+    "consultationId": 5,
+    "duration": 30,
+    "status": "Confirmed"
+}
+```
+
+Notes:
+
+- patients see their own bookings
+- doctors see bookings assigned to their staff record
+- admins see every booking
+- admin delete also frees the related slot
+- non-admin cancellation can be blocked inside 24 hours
 
 
