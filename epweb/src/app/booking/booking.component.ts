@@ -25,7 +25,11 @@ export class BookingComponent implements OnInit {
   public readonly auth = inject(AuthService);
 
   protected staffs: any[] = [];
+  protected filteredStaffs: any[] = [];
   protected availableSlots: Slot[] = [];
+
+  protected specialties: string[] = [];
+  protected selectedSpecialty: string = '';
 
   protected isLoading = false;
   protected errorMessage = '';
@@ -38,93 +42,105 @@ export class BookingComponent implements OnInit {
   protected readonly today = new Date().toISOString().split('T')[0];
 
   ngOnInit(): void {
-    this.loadInitialData();
-
     this.route.queryParams.subscribe(params => {
-      let hasChange = false;
-
-      if (params['staffId']) {
-        this.selectedStaffId = Number(params['staffId']);
-        hasChange = true;
-      }
-      
-      if (params['treatmentId']) {
-        this.selectedConsultationId = Number(params['treatmentId']);
-        hasChange = true;
-      }
-
-      if (hasChange && this.staffs.length > 0) {
-        this.onStaffChange();
-      }
+      this.loadInitialData(params); 
     });
-  }
+  } 
 
-  loadInitialData(): void {
+  loadInitialData(params?: any): void {
     this.isLoading = true;
     forkJoin({
       staffs: this.staffApi.getStaff(),
       consultations: this.staffApi.getConsultations()
     }).subscribe({
-      next: (res: any) => {
-        this.staffs = res.staffs.data || res.staffs;
-        this.consultations = res.consultations.data || res.consultations;
+      next: (res: any) => { 
+        const rawStaffs = res.staffs?.data || res.staffs || [];
+        this.staffs = rawStaffs.map((s: any) => ({
+          ...s,
+          id: Number(s.id),
+          userId: Number(s.userId)
+        }));
 
-        const urlStaffId = this.route.snapshot.queryParams['staffId'];
-        const urlTreatmentId = this.route.snapshot.queryParams['treatmentId'];
+        const rawConsultations = res.consultations?.data || res.consultations || [];
+        this.consultations = rawConsultations.map((c: any) => ({
+          ...c,
+          id: Number(c.id)
+        }));
 
-        if (urlStaffId) {
-          this.selectedStaffId = Number(urlStaffId);
-        } else if (this.staffs.length > 0 && !this.selectedStaffId) {
-          this.selectedStaffId = Number(this.staffs[0].userId || this.staffs[0].id);
+        this.specialties = [...new Set(this.staffs.map(s => s.specialty))].filter(Boolean);
+
+        if (params && (params['staffId'] || params['treatmentId'])) {
+          this.syncSelectionFromParams(params);
+        } else {
+          this.isLoading = false;
         }
-
-        if (urlTreatmentId) {
-          this.selectedConsultationId = Number(urlTreatmentId);
-        }
-
-        this.updateFilteredConsultations();
-        this.isLoading = false;
-        this.loadSlots();
       },
       error: (err) => {
+        console.error('Hiba az adatok betöltésekor:', err);
         this.isLoading = false;
-        this.errorMessage = 'Hiba az adatok betöltésekor.';
-        console.error(err);
       }
     });
   }
 
-  protected updateFilteredConsultations(): void {
-    if (!this.selectedStaffId) return;
+  private syncSelectionFromParams(params: any): void {
+    if (params['staffId']) {
+      this.selectedStaffId = Number(params['staffId']);
+      
+      const doctor = this.staffs.find(s => Number(s.id) === this.selectedStaffId);
+      if (doctor) {
+        this.selectedSpecialty = doctor.specialty;
+        this.filteredStaffs = this.staffs.filter(s => s.specialty === this.selectedSpecialty);
+      }
+    }
+    // Meghívjuk a szűrést, átadva a treatmentId-t ha van
+    const tId = params['treatmentId'] ? Number(params['treatmentId']) : null;
+    this.updateFilteredConsultations(tId);
+  }
 
-    const selectedStaff = this.staffs.find(s => 
-      Number(s.userId) === Number(this.selectedStaffId) || 
-      Number(s.id) === Number(this.selectedStaffId)
-    );
-    
-    if (selectedStaff && selectedStaff.treatments) {
-      const allowedIds = selectedStaff.treatments.map((t: any) => Number(t.id));
-      this.filteredConsultations = this.consultations.filter(c => 
-        allowedIds.includes(Number(c.id))
-      );
-    } else {
+  protected updateFilteredConsultations(targetTreatmentId?: number | null): void {
+    if (!this.selectedStaffId) {
       this.filteredConsultations = [];
-    }
-
-    const isValid = this.filteredConsultations.some(
-      c => Number(c.id) === Number(this.selectedConsultationId)
-    );
-
-    if (!isValid && this.filteredConsultations.length > 0) {
-      this.selectedConsultationId = Number(this.filteredConsultations[0].id);
-    } else if (this.filteredConsultations.length === 0) {
       this.selectedConsultationId = null;
+      return;
     }
+    this.isLoading = true;
+    this.staffApi.getTreatmentsForStaff(Number(this.selectedStaffId)).subscribe({
+      next: (res: any) => {
+        this.filteredConsultations = res.data || res || [];
+        
+        if (this.filteredConsultations.length > 0) {
+          if (targetTreatmentId) {
+            this.selectedConsultationId = targetTreatmentId;
+          } else {
+            const stillValid = this.filteredConsultations.some(c => Number(c.id) === Number(this.selectedConsultationId));
+            if (!stillValid) {
+              this.selectedConsultationId = Number(this.filteredConsultations[0].id);
+            }
+          }
+          this.loadSlots();
+        } else {
+          this.selectedConsultationId = null;
+          this.availableSlots = [];
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Hiba a kezelések betöltésekor:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  protected onSpecialtyChange(): void {
+    this.filteredStaffs = this.staffs.filter(s => s.specialty === this.selectedSpecialty);
+    this.selectedStaffId = null;
+    this.filteredConsultations = [];
+    this.selectedConsultationId = null;
+    this.availableSlots = [];
   }
 
   protected onStaffChange(): void {
     this.updateFilteredConsultations();
-    this.loadSlots();
   }
 
   protected onFilterChange(): void {
@@ -181,11 +197,11 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    const selectedTreatment = this.consultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
+    const selectedTreatment = this.filteredConsultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
 
     if (!selectedTreatment) {
-    Swal.fire('Hiba', 'A kiválasztott vizsgálat nem érhető el ennél az orvosnál!', 'error');
-    return;
+      Swal.fire('Hiba', 'A kiválasztott vizsgálat nem érhető el!', 'error');
+      return;
     }
 
     const bookingData = {

@@ -1,0 +1,34 @@
+.nopage-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #ffffff 0%, #f2f7ff 100%);
+  padding: 1.5rem;
+}
+
+.nopage-card {
+  max-width: 450px;
+  width: 100%;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  /* Az általad használt kék gradiens */
+  background: linear-gradient(135deg, #007bff, #00d4ff);
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 8px 15px rgba(0, 123, 255, 0.2));
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+#countdown {
+  min-width: 15px;
+  display: inline-block;
+}

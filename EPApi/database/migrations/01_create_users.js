@@ -33,6 +33,14 @@ async function up({context: QueryInterface}) {
     },
     verificationToken: { type: DataTypes.STRING, allowNull: true },
     verified: { type: DataTypes.BOOLEAN, defaultValue: false },
+    resetPasswordToken: { 
+      type: DataTypes.STRING, 
+      allowNull: true 
+    },
+    resetPasswordExpires: { 
+      type: DataTypes.DATE, 
+      allowNull: true 
+    },
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }    
   });

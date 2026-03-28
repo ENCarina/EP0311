@@ -19,6 +19,9 @@ const User = sequelize.define('user', {
     },
     verificationToken: { type: DataTypes.STRING, allowNull: true },
     verified: { type: DataTypes.BOOLEAN, defaultValue: false },
+
+    resetPasswordToken: { type: DataTypes.STRING, allowNull: true },
+    resetPasswordExpires: { type: DataTypes.DATE, allowNull: true }
 }, {
     timestamps: true,    
     freezeTableName: true,

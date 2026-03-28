@@ -11,7 +11,9 @@ import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { authGuard } from './auth-guard';
 import { UserListComponent } from './admin/user-list/user-list.component';
 import { MyBookingComponent } from './my-booking/my-booking.component';
-
+import { NopageComponent } from './nopage/nopage.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -20,6 +22,8 @@ export const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent },
     { path: 'verify-email/:token', component: VerifyEmailComponent},
+    { path: 'forgot-password', component: ForgotPasswordComponent},
+    { path: 'reset-password/:token', component: ResetPasswordComponent},
     { path: 'about', component:AboutComponent},
 
     { path: 'my-bookings', component: MyBookingComponent, canActivate: [authGuard]},
@@ -36,6 +40,6 @@ export const routes: Routes = [
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
     { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
     
-    { path: '**', redirectTo: 'home' },
+    { path: '**', component: NopageComponent },
 
 ];

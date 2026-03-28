@@ -105,33 +105,30 @@ import { Router } from '@angular/router';
         }
 
     addStaff() {
-          // 1. Kérjük le a form nyers adatait
       const rawData = this.staffForm.getRawValue();
       
-      // 2. Destrukturálás: Csak azokat vesszük ki, amiket NEM akarunk a 'rest'-be
       const { id, role, password, ...rest } = rawData;
 
-      // 3. Payload összeállítása
+      // Payload összeállítása
       const payload: any = {
         ...rest,
         roleId: Number(role), 
-        treatmentIds: this.selectedTreatments // Beküldjük a kijelölt szolgáltatásokat
+        treatmentIds: this.selectedTreatments, 
+        isActive:true
       };
 
-      // 4. Csak akkor küldjük a jelszót, ha beírtak valamit
       if (password && password.trim() !== '') {
         payload.password = password;
       }
 
-      console.log('Küldendő adatok (Payload):', payload);
+      console.log('Küldendő adatok (Új szakember):', payload);
 
       // 5. API hívás
       this.api.addStaff(payload).subscribe({
         next: (res: any) => {
-          // Megnézzük, mi jött vissza (id vagy userId)
+          // A backend visszaküldi az új STAFF rekord ID-ját
           const newStaffId = res.data?.id || res.id;
 
-          // Ha a backend store-ja nem mentené el a kezeléseket, itt még egyszer megpróbáljuk
       if (this.selectedTreatments.length > 0 && newStaffId) {
             this.api.assignTreatments(newStaffId, this.selectedTreatments).subscribe({
               next: () => this.completeAction('Szakember és kezelések hozzáadva!'),
@@ -173,19 +170,19 @@ import { Router } from '@angular/router';
     }
   
     updateStaff() {
-  const staffId = this.selectedStaffId; // Ez a Staff tábla ID-ja (pl. 6)
-  if (!staffId) {
-    Swal.fire('Hiba', 'Nem azonosítható a szakember!', 'error');
-    return;
-  }
-  // 1. Megkeressük a valódi USER ID-t
-  const currentStaff = this.staffs.find(s => s.id === staffId);
-  const targetUserId = currentStaff?.userId; 
+      const staffId = this.selectedStaffId; // Ez a Staff tábla ID-ja (pl. 6)
+      if (!staffId) {
+        Swal.fire('Hiba', 'Nem azonosítható a szakember!', 'error');
+        return;
+      }
+      // 1. Megkeressük a valódi USER ID-t
+      const currentStaff = this.staffs.find(s => s.id === staffId);
+      const targetUserId = currentStaff?.userId; 
 
-  if (!targetUserId) {
-    Swal.fire('Hiba', 'A felhasználói azonosító hiányzik!', 'error');
-    return;
-  }
+      if (!targetUserId) {
+        Swal.fire('Hiba', 'A felhasználói azonosító hiányzik!', 'error');
+        return;
+      }
 
   // 2. Adatok előkészítése
   const rawData = this.staffForm.getRawValue();

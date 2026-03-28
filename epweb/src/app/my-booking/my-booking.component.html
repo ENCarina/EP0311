@@ -68,18 +68,31 @@
                 </div>
               </div>
 
-              <button class="btn btn-cancel w-100 rounded-pill py-2 fw-bold"
-                      (click)="cancelBooking(b.id)">
-                <i class="bi bi-trash3 me-2"></i>Időpont lemondása
-              </button>
-            </div>
+             @if (isPast(b.timeSlot?.date)) {
+                <button class="btn btn-outline-secondary w-100 rounded-pill py-2 fw-bold disabled">
+                  <i class="bi bi-check2-all me-2 text-primary"></i>Megtörtént vizit
+                </button>
+              } @else {
+                <button class="btn btn-cancel w-100 rounded-pill py-2 fw-bold"
+                        (click)="cancelBooking(b.id)">
+                  <i class="bi bi-trash3 me-2"></i>Időpont lemondása
+                </button>
+              }
+              </div>
 
-            <div class="card-footer bg-light border-0 py-2 px-4 text-center">
-              <small class="text-success fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
-                <i class="bi bi-check-circle-fill me-1"></i>AKTÍV FOGLALÁS
-              </small>
+            <div class="card-footer bg-light border-0 py-2 px-4 text-center"
+              [ngClass]="isPast(b.timeSlot?.date) ? 'bg-secondary-subtle' : 'bg-success-subtle'">
+              @if (isPast(b.timeSlot?.date)) {
+                <small class="text-secondary fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
+                  <i class="bi bi-archive-fill me-1"></i>MÚLTBELI / LEZÁRT
+                </small>
+              } @else {
+                <small class="text-success fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
+                  <i class="bi bi-check-circle-fill me-1"></i>AKTÍV FOGLALÁS
+                </small>
+              }
+              </div>
             </div>
-          </div>
         </div>
       } @empty {
         <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0 my-5">

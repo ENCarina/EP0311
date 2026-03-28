@@ -32,12 +32,18 @@ export class StaffCardComponent implements OnInit {
         this.staffs = rawData
           .filter((s: any) => s.isActive === true || s.isActive === 1)
           .map((s: any, i: number) => {
-          const idForRotation = s.id || Math.floor(Math.random() * 100);
-          const rotationNumber = (i % 5) + 1;
-          const fallbackImg = `/images/doctor${rotationNumber}.png`;
+            const name = s.user?.name || s.name || '';
+            const femaleNames = ['Tünde', 'Beatrix', 'Julianna', 'Anna', 'Eszter', 'Lilla', 'Andrea', 'Katalin'];
+            const isFemale = femaleNames.some(fn => name.includes(fn));
+
+          let fallback: string;
+          if (isFemale) {
+            fallback = (i % 4 < 2) ? '/images/doctor2.png' : '/images/doctor4.png';
+          } else {
+            fallback = (i % 4 < 2 ) ? '/images/doctor1.png' : '/images/doctor3.png';
+          }
 
           const dbImage = s.imageUrl && s.imageUrl !== 'null' ? s.imageUrl.trim() : null;
-
           let finalUrl: string;
           
           if (dbImage && dbImage.length > 2) {
@@ -50,7 +56,7 @@ export class StaffCardComponent implements OnInit {
               finalUrl = cleanPath.includes('/images/') ? cleanPath : `/images${cleanPath}`;
             }
             } else {
-              finalUrl = fallbackImg;
+              finalUrl = fallback;
             }
 
             const processedStaff = {
@@ -58,7 +64,7 @@ export class StaffCardComponent implements OnInit {
               name: s.user?.name || s.name || 'Névtelen',
               specialty: s.specialty || 'Szakorvos',
               imageUrl: finalUrl,
-              fallbackImg: fallbackImg,
+              fallbackImg: fallback,
               treatments: []
             };
             this.staffService.getTreatmentsForStaff(s.id).subscribe({

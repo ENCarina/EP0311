@@ -2,7 +2,7 @@
 
 ```cmd
 git clone https://github.com/ENCarina/EPort.git
-cd ternat
+cd EPApi
 npm install
 node op conf:generate
 node op key:generate

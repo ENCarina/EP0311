@@ -1,0 +1,147 @@
+import db from '../../app/models/modrels.js';
+
+async function up({context: QueryInterface}) {
+  const consultationData = [
+  {
+    id: 1,
+    name: 'Kardiológiai szakvizsgálat',
+    description: 'Teljes körű szív- és érrendszeri állapotfelmérés.',
+    specialty: 'Kardiológia',
+    duration: 30,
+    price: 25000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 2,
+    name: 'Fogászati kontroll',
+    description: 'Általános állapotfelmérés és tanácsadás.',
+    specialty: 'Fogászat',
+    duration: 20,
+    price: 15000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 3,
+    name: 'Pszichiátriai első konzultáció',
+    description: 'Hosszabb mélyinterjú és diagnózis felállítás.',
+    specialty: 'Pszichiátria',
+    duration: 60,
+    price: 35000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 4,
+    name: 'Anyajegyszűrés (Dermatoszkópia)',
+    description: 'Digitális anyajegyvizsgálat és bőrrák szűrés.',
+    specialty: 'Bőrgyógyász',
+    duration: 20,
+    price: 18000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 5,
+    name: 'Ortopédiai szakvizsgálat',
+    description: 'Ízületi panaszok kivizsgálása és mozgásszervi tanácsadás.',
+    specialty: 'Ortopéd szakorvos',
+    duration: 30,
+    price: 22000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 6,
+    name: 'Szemészeti alapvizsgálat',
+    description: 'Látásellenőrzés, szemnyomás mérés és receptírás.',
+    specialty: 'Szemész',
+    duration: 25,
+    price: 16000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 7,
+    name: 'Urológiai kismedencei szűrés',
+    description: 'Ultrahangos és fizikális vizsgálat.',
+    specialty: 'Urológus',
+    duration: 30,
+    price: 20000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 8,
+    name: 'Nőgyógyászati rákszűrés',
+    description: 'Méhnyakrák szűrés (citológia) és kismedencei ultrahang.',
+    specialty: 'Nőgyógyász',
+    duration: 40,
+    price: 28000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 9,
+    name: 'Fogkő-eltávolítás (Ultrahangos)',
+    description: 'Professzionális tisztítás és polírozás.',
+    specialty: 'Fogászat',
+    duration: 45,
+    price: 22000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 10,
+    name: 'Fogtömés (Esztétikai)',
+    description: 'Fényre kötő tömőanyaggal végzett fogmegtartó kezelés.',
+    specialty: 'Fogászat',
+    duration: 60,
+    price: 35000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 11,
+    name: 'Látásvizsgálat és szemüvegfelírás',
+    description: 'Dioptria meghatározása szubjektív és objektív módszerekkel.',
+    specialty: 'Szemész',
+    duration: 40,
+    price: 12000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 12,
+    name: 'Ízületi injekció beadása',
+    description: 'Célzott fájdalomcsillapító vagy porcpótló terápia.',
+    specialty: 'Ortopéd szakorvos',
+    duration: 15,
+    price: 12000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 13,
+    name: 'Posztoperatív kontroll',
+    description: 'Műtét utáni ellenőrzés és varratszedés.',
+    specialty: 'Ortopéd szakorvos',
+    duration: 20,
+    price: 15000.00,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+  if (db && db.Consultation) {
+    await db.Consultation.bulkCreate(consultationData);
+  } else {
+    await QueryInterface.bulkInsert('consultations', consultationData);
+  }
+}
+
+async function down({context: QueryInterface}) {
+  await QueryInterface.bulkDelete('consultations', null, {});
+}
+
+export { up, down }

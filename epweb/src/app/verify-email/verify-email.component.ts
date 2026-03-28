@@ -1,10 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from '../shared/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-verify-email',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, RouterLink],
   templateUrl: './verify-email.component.html',
   styleUrl: './verify-email.component.css',
 })

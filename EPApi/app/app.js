@@ -10,6 +10,13 @@ import sequelize from './database/database.js'
 
 const app = express()
 
+app.use(cors({
+  origin: 'http://localhost:4200', // Vagy ahol az Angular fut
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 // Adatbázis szinkronizálása
 sequelize.sync({ force: false})
   .then(() => console.log('db kész'))
@@ -20,7 +27,7 @@ var accessLogStream = fs.createWriteStream(logfile, { flags: 'a' })
 
 app.use('/images', express.static('public/images'));
 app.use(morgan('dev', { stream: accessLogStream }))
-app.use(cors())
+
 app.use(express.json())
 
 app.use((req, res, next) => {

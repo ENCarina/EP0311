@@ -1,0 +1,57 @@
+import db from '../../app/models/modrels.js';
+async function up({ context: QueryInterface }) {
+  await QueryInterface.bulkDelete('slots', null, {});
+
+  const slotsData = [];
+  const daysToGenerate = 14;
+  const startHour = 8;
+  const endHour = 16;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const staff of staffProfiles) {
+    const matchingConsultations = consultationData.filter(c => c.specialty === staff.specialty);
+    
+    if (matchingConsultations.length === 0) continue;
+
+    for (let i = 0; i < daysToGenerate; i++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + i);
+
+      // Hétvégék kihagyása
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+      const dateString = currentDate.toISOString().split('T')[0];
+
+      for (let hour = startHour; hour < endHour; hour++) {
+        const randomConsultation = matchingConsultations[Math.floor(Math.random() * matchingConsultations.length)];
+
+        slotsData.push({
+          staffId: staff.id,
+          consultationId: randomConsultation.id,
+          date: dateString,
+          startTime: `${hour.toString().padStart(2, '0')}:00:00`,
+          endTime: `${(hour + 1).toString().padStart(2, '0')}:00:00`,
+          isAvailable: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+    }
+  }
+
+  
+  try {
+    await QueryInterface.bulkInsert('slots', slotsData);
+  } catch (error) {
+    console.error("Hiba a slotok seedelésekor:", error);
+  }
+}
+
+async function down({ context: QueryInterface }) {
+  await QueryInterface.bulkDelete('slots', null, {});
+}
+
+export { up, down };

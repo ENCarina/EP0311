@@ -14,6 +14,8 @@ import checkRole from '../middleware/checkRole.js';
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 router.get('/verify-email/:token', AuthController.verifyEmail);
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password/:token', AuthController.resetPassword);
 
 // --- MY PROFILE ---
 router.get('/profile/me', [verifyToken], UserController.getMyProfile); 
@@ -22,11 +24,12 @@ router.put('/profile/update', [verifyToken], UserController.updateMyProfile);
 // --- USERS (Admin) ---
 router.get('/users', [verifyToken, checkRole(2)], UserController.index);
 router.get('/users/:id', [verifyToken], UserController.show);
-// Fontos: Itt 'update', 'updatePassword', stb. kell, nem 'tryUpdate'!
+
 router.post('/users/:id/password', [verifyToken, checkRole(2)], UserController.updatePassword);
 router.post('/users/:id/status', [verifyToken, checkRole(2)], UserController.updateStatus);
 router.put('/users/:id', [verifyToken, checkRole(2)], UserController.update);
 router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy);
+
 
 // --- STAFF (Szakemberek) ---
 router.get('/staff', StaffController.index); 

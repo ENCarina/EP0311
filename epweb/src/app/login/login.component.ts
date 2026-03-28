@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule} from '@angular/router'; 
+import { ActivatedRoute, Router, RouterModule, RouterLink} from '@angular/router'; 
 import { AuthService } from '../shared/auth.service';
 import Swal from 'sweetalert2'
 import { CommonModule } from '@angular/common';
@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule], 
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, RouterLink], 
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
@@ -41,16 +41,16 @@ export class LoginComponent {
     next: (res: any) => {
       if (res.accessToken) {
         localStorage.setItem('token', res.accessToken);
-        localStorage.setItem('user', JSON.stringify(res)); 
-
+        localStorage.setItem('user', JSON.stringify(res.user)); 
       }
-      const role = res.roleId !== undefined ? res.roleId : (res.user?.roleId);
+      this.loginForm.reset(); 
+      this.cleanupModal();
+
+      const role = Number(res.roleId || res.user?.roleId);
       const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/booking';
       const staffId = this.route.snapshot.queryParams['staffId'];
 
-      this.cleanupModal();
-
-      if (role === 2) {
+      if (role === 2 || role === 1) {
         this.router.navigate(['/admin/staff']).then(() => {
           this.isLoading = false; 
         });
@@ -58,15 +58,7 @@ export class LoginComponent {
         this.router.navigate([returnUrl], {
           queryParams: staffId ? { staffId: staffId } : {},
           queryParamsHandling: 'merge' 
-        }).then((navigated) => {
-          if (navigated) {
-            console.log('Sikeres navigáció!');
-          } else {
-            console.warn('A navigáció nem történt meg!');
-          }
-          this.isLoading = false;
-        }).catch(err => {
-          console.error('Navigációs hiba:', err);
+        }).then(() => {
           this.isLoading = false;
         });
       }

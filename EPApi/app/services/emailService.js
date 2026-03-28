@@ -3,9 +3,9 @@ import dotenvFlow from 'dotenv-flow';
 dotenvFlow.config();
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.freemail.hu", 
+    host: 'smtp.freemail.hu', 
     port: 587,
-    secure: false, 
+    secure: process.env.EMAIL_SECURE === 'false', 
     auth: {
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS
@@ -25,7 +25,7 @@ const COLORS = {
 };
 
 export const EmailService = {
-    async sendWelcomeEmail(userEmail, userName) {
+    async sendWelcomeEmail(userEmail, userName, verifyUrl) {
         try {
             const info = await transporter.sendMail({
                 from: process.env.EMAIL_USER,
@@ -40,7 +40,11 @@ export const EmailService = {
                     <h2 style="color: ${COLORS.darkBlue}; font-size: 18px;">Kedves ${userName}!</h2>
                     <p style="font-size: 16px; line-height: 1.5;">
                         Köszönjük, hogy regisztráltál az <strong>Elit Klinika</strong> online rendszerébe. 
-                        Mostantól egyszerűen, néhány kattintással foglalhatsz időpontot szakorvosainkhoz.
+                        <p>Már csak egy lépés választ el a teljes hozzáféréstől.</p>
+                        <a href="${verifyUrl}" style="background: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                            Email cím megerősítése
+                        </a>
+                        <p>Ha a gomb nem működik, másold be ezt a linket a böngésződbe: ${verifyUrl}</p>
                     </p>
                     
                     <p style="margin-top: 30px; line-height: 1.5;">Várjuk szeretettel!</p>
@@ -102,7 +106,47 @@ export const EmailService = {
             console.error('Foglalási email hiba:', error);
             throw error; 
         }
-    }
+    },
+    async sendPasswordResetEmail(userEmail, resetUrl) {
+        try {
+            const info = await transporter.sendMail({
+                from: `"Elit Klinika" <${process.env.EMAIL_USER}>`,
+                to: userEmail,
+                subject: 'Jelszó visszaállítás - ElitPort',
+                html: `
+                <div style="font-family: Arial, sans-serif; color: ${COLORS.text}; max-width: 600px; margin: auto; border: 1px solid ${COLORS.silver}; background-color: ${COLORS.white}; padding: 0;"> 
+                    <div style="background-color: ${COLORS.darkBlue}; padding: 20px; text-align: center;">
+                        <h1 style="color: ${COLORS.white}; margin: 0; font-size: 24px;">Jelszó visszaállítás</h1>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <p style="font-size: 16px; line-height: 1.5;">Tisztelt Felhasználó!</p>
+                        <p style="font-size: 16px; line-height: 1.5;">Úgy értesültünk, hogy elfelejtette jelszavát. Ha Ön kérte a visszaállítást, kattintson az alábbi gombra:</p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${resetUrl}" style="background-color: ${COLORS.darkBlue}; color: ${COLORS.white}; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Új jelszó megadása</a>
+                        </div>
+                        
+                        <p style="font-size: 14px; color: ${COLORS.text}; line-height: 1.5;">
+                            A biztonság érdekében ez a link <strong>30 perc múlva lejár</strong>.<br>
+                            Ha nem Ön kérte a jelszó visszaállítását, kérjük, hagyja figyelmen kívül ezt az üzenetet.
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: ${COLORS.lightGray}; border-top: 1px solid ${COLORS.silver}; padding: 15px; text-align: center;">
+                        <p style="font-size: 12px; color: ${COLORS.darkBlue}; margin: 0;">Ez egy biztonsági értesítés az ElitPort rendszeréből.</p>
+                        <p style="font-size: 10px; color: ${COLORS.text}; margin-top: 5px;">© 2026 Elit Klinika</p>
+                    </div>
+                </div>
+                `
+            });
+            console.log('Jelszó visszaállító email elküldve:', info.messageId);
+            return info;
+        } catch (error) {
+            console.error('Jelszó visszaállítási email hiba:', error);
+            throw error;
+        }
+    },
 };
 
 export const sendEmail = EmailService.sendWelcomeEmail;

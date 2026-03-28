@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BookingService } from '../shared/booking.service'; 
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { AuthService } from '../shared/auth.service';
 
 @Component({
   selector: 'app-my-booking',
@@ -16,7 +17,10 @@ export class MyBookingComponent implements OnInit {
   loading = true;
   errorMessage = '';
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService,
+    public auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     console.log('--- MyBooking komponens inicializálva ---');
@@ -51,6 +55,13 @@ export class MyBookingComponent implements OnInit {
         this.errorMessage = 'Nem sikerült betölteni a foglalásokat. ' + (err.error?.message || '');
       }
     });
+}
+isPast(dateString: string | undefined): boolean {
+  if (!dateString) return false;
+  const bookingDate = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); 
+  return bookingDate < today;
 }
   cancelBooking(id: number): void {
     if (!id || !confirm('Biztosan lemondja ezt az időpontot?')) return;
