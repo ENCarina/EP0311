@@ -1,0 +1,202 @@
+<div class="container py-5 dashboard-page">
+  <div class="dashboard-hero mb-4">
+    <div>
+      <p class="eyebrow mb-2">{{ isDoctorView ? 'Orvosi nézet' : 'Saját foglalásaim' }}</p>
+      <h2 class="fw-bold mb-2">{{ isDoctorView ? 'Páciensek időpontjai egy helyen' : 'Áttekintés egy helyen' }}</h2>
+      <p class="text-muted mb-0">
+        {{ isDoctorView
+          ? 'Közelgő vizitek, páciensadatok és új időpontfoglalás ugyanarról a felületről.'
+          : 'Foglalások, közelgő időpontok és gyors újrafoglalás ugyanarról a felületről.' }}
+      </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-light rounded-pill px-4 border" (click)="openBookingsPage()">
+        <i class="bi bi-list-ul me-2"></i>{{ isDoctorView ? 'Összes időpont' : 'Összes foglalás' }}
+      </button>
+      <button class="btn btn-outline-primary rounded-pill px-4" (click)="refreshDashboard()">
+        <i class="bi bi-arrow-clockwise me-2"></i>Frissítés
+      </button>
+      <button class="btn btn-primary rounded-pill px-4" (click)="onStartBooking()">
+        <i class="bi bi-plus-lg me-2"></i>{{ isDoctorView ? 'Új páciens foglalás' : 'Új foglalás' }}
+      </button>
+      <button class="btn btn-light rounded-pill px-4 border" (click)="openProfileQuickView()">
+        <i class="bi bi-person-circle me-2"></i>Profil
+      </button>
+    </div>
+  </div>
+
+  @if (dashboardError) {
+    <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4">{{ dashboardError }}</div>
+  }
+
+  @if (loadingDashboard) {
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <p class="mb-0 text-muted">A vezérlőpult betöltése folyamatban...</p>
+    </div>
+  } @else {
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="metric-card">
+          <span class="metric-label">Összes foglalás</span>
+          <strong class="metric-value">{{ totalBookings }}</strong>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card">
+          <span class="metric-label">Közelgő időpontok</span>
+          <strong class="metric-value">{{ upcomingBookingsCount }}</strong>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card">
+          <span class="metric-label">{{ isDoctorView ? 'Egyedi páciensek' : 'Legutóbbi foglalás' }}</span>
+          <strong class="metric-value metric-value-small">
+            {{ isDoctorView ? uniquePatientsCount : (latestBookingDateLabel || 'Nincs adat') }}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="panel-card h-100">
+          <div class="panel-header">
+            <h5 class="mb-0">{{ isDoctorView ? 'Közelgő vizitek' : 'Közelgő időpontok' }}</h5>
+            <span class="badge rounded-pill text-bg-light">{{ upcomingAppointments.length }}</span>
+          </div>
+          @if (upcomingAppointments.length) {
+            <div class="list-group list-group-flush">
+              @for (item of upcomingAppointments; track item.id) {
+                <div class="list-group-item px-0 py-3 border-bottom">
+                  <div class="fw-semibold">{{ item.serviceName }}</div>
+                  <div class="small text-muted">{{ item.dateLabel }} · {{ item.timeLabel }}</div>
+                  <div class="small text-primary mb-3">
+                    {{ isDoctorView ? item.patientName : item.doctorName }}
+                  </div>
+                  @if (!isDoctorView) {
+                    <div class="appointment-actions">
+                      <button
+                        class="btn btn-sm btn-outline-danger rounded-pill"
+                        [disabled]="!canCancelBooking(item) || cancellingBookingId === item.id"
+                        (click)="cancelUpcomingBooking(item)">
+                        <i class="bi bi-trash3 me-2"></i>
+                        {{ cancellingBookingId === item.id ? 'Lemondás...' : 'Lemondás' }}
+                      </button>
+                      <span class="small text-muted">{{ getCancellationHint(item) }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-muted mb-0">{{ isDoctorView ? 'Nincs közelgő vizit.' : 'Nincs közelgő időpont.' }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="panel-card h-100">
+          <div class="panel-header">
+            <h5 class="mb-0">Leggyakoribb szolgáltatások</h5>
+            <span class="small text-muted">Kedvenc: {{ favoriteServiceName || 'nincs még' }}</span>
+          </div>
+          @if (topServices.length) {
+            @for (service of topServices; track service.name) {
+              <div class="service-row">
+                <span>{{ service.name }}</span>
+                <strong>{{ service.count }} alkalom</strong>
+              </div>
+            }
+          } @else {
+            <p class="text-muted mb-0">Még nincs elegendő foglalási adat.</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card mt-4">
+      <div class="panel-header mb-3">
+        <h5 class="mb-0">{{ isDoctorView ? 'Összes páciens időpontja' : 'Összes foglalásom' }}</h5>
+        <span class="badge rounded-pill text-bg-light">{{ allBookings.length }}</span>
+      </div>
+
+      @if (allBookings.length) {
+        <div class="booking-list">
+          @for (booking of allBookings; track booking.id) {
+            <div class="booking-row">
+              <div class="booking-main">
+                <strong>{{ getBookingServiceName(booking) }}</strong>
+                <span>
+                  {{ formatDate(getBookingSlot(booking)?.date || booking.date) }} ·
+                  {{ formatTime(getBookingSlot(booking)?.startTime || booking.startTime) }}
+                </span>
+                <small>{{ isDoctorView ? getPatientName(booking) : getDoctorName(booking) }}</small>
+              </div>
+              <div class="booking-meta">
+                <span>{{ getBookingPrice(booking) }} Ft</span>
+                @if (!isDoctorView) {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger rounded-pill"
+                    [disabled]="!canCancelRawBooking(booking) || cancellingBookingId === booking.id"
+                    (click)="cancelBooking(booking)">
+                    <i class="bi bi-trash3 me-2"></i>
+                    {{ cancellingBookingId === booking.id ? 'Lemondás...' : 'Lemondás' }}
+                  </button>
+                  <small>{{ getCancellationHintForBooking(booking) }}</small>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-muted mb-0">{{ isDoctorView ? 'Még nincs rögzített páciens időpont.' : 'Még nincs foglalása.' }}</p>
+      }
+    </div>
+
+    @if (!isDoctorView) {
+    <div class="panel-card mt-4">
+      <div class="panel-header mb-3">
+        <h5 class="mb-0">Gyors foglalás szolgáltatás szerint</h5>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Keresés szolgáltatásra vagy szakterületre"
+            [(ngModel)]="serviceSearchTerm"
+            (input)="updateConsultationFilter()">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="selectedSpecialty" (change)="updateConsultationFilter()">
+            <option value="">Minden szakterület</option>
+            @for (specialty of consultationSpecialties; track specialty) {
+              <option [value]="specialty">{{ specialty }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="consultation-grid">
+        @for (item of filteredConsultations; track item.id) {
+          <div class="consultation-card">
+            <div>
+              <div class="consultation-specialty">{{ item.specialty }}</div>
+              <h6 class="mb-2">{{ item.name }}</h6>
+              <div class="small text-muted">{{ item.duration }} perc · {{ formatPrice(item.price) }} Ft</div>
+            </div>
+            <button class="btn btn-outline-primary btn-sm rounded-pill mt-3" (click)="startQuickBooking(item.id)">
+              Foglalás indítása
+            </button>
+          </div>
+        } @empty {
+          <div class="text-muted">Nincs a szűrésnek megfelelő szolgáltatás.</div>
+        }
+      </div>
+    </div>
+    }
+  }
+</div>

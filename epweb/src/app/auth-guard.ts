@@ -28,13 +28,23 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   if (state.url.startsWith('/dashboard')) {
-    if (userRole === 1 || userRole === 2) {
+    if (loggedIn) {
       return true;
     } else {
       router.navigate(['/my-bookings']);
       return false;
     }
   }
+
+  if (state.url.startsWith('/naptaram')) {
+    if (userRole === 1) {
+      return true;
+    }
+
+    router.navigate(['/dashboard']);
+    return false;
+  }
+
   // Minden más (pl. /booking, /my-bookings, /profile) -> Mehet!
   return true;
 };

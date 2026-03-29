@@ -6,12 +6,160 @@ import { Op } from 'sequelize';
 
 const { Staff, User, Consultation, Slot } = db;
 
+const SPECIALTY_MAP = {
+    'Kardiológus': 'Kardiológia',
+    'Fogorvos': 'Fogászat',
+    'Pszichiáter': 'Pszichiátria',
+    'Szemész': 'Szemészet',
+    'Nőgyógyász': 'Nőgyógyászat',
+    'Bőrgyógyász': 'Bőrgyógyászat',
+    'Neurológus': 'Neurológia',
+    'Ortopéd': 'Ortopédia',
+    'Ortopéd szakorvos': 'Ortopédia',
+    'Urológus': 'Urológia',
+    'Endokrinológus': 'Endokrinológia',
+    'Pulmonológus': 'Pulmonológia',
+    'Fül-orr-gégész': 'Fül-orr-gégészet',
+    'Gasztroenterológus': 'Gasztroenterológia',
+    'Reumatológus': 'Reumatológia',
+    'Diabetológus': 'Diabetológia'
+};
+
+const SLOT_START_HOUR = 8;
+const SLOT_END_HOUR = 21;
+const SLOT_DURATION_MINUTES = 30;
+
+function normalizeTreatmentIds(treatmentIds) {
+    if (!Array.isArray(treatmentIds)) {
+        return [];
+    }
+
+    return [...new Set(
+        treatmentIds
+            .map((id) => Number(id))
+            .filter((id) => Number.isInteger(id) && id > 0)
+    )];
+}
+
+async function resolveTreatmentIdsForSpecialty(specialty, transaction) {
+    const specialtyName = SPECIALTY_MAP[specialty] || specialty;
+    const consultations = await Consultation.findAll({
+        attributes: ['id', 'specialty'],
+        transaction
+    });
+
+    const specialtyIds = consultations
+        .filter((consultation) => consultation.specialty === specialtyName)
+        .map((consultation) => Number(consultation.id));
+
+    const generalIds = consultations
+        .filter((consultation) => consultation.specialty === 'Általános')
+        .map((consultation) => Number(consultation.id));
+
+    return [...new Set([...specialtyIds, ...generalIds])];
+}
+
+function getDaysToEndOfAugust() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endOfAugust = new Date(today.getFullYear(), 7, 31);
+    if (today > endOfAugust) {
+        endOfAugust.setFullYear(endOfAugust.getFullYear() + 1);
+    }
+
+    const diffMs = endOfAugust.getTime() - today.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+}
+
+function toDateOnly(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function toTime(hours, minutes) {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+}
+
+async function ensureFutureSlotsForStaff(staffId, consultationIds) {
+    if (!consultationIds.length) {
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existingFutureSlots = await Slot.count({
+        where: {
+            staffId,
+            consultationId: { [Op.in]: consultationIds },
+            isAvailable: true,
+            date: { [Op.gte]: toDateOnly(today) }
+        }
+    });
+
+    if (existingFutureSlots > 0) {
+        return;
+    }
+
+    const slotsToCreate = [];
+    const daysToGenerate = getDaysToEndOfAugust();
+
+    for (let offset = 0; offset < daysToGenerate; offset += 1) {
+        const currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + offset);
+
+        if (currentDate.getDay() === 0) {
+            continue;
+        }
+
+        const dateValue = toDateOnly(currentDate);
+        let slotIndex = 0;
+
+        for (let minutes = SLOT_START_HOUR * 60; minutes < SLOT_END_HOUR * 60; minutes += SLOT_DURATION_MINUTES) {
+            const startHours = Math.floor(minutes / 60);
+            const startMinutes = minutes % 60;
+            const endTotalMinutes = minutes + SLOT_DURATION_MINUTES;
+            const endHours = Math.floor(endTotalMinutes / 60);
+            const endMinutes = endTotalMinutes % 60;
+            const consultationId = consultationIds[slotIndex % consultationIds.length];
+
+            slotsToCreate.push({
+                staffId,
+                consultationId,
+                date: dateValue,
+                startTime: toTime(startHours, startMinutes),
+                endTime: toTime(endHours, endMinutes),
+                isAvailable: true,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            slotIndex += 1;
+        }
+    }
+
+    if (slotsToCreate.length > 0) {
+        await Slot.bulkCreate(slotsToCreate);
+    }
+}
+
 const StaffController = {
     // 1. Admin lista (Mindenki)
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
-                include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+                include: [
+                    { model: User, as: 'user', attributes: ['name', 'email', 'roleId'] },
+                    {
+                        model: Consultation,
+                        as: 'treatments',
+                        attributes: ['id', 'name', 'price'],
+                        through: { attributes: [] }
+                    }
+                ]
             });
             res.json({ success: true, data: staff });
         } catch (error) {
@@ -103,11 +251,79 @@ const StaffController = {
 
     // 6. ELŐLÉPTETÉS
     async promoteToStaff(req, res) {
+        let transaction;
+
         try {
-            const { userId, specialty } = req.body;
-            const newStaff = await Staff.create({ userId, specialty, isActive: true });
-            res.json({ success: true, data: newStaff });
+            const normalizedUserId = Number(req.body?.userId);
+            const specialty = String(req.body?.specialty || '').trim();
+            const requestedTreatmentIds = normalizeTreatmentIds(req.body?.treatmentIds);
+
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return res.status(400).json({ success: false, message: 'Érvénytelen felhasználó azonosító.' });
+            }
+
+            if (!specialty) {
+                return res.status(400).json({ success: false, message: 'A szakterület megadása kötelező.' });
+            }
+
+            transaction = await db.sequelize.transaction();
+
+            const user = await User.findByPk(normalizedUserId, { transaction });
+            if (!user) {
+                await transaction.rollback();
+                return res.status(404).json({ success: false, message: 'A kiválasztott felhasználó nem található.' });
+            }
+
+            if (Number(user.roleId) === 2) {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, message: 'Admin felhasználó nem nevezhető ki szakemberré.' });
+            }
+
+            const existingStaff = await Staff.findOne({
+                where: { userId: normalizedUserId },
+                transaction
+            });
+
+            let staffProfile;
+            if (existingStaff) {
+                await existingStaff.update({
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+                staffProfile = existingStaff;
+            } else {
+                staffProfile = await Staff.create({
+                    userId: normalizedUserId,
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+            }
+
+            if (Number(user.roleId) !== 1) {
+                await user.update({ roleId: 1 }, { transaction });
+            }
+
+            const treatmentIds = requestedTreatmentIds.length > 0
+                ? requestedTreatmentIds
+                : await resolveTreatmentIdsForSpecialty(specialty, transaction);
+
+            await staffProfile.setTreatments(treatmentIds, { transaction });
+
+            await transaction.commit();
+
+            await ensureFutureSlotsForStaff(Number(staffProfile.id), treatmentIds);
+
+            res.json({
+                success: true,
+                message: existingStaff ? 'A szakember profil frissítve lett.' : 'A szakember profil sikeresen létrejött.',
+                data: staffProfile
+            });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             res.status(500).json({ success: false, message: error.message });
         }
     },

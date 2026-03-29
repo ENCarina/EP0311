@@ -24,14 +24,24 @@
         <li class="nav-item"><a class="nav-link text-white fw-medium px-3" routerLink="/staffCard" routerLinkActive="active">Szakembereink</a></li>
 
         @if (auth.isAuthenticated()) {
-          <li class="nav-item">
-            <a class="nav-link text-white fw-medium px-3" routerLink="/my-bookings" routerLinkActive="active">
-              <i class="bi bi-calendar-check me-1"></i><span class="d-inline d-lg-none d-xl-inline">Időpontjaim</span>
-            </a>
-          </li>
+          @if (auth.getRoleId() !== 2) {
+            <li class="nav-item">
+              <a class="nav-link text-white fw-medium px-3" routerLink="/dashboard" routerLinkActive="active">
+                <i class="bi bi-calendar-check me-1"></i><span class="d-inline d-lg-none d-xl-inline">Időpontjaim</span>
+              </a>
+            </li>
+          }
+
+          @if (auth.getRoleId() === 1) {
+            <li class="nav-item">
+              <a class="nav-link text-white fw-medium px-3" routerLink="/naptaram" routerLinkActive="active">
+                <i class="bi bi-calendar3 me-1"></i>Naptáram
+              </a>
+            </li>
+          }
 
           <li class="nav-item">
-            <a class="nav-link text-white fw-medium px-3" routerLink="/booking" routerLinkActive="active">Foglalás</a>
+            <a class="nav-link text-white fw-medium px-3" routerLink="/booking" routerLinkActive="active">{{ auth.getRoleId() === 1 ? 'Páciens foglalása' : 'Foglalás' }}</a>
           </li>
           
           @if (auth.getRoleId() === 2) {

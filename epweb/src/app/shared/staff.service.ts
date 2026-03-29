@@ -30,9 +30,18 @@ export class StaffService {
         return this.http.put(`${this.baseUrl}/users/${id}`, data);
     }
 
+    updateStaffStatus(id: number, isActive: boolean) {
+        return this.http.post(`${this.baseUrl}/users/${id}/status`, { isActive });
+    }
+
     getAllUsers() {
         return this.http.get(`${this.baseUrl}/users`);
     }
+
+    getPatients() {
+        return this.http.get(`${this.baseUrl}/patients`);
+    }
+
     archiveUser(id: number) {
         return this.http.delete(`${this.baseUrl}/users/${id}`);
     }
