@@ -117,6 +117,8 @@ export class BookingComponent implements OnInit {
 
         if (params && (params['staffId'] || params['treatmentId'] || params['consultationId'])) {
           this.syncSelectionFromParams(params);
+        } else if (this.isDoctorBooking && this.selectedStaffId) {
+          this.updateFilteredConsultations();
         } else {
           this.isLoading = false;
         }

@@ -32,8 +32,16 @@
             </li>
           }
 
+          @if (auth.getRoleId() === 1) {
+            <li class="nav-item">
+              <a class="nav-link text-white fw-medium px-3" routerLink="/naptaram" routerLinkActive="active">
+                <i class="bi bi-calendar3 me-1"></i>Naptáram
+              </a>
+            </li>
+          }
+
           <li class="nav-item">
-            <a class="nav-link text-white fw-medium px-3" routerLink="/booking" routerLinkActive="active">Foglalás</a>
+            <a class="nav-link text-white fw-medium px-3" routerLink="/booking" routerLinkActive="active">{{ auth.getRoleId() === 1 ? 'Páciens foglalása' : 'Foglalás' }}</a>
           </li>
           
           @if (auth.getRoleId() === 2) {

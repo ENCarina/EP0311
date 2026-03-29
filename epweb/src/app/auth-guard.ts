@@ -35,6 +35,16 @@ export const authGuard: CanActivateFn = (route, state) => {
       return false;
     }
   }
+
+  if (state.url.startsWith('/naptaram')) {
+    if (userRole === 1) {
+      return true;
+    }
+
+    router.navigate(['/dashboard']);
+    return false;
+  }
+
   // Minden más (pl. /booking, /my-bookings, /profile) -> Mehet!
   return true;
 };

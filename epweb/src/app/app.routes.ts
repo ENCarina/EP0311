@@ -15,6 +15,7 @@ import { NopageComponent } from './nopage/nopage.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { DoctorCalendarComponent } from './doctor-calendar/doctor-calendar.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -29,6 +30,7 @@ export const routes: Routes = [
 
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard]},
     { path: 'my-bookings', component: MyBookingComponent, canActivate: [authGuard]},
+    { path: 'naptaram', component: DoctorCalendarComponent, canActivate: [authGuard]},
 
     //publikus kártya
     { path: 'staffCard', component: StaffCardComponent }, 
