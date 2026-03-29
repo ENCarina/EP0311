@@ -24,7 +24,7 @@ main {
 footer {
   flex-shrink: 0; /* Megakadályozza, hogy a footer összenyomódjon */
   background-color: #1a1a1a !important; /* Mélyebb fekete a prémium hatásért */
-  border-top: 2px solid #007bff; /* Az ElitPort kékje vagy arany/ezüst csík */
+  border-top: 2px solid #756796; /* Az ElitPort kékje vagy arany/ezüst csík */
 }
 
 
@@ -33,4 +33,20 @@ footer {
               url('/images/medical-bg2.jpg') no-repeat center center fixed; 
   background-size: cover;
   border-radius: 15px; 
+}
+ .btn-xs {
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  min-width: 28px !important;
+}
+
+.lang-wrapper {
+  transition: all 0.3s ease;
+}
+
+/* vegyük vissza a feszességet mobilon */
+@media (max-width: 991px) {
+  .lang-wrapper {
+    margin-right: 5px;
+  }
 }

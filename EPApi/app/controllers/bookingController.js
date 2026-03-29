@@ -146,34 +146,54 @@ const BookingController = {
     async destroy(req, res) {
         const t = await db.sequelize.transaction();
         try {
-            const booking = await db.Booking.findByPk(req.params.id);
+            const booking = await db.Booking.findByPk(req.params.id, {
+                include: [{ model: db.Slot }]
+            });
             
             if (!booking) {
                 await t.rollback();
                 return res.status(404).json({ success: false, message: "Foglalás nem található!" });
             }
 
-            // Jogosultság: Csak Admin (2) vagy a foglalás saját tulajdonosa törölhet
+             // Jogosultság: Csak Admin (2) vagy a tulajdonos törölhet
             if (req.user.roleId !== 2 && booking.patientId != req.user.id) {
                 await t.rollback();
                 return res.status(403).json({ success: false, message: "Nincs jogosultsága a törléshez!" });
             }
 
-            // Felszabadítjuk az időpontot (isAvailable: true)
-            await db.Slot.update(
-                { isAvailable: true },
-                { where: { id: booking.slotId }, transaction: t }
-            );
+            // 24 ÓRÁS SZABÁLY ELLENŐRZÉSE - ha nem Admin
+            if (req.user.roleId !== 2) {
+                const now = new Date();
+                const appointmentDate = new Date(booking.Slot.startTime); 
+                
+                const diffInMs = appointmentDate - now;
+                const diffInHours = diffInMs / (1000 * 60 * 60);
 
-            await booking.destroy({ transaction: t });
-            await t.commit();
+                if (diffInHours < 24) {
+                    await t.rollback();
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: "Az időpont 24 órán belül már nem mondható le online. Kérjük, hívjon!!" 
+                    });
+                }
+            }
+            // TÖRLÉSI FOLYAMAT (ha átment az ellenőrzéseken)
+                await db.Slot.update(
+                    { isAvailable: true },
+                    { where: { id: booking.slotId }, transaction: t }
+                    );
 
-            return res.status(200).json({ success: true, message: 'Foglalás sikeresen törölve.' });
-        } catch (error) {
-            if (t) await t.rollback();
-            return res.status(500).json({ success: false, error: error.message });
+                await booking.destroy({ transaction: t });
+                await t.commit();
+
+                return res.status(200).json({ success: true, message: 'Foglalás sikeresen törölve.' });
+
+                } catch (error) {
+                    if (t) await t.rollback();
+                    return res.status(500).json({ success: false, error: error.message });
+                }
+            }
         }
-    }
-};
+
 
 export default BookingController;

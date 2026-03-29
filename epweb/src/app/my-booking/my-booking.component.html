@@ -73,22 +73,38 @@
                   <i class="bi bi-check2-all me-2 text-primary"></i>Megtörtént vizit
                 </button>
               } @else {
-                <button class="btn btn-cancel w-100 rounded-pill py-2 fw-bold"
-                        (click)="cancelBooking(b.id)">
-                  <i class="bi bi-trash3 me-2"></i>Időpont lemondása
-                </button>
-              }
+                @if (isCancellable(b)) {
+                  <button class="btn btn-cancel w-100 rounded-pill py-2 fw-bold"
+                          (click)="cancelBooking(b.id)">
+                    <i class="bi bi-trash3 me-2"></i>Időpont lemondása
+                  </button>
+                } @else {
+                  <button class="btn btn-secondary w-100 rounded-pill py-2 fw-bold opacity-75" 
+                          style="cursor: not-allowed;"
+                          title="24 órán belül már nem mondható le online">
+                    <i class="bi bi-telephone-outbound me-2"></i>Csak telefonon mondható le
+                  </button>
+                }
+              }  
               </div>
 
             <div class="card-footer bg-light border-0 py-2 px-4 text-center"
-              [ngClass]="isPast(b.timeSlot?.date) ? 'bg-secondary-subtle' : 'bg-success-subtle'">
+              [ngClass]="{
+                'bg-secondary-subtle' : isPast(b.timeSlot?.date), 
+                'bg-warning-subtle' : !isPast(b.timeSlot?.date) && !isCancellable(b),
+                'bg-success-subtle':isCancellable(b) 
+              }">
               @if (isPast(b.timeSlot?.date)) {
                 <small class="text-secondary fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
                   <i class="bi bi-archive-fill me-1"></i>MÚLTBELI / LEZÁRT
                 </small>
+              } @else if (!isCancellable(b)) {
+                <small class="text-warning-emphasis fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>VÉGLEGESÍTETT (NEM MONDHATÓ LE)
+                </small>
               } @else {
                 <small class="text-success fw-bold uppercase-tracking" style="font-size: 0.7rem; letter-spacing: 1px;">
-                  <i class="bi bi-check-circle-fill me-1"></i>AKTÍV FOGLALÁS
+                  <i class="bi bi-check-circle-fill me-1"></i>AKTÍV / Lemondható
                 </small>
               }
               </div>

@@ -52,7 +52,9 @@ export class BookingService {
     return this.http.delete(`${this.API_URL}/bookings/${bookingId}`, { 
       headers: this.getHeaders() 
     }).pipe(
-      catchError(err => throwError(() => err))
+      catchError(err => {
+        return throwError(() => err);
+      })
     );
   }
 
