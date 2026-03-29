@@ -163,16 +163,8 @@ import { AdminService } from '../shared/admin.service';
         return;
       }
 
-      this.adminService.promoteUser(selectedUserId, { specialty }).subscribe({
+      this.api.promoteUser(selectedUserId, { specialty, treatmentIds: this.selectedTreatments }).subscribe({
         next: () => {
-          if (this.selectedTreatments.length > 0) {
-            this.api.assignTreatments(selectedUserId, this.selectedTreatments).subscribe({
-              next: () => this.completeAction('Szakember és kezelések sikeresen mentve!'),
-              error: () => this.completeAction('Szakember létrejött, de a kezelések mentése sikertelen.')
-            });
-            return;
-          }
-
           this.completeAction('Szakember sikeresen létrehozva!');
         },
         error: (err: any) => {
@@ -304,7 +296,7 @@ import { AdminService } from '../shared/admin.service';
     restoreStaff(staff: any) {
       const targetId = staff.userId;
 
-      this.api.updateStaff(targetId, { isActive: true }).subscribe({
+      this.api.updateStaffStatus(targetId, true).subscribe({
         next: () => {
           staff.isActive = true;
           staff.isAvailable = true;

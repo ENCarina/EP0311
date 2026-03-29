@@ -47,10 +47,11 @@ export class LoginComponent {
       this.cleanupModal();
 
       const role = Number(res.roleId || res.user?.roleId);
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/booking';
+      const defaultRoute = role === 1 ? '/naptaram' : '/booking';
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultRoute;
       const staffId = this.route.snapshot.queryParams['staffId'];
 
-      if (role === 2 || role === 1) {
+      if (role === 2) {
         this.router.navigate(['/admin/staff']).then(() => {
           this.isLoading = false; 
         });
@@ -58,7 +59,15 @@ export class LoginComponent {
         this.router.navigate([returnUrl], {
           queryParams: staffId ? { staffId: staffId } : {},
           queryParamsHandling: 'merge' 
-        }).then(() => {
+        }).then((navigated) => {
+          if (navigated) {
+            console.log('Sikeres navigáció!');
+          } else {
+            console.warn('A navigáció nem történt meg!');
+          }
+          this.isLoading = false;
+        }).catch((err) => {
+          console.error('Navigációs hiba:', err);
           this.isLoading = false;
         });
       }

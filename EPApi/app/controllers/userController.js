@@ -1,6 +1,155 @@
 import db from '../models/modrels.js';
-const { User, Staff, Role, Consultation, Booking, Slot, Op } = db;
 import bcrypt from 'bcryptjs';
+import { Op } from 'sequelize';
+
+const { User, Staff, Role, Consultation, Booking, Slot } = db;
+
+const SPECIALTY_MAP = {
+    'Kardiológus': 'Kardiológia',
+    'Fogorvos': 'Fogászat',
+    'Pszichiáter': 'Pszichiátria',
+    'Szemész': 'Szemészet',
+    'Nőgyógyász': 'Nőgyógyászat',
+    'Bőrgyógyász': 'Bőrgyógyászat',
+    'Neurológus': 'Neurológia',
+    'Ortopéd': 'Ortopédia',
+    'Ortopéd szakorvos': 'Ortopédia',
+    'Urológus': 'Urológia',
+    'Endokrinológus': 'Endokrinológia',
+    'Pulmonológus': 'Pulmonológia',
+    'Fül-orr-gégész': 'Fül-orr-gégészet',
+    'Gasztroenterológus': 'Gasztroenterológia',
+    'Reumatológus': 'Reumatológia',
+    'Diabetológus': 'Diabetológia'
+};
+
+const SLOT_START_HOUR = 8;
+const SLOT_END_HOUR = 21;
+const SLOT_DURATION_MINUTES = 30;
+
+async function resolveTreatmentIdsForSpecialty(specialty) {
+    const specialtyName = SPECIALTY_MAP[specialty] || specialty;
+    const consultations = await Consultation.findAll({
+        attributes: ['id', 'specialty']
+    });
+
+    const specialtyIds = consultations
+        .filter((consultation) => consultation.specialty === specialtyName)
+        .map((consultation) => Number(consultation.id));
+
+    const generalIds = consultations
+        .filter((consultation) => consultation.specialty === 'Általános')
+        .map((consultation) => Number(consultation.id));
+
+    return [...new Set([...specialtyIds, ...generalIds])];
+}
+
+function getDaysToEndOfAugust() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endOfAugust = new Date(today.getFullYear(), 7, 31);
+    if (today > endOfAugust) {
+        endOfAugust.setFullYear(endOfAugust.getFullYear() + 1);
+    }
+
+    const diffMs = endOfAugust.getTime() - today.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+}
+
+function toDateOnly(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function toTime(hours, minutes) {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+}
+
+async function ensureFutureSlotsForStaff(staffId, consultationIds) {
+    if (!consultationIds.length) {
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existingFutureSlots = await Slot.count({
+        where: {
+            staffId,
+            consultationId: { [Op.in]: consultationIds },
+            isAvailable: true,
+            date: { [Op.gte]: toDateOnly(today) }
+        }
+    });
+
+    if (existingFutureSlots > 0) {
+        return;
+    }
+
+    const slotsToCreate = [];
+    const daysToGenerate = getDaysToEndOfAugust();
+
+    for (let offset = 0; offset < daysToGenerate; offset += 1) {
+        const currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + offset);
+
+        if (currentDate.getDay() === 0) {
+            continue;
+        }
+
+        const dateValue = toDateOnly(currentDate);
+        let slotIndex = 0;
+
+        for (let minutes = SLOT_START_HOUR * 60; minutes < SLOT_END_HOUR * 60; minutes += SLOT_DURATION_MINUTES) {
+            const startHours = Math.floor(minutes / 60);
+            const startMinutes = minutes % 60;
+            const endTotalMinutes = minutes + SLOT_DURATION_MINUTES;
+            const endHours = Math.floor(endTotalMinutes / 60);
+            const endMinutes = endTotalMinutes % 60;
+            const consultationId = consultationIds[slotIndex % consultationIds.length];
+
+            slotsToCreate.push({
+                staffId,
+                consultationId,
+                date: dateValue,
+                startTime: toTime(startHours, startMinutes),
+                endTime: toTime(endHours, endMinutes),
+                isAvailable: true,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            slotIndex += 1;
+        }
+    }
+
+    if (slotsToCreate.length > 0) {
+        await Slot.bulkCreate(slotsToCreate);
+    }
+}
+
+async function ensureStaffAvailability(staffProfile) {
+    if (!staffProfile) {
+        return;
+    }
+
+    let treatmentIds = [];
+    const existingTreatments = await staffProfile.getTreatments({ attributes: ['id'] });
+
+    if (existingTreatments.length > 0) {
+        treatmentIds = existingTreatments.map((treatment) => Number(treatment.id));
+    } else {
+        treatmentIds = await resolveTreatmentIdsForSpecialty(staffProfile.specialty);
+        if (treatmentIds.length > 0) {
+            await staffProfile.setTreatments(treatmentIds);
+        }
+    }
+
+    await ensureFutureSlotsForStaff(Number(staffProfile.id), treatmentIds);
+}
 
 const UserController = {
     // --- LISTÁZÁS ---
@@ -109,6 +258,10 @@ const UserController = {
             if (staffProfile) {
                 staffProfile.isActive = isActive;
                 await staffProfile.save();
+
+                if (isActive) {
+                    await ensureStaffAvailability(staffProfile);
+                }
             }
             res.status(200).json({ success: true, data: { id, isActive } });
         } catch (error) {
