@@ -14,7 +14,7 @@ const SlotController = {
 
     async index(req, res) {
         try {
-            const { staffId, date } = req.query;
+            const { staffId, consultationId, date } = req.query;
 
             // Alap feltételek: csak elérhető és jövőbeli (vagy mai) időpontok
             const whereClause = {
@@ -23,6 +23,7 @@ const SlotController = {
             };
 
             if (staffId) whereClause.staffId = Number(staffId);
+            if (consultationId) whereClause.consultationId = Number(consultationId);
             
             // Ha konkrét dátumra szűrünk, felülírjuk az alap "mától kezdve" feltételt
             if (date) whereClause.date = date;

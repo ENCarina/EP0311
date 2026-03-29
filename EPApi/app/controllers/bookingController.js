@@ -142,35 +142,61 @@ const BookingController = {
         }
     },
 
-    // 5. Foglalás törlése (Transaction-nel)
+    // 5. Foglalás törlése (24 órás szabály a pácienseknél)
     async destroy(req, res) {
-        const t = await db.sequelize.transaction();
         try {
-            const booking = await db.Booking.findByPk(req.params.id);
-            
-            if (!booking) {
-                await t.rollback();
-                return res.status(404).json({ success: false, message: "Foglalás nem található!" });
+            const currentUserId = req.user?.id || req.userId;
+            const currentUserRole = req.user?.roleId;
+
+            if (!currentUserId) {
+                return res.status(401).json({ success: false, error: 'User not authenticated' });
             }
 
-            // Jogosultság: Csak Admin (2) vagy a foglalás saját tulajdonosa törölhet
-            if (req.user.roleId !== 2 && booking.patientId != req.user.id) {
-                await t.rollback();
-                return res.status(403).json({ success: false, message: "Nincs jogosultsága a törléshez!" });
+            if (currentUserRole === 2) {
+                const transaction = await db.sequelize.transaction();
+                try {
+                    const booking = await db.Booking.findByPk(req.params.id, { transaction });
+                    if (!booking) {
+                        throw new Error('Foglalás nem található!');
+                    }
+
+                    await db.Slot.update(
+                        { isAvailable: true },
+                        { where: { id: booking.slotId }, transaction }
+                    );
+
+                    await booking.destroy({ transaction });
+                    await transaction.commit();
+
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Foglalás sikeresen törölve.'
+                    });
+                } catch (error) {
+                    await transaction.rollback();
+                    throw error;
+                }
             }
 
-            // Felszabadítjuk az időpontot (isAvailable: true)
-            await db.Slot.update(
-                { isAvailable: true },
-                { where: { id: booking.slotId }, transaction: t }
-            );
+            const result = await BookingService.cancelBooking(req.params.id, currentUserId);
 
-            await booking.destroy({ transaction: t });
-            await t.commit();
-
-            return res.status(200).json({ success: true, message: 'Foglalás sikeresen törölve.' });
+            return res.status(200).json({
+                success: true,
+                message: result.message
+            });
         } catch (error) {
-            if (t) await t.rollback();
+            if (error.message === 'Foglalás nem található!') {
+                return res.status(404).json({ success: false, error: error.message });
+            }
+
+            if (error.message === 'Nincs jogosultságod a lemondáshoz!') {
+                return res.status(403).json({ success: false, error: error.message });
+            }
+
+            if (error.message === '24 órán belüli lemondás csak telefonon lehetséges!') {
+                return res.status(400).json({ success: false, error: error.message });
+            }
+
             return res.status(500).json({ success: false, error: error.message });
         }
     }

@@ -74,9 +74,12 @@
                 </button>
               } @else {
                 <button class="btn btn-cancel w-100 rounded-pill py-2 fw-bold"
-                        (click)="cancelBooking(b.id)">
+                        [disabled]="!canCancelBooking(b)"
+                        [title]="getCancellationHint(b)"
+                        (click)="cancelBooking(b)">
                   <i class="bi bi-trash3 me-2"></i>Időpont lemondása
                 </button>
+                <small class="d-block text-muted mt-2">{{ getCancellationHint(b) }}</small>
               }
               </div>
 

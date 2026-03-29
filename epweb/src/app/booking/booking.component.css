@@ -3,6 +3,132 @@
   background-color: #ffffff;
 }
 
+.scheduler-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.week-label-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  background: #fff;
+  border-radius: 999px;
+  border: 1px solid #dce7f5;
+  box-shadow: 0 8px 24px rgba(0, 44, 90, 0.06);
+  font-weight: 600;
+}
+
+.week-scheduler-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.day-column {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e8eef5;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.today-column {
+  border-color: #8ec5ff;
+}
+
+.day-column-header {
+  padding: 1rem 0.9rem 0.85rem;
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+  border-bottom: 1px solid #eef3f8;
+  text-align: center;
+}
+
+.day-column-header.today {
+  background: linear-gradient(180deg, #e9f4ff 0%, #ffffff 100%);
+}
+
+.weekday-name {
+  font-size: 0.8rem;
+  color: #5c6c80;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+
+.day-date {
+  font-weight: 700;
+  color: #17324d;
+  margin-bottom: 0.6rem;
+}
+
+.slot-badge {
+  display: inline-block;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #e8f4ff;
+  color: #0d5cab;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.slot-badge-empty {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.day-column-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  min-height: 320px;
+}
+
+.scheduler-slot {
+  width: 100%;
+  border: 1px solid #d7e7fb;
+  background: #f9fcff;
+  color: #0d5cab;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.scheduler-slot:hover {
+  background: #e8f4ff;
+  border-color: #9bc5f8;
+}
+
+.scheduler-slot.selected {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-color: #0056b3;
+  color: #fff;
+}
+
+.day-scroll-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: #f3f7fb;
+  color: #45627e;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.no-day-slots {
+  margin: auto 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 1rem 0.5rem;
+}
+
 /* --- SZŰRŐ PANEL (Bal oldal) --- */
 .card.shadow-sm.rounded-4 {
   background-color: #ffffff;
@@ -104,6 +230,18 @@
   background-color: #fdfdfd;
   cursor: not-allowed;
   filter: grayscale(0.5);
+}
+
+@media (max-width: 1200px) {
+  .week-scheduler-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .week-scheduler-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 }
 
 

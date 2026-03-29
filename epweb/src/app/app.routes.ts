@@ -14,6 +14,7 @@ import { MyBookingComponent } from './my-booking/my-booking.component';
 import { NopageComponent } from './nopage/nopage.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -26,6 +27,7 @@ export const routes: Routes = [
     { path: 'reset-password/:token', component: ResetPasswordComponent},
     { path: 'about', component:AboutComponent},
 
+    { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard]},
     { path: 'my-bookings', component: MyBookingComponent, canActivate: [authGuard]},
 
     //publikus kártya

@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './booking.component.css'
 })
 export class BookingComponent implements OnInit {
+  private readonly daySlotsPageSize = 5;
   private readonly bookingApi = inject(BookingService);
   private readonly staffApi = inject(StaffService);
   private readonly route = inject(ActivatedRoute);
@@ -35,17 +36,40 @@ export class BookingComponent implements OnInit {
   protected errorMessage = '';
 
   protected selectedStaffId: number | null = null;
-  protected selectedDate: string = new Date().toISOString().split('T')[0];
+  protected selectedDate: string = this.getInitialBookingDate();
   protected selectedConsultationId: number | null = null; 
   protected filteredConsultations: Consultation[] = [];
   protected consultations: Consultation[] = [];
   protected readonly today = new Date().toISOString().split('T')[0];
+  protected currentWeekStart: Date = this.getWeekStart(new Date());
+  protected selectedSlot: Slot | null = null;
+  protected daySlotStartIndexMap: Record<string, number> = {};
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.loadInitialData(params); 
     });
   } 
+
+  protected get selectedStaff(): any | undefined {
+    return this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
+  }
+
+  protected get selectedStaffName(): string {
+    const staff = this.selectedStaff;
+    return staff?.user?.name || staff?.name || '';
+  }
+
+  private getInitialBookingDate(): string {
+    const now = new Date();
+    const day = now.getDay();
+    if (day === 6) {
+      now.setDate(now.getDate() + 2);
+    } else if (day === 0) {
+      now.setDate(now.getDate() + 1);
+    }
+    return now.toISOString().split('T')[0];
+  }
 
   loadInitialData(params?: any): void {
     this.isLoading = true;
@@ -69,7 +93,7 @@ export class BookingComponent implements OnInit {
 
         this.specialties = [...new Set(this.staffs.map(s => s.specialty))].filter(Boolean);
 
-        if (params && (params['staffId'] || params['treatmentId'])) {
+        if (params && (params['staffId'] || params['treatmentId'] || params['consultationId'])) {
           this.syncSelectionFromParams(params);
         } else {
           this.isLoading = false;
@@ -93,7 +117,15 @@ export class BookingComponent implements OnInit {
       }
     }
     // Meghívjuk a szűrést, átadva a treatmentId-t ha van
-    const tId = params['treatmentId'] ? Number(params['treatmentId']) : null;
+    const tId = params['treatmentId']
+      ? Number(params['treatmentId'])
+      : (params['consultationId'] ? Number(params['consultationId']) : null);
+
+    if (params['staffId']) {
+      this.selectedDate = this.getInitialBookingDate();
+      this.currentWeekStart = this.getWeekStart(this.selectedDate);
+    }
+
     this.updateFilteredConsultations(tId);
   }
 
@@ -137,45 +169,174 @@ export class BookingComponent implements OnInit {
     this.filteredConsultations = [];
     this.selectedConsultationId = null;
     this.availableSlots = [];
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
   }
 
   protected onStaffChange(): void {
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
     this.updateFilteredConsultations();
   }
 
-  protected onFilterChange(): void {
+  protected onDateChange(): void {
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
+    this.currentWeekStart = this.getWeekStart(this.selectedDate);
+  }
+
+  protected onConsultationChange(): void {
+    this.selectedSlot = null;
+    this.daySlotStartIndexMap = {};
     this.loadSlots();
+  }
+
+  protected getWeekDays(): string[] {
+    const days: string[] = [];
+    const start = new Date(this.currentWeekStart);
+
+    for (let index = 0; index < 7; index += 1) {
+      const day = new Date(start);
+      day.setDate(start.getDate() + index);
+      days.push(this.toDateKey(day));
+    }
+
+    return days;
+  }
+
+  protected getWeekLabel(): string {
+    const weekDays = this.getWeekDays();
+    if (!weekDays.length) return '';
+    return `${this.formatDateLabelShort(weekDays[0])} - ${this.formatDateLabelShort(weekDays[6])}`;
+  }
+
+  protected goToPreviousWeek(): void {
+    const previous = new Date(this.currentWeekStart);
+    previous.setDate(previous.getDate() - 7);
+    this.currentWeekStart = previous;
+    this.ensureSelectedSlotVisible();
+  }
+
+  protected goToNextWeek(): void {
+    const next = new Date(this.currentWeekStart);
+    next.setDate(next.getDate() + 7);
+    this.currentWeekStart = next;
+    this.ensureSelectedSlotVisible();
+  }
+
+  protected goToCurrentWeek(): void {
+    this.selectedDate = this.getInitialBookingDate();
+    this.currentWeekStart = this.getWeekStart(this.selectedDate);
+    this.ensureSelectedSlotVisible();
+  }
+
+  protected getSlotsForDate(date: string): Slot[] {
+    return this.availableSlots
+      .filter(slot => slot.date === date)
+      .sort((left, right) => (left.startTime || '').localeCompare(right.startTime || ''));
+  }
+
+  protected getVisibleSlotsForDate(date: string): Slot[] {
+    const allSlots = this.getSlotsForDate(date);
+    const start = this.daySlotStartIndexMap[date] || 0;
+    return allSlots.slice(start, start + this.daySlotsPageSize);
+  }
+
+  protected canScrollDayEarlier(date: string): boolean {
+    return (this.daySlotStartIndexMap[date] || 0) > 0;
+  }
+
+  protected canScrollDayLater(date: string): boolean {
+    const allSlots = this.getSlotsForDate(date);
+    const start = this.daySlotStartIndexMap[date] || 0;
+    return start + this.daySlotsPageSize < allSlots.length;
+  }
+
+  protected scrollDayEarlier(date: string): void {
+    const currentStart = this.daySlotStartIndexMap[date] || 0;
+    this.daySlotStartIndexMap[date] = Math.max(0, currentStart - this.daySlotsPageSize);
+  }
+
+  protected scrollDayLater(date: string): void {
+    const allSlots = this.getSlotsForDate(date);
+    const currentStart = this.daySlotStartIndexMap[date] || 0;
+    const maxStart = Math.max(0, allSlots.length - this.daySlotsPageSize);
+    this.daySlotStartIndexMap[date] = Math.min(maxStart, currentStart + this.daySlotsPageSize);
+  }
+
+  protected isToday(date: string): boolean {
+    return date === this.toDateKey(new Date());
+  }
+
+  protected getWeekdayLabel(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { weekday: 'short' });
+  }
+
+  protected getDayMonthLabel(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+  }
+
+  protected isSlotSelected(slot: Slot): boolean {
+    return !!this.selectedSlot && this.selectedSlot.id === slot.id;
+  }
+
+  protected formatTimeRange(slot: Slot): string {
+    return `${this.formatTimeOnly(slot.startTime)} - ${this.formatTimeOnly(slot.endTime)}`;
+  }
+
+  protected formatTimeOnly(time: string): string {
+    return String(time || '').slice(0, 5);
   }
 
   loadSlots(): void {
     if (!this.selectedStaffId || !this.selectedConsultationId) {
       this.availableSlots = [];
+      this.selectedSlot = null;
       return;
     }
 
     this.isLoading = true;
     this.bookingApi.getAvailableSlots(
       Number(this.selectedStaffId), 
-      Number(this.selectedConsultationId), 
-      this.selectedDate
+      Number(this.selectedConsultationId)
     ).subscribe({
       next: (res: any) => {
         const allData = res.data || res;
-        this.availableSlots = allData.filter((slot: any) => slot.date === this.selectedDate);
+        this.availableSlots = allData
+          .filter((slot: Slot) => this.isSelectableDate(slot.date))
+          .sort((left: Slot, right: Slot) => {
+            const dateCompare = (left.date || '').localeCompare(right.date || '');
+            if (dateCompare !== 0) return dateCompare;
+            return (left.startTime || '').localeCompare(right.startTime || '');
+          });
+
+        if (this.selectedDate) {
+          this.currentWeekStart = this.getWeekStart(this.selectedDate);
+        }
+
+        if (this.selectedSlot && !this.availableSlots.some(slot => slot.id === this.selectedSlot?.id)) {
+          this.selectedSlot = null;
+        }
+
+        this.errorMessage = '';
         this.isLoading = false;
       },
       error: (err: any) => {
         this.isLoading = false;
         this.availableSlots = [];
+        this.selectedSlot = null;
         this.errorMessage = 'Hiba az időpontok lekérésekor.';
       }
     });
   }
 
-  onReserve(slot: any): void {
+  protected onReserve(slot: Slot): void {
+    this.selectedSlot = slot;
+    this.ensureSlotVisibleInDayPage(slot);
+
     Swal.fire({
       title: 'Foglalás megerősítése',
-      text: `Időpont: ${slot.date} ${slot.startTime.slice(0, 5)}`,
+      text: `Időpont: ${slot.date} ${this.formatTimeOnly(slot.startTime)}`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#003366',
@@ -188,7 +349,50 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  private executeBooking(slot: any): void {
+  private isSelectableDate(date: string): boolean {
+    const parsedDate = new Date(`${date}T00:00:00`);
+    return !isNaN(parsedDate.getTime());
+  }
+
+  private getWeekStart(dateValue: Date | string): Date {
+    const date = new Date(dateValue);
+    const day = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() - day);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  private toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatDateLabelShort(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+  }
+
+  private ensureSelectedSlotVisible(): void {
+    if (!this.selectedSlot) return;
+
+    const visibleDays = this.getWeekDays();
+    if (!visibleDays.includes(this.selectedSlot.date)) {
+      this.selectedSlot = null;
+      return;
+    }
+
+    this.ensureSlotVisibleInDayPage(this.selectedSlot);
+  }
+
+  private ensureSlotVisibleInDayPage(slot: Slot): void {
+    const allSlots = this.getSlotsForDate(slot.date);
+    const slotIndex = allSlots.findIndex(item => item.id === slot.id);
+    if (slotIndex < 0) return;
+    this.daySlotStartIndexMap[slot.date] = Math.floor(slotIndex / this.daySlotsPageSize) * this.daySlotsPageSize;
+  }
+
+  private executeBooking(slot: Slot): void {
     const userId = this.auth.getUserId();
 
     if (!userId) {
@@ -207,14 +411,13 @@ export class BookingComponent implements OnInit {
     const bookingData = {
       slotId: Number(slot.id),
       patientId: Number(userId),
-      staffId: Number(this.selectedStaffId), 
+      staffId: Number(slot.staffId || this.selectedStaffId), 
       consultationId: Number(this.selectedConsultationId),
       duration: Number(selectedTreatment?.duration || 30),
       name: selectedTreatment?.name || 'Konzultáció',
       price: Number(selectedTreatment?.price || 0),
       startTime: slot.startTime, 
       date: slot.date,
-      status: 'pending', 
       isPublic: true
     };
 

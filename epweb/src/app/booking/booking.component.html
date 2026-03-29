@@ -1,6 +1,5 @@
 <div class="container py-5 animate-fade-in">
   <div class="row">
-    
     <div class="col-lg-4">
       <div class="card shadow-sm border-0 mb-4 rounded-4">
         <div class="card-body p-4">
@@ -9,10 +8,10 @@
           </h5>
           
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Dátum kiválasztása</label>
+            <label class="form-label small fw-bold text-muted">Hét kiinduló napja</label>
             <input type="date" class="form-control border-light-subtle shadow-sm" 
                    [(ngModel)]="selectedDate" 
-                   (change)="onFilterChange()"
+                   (change)="onDateChange()"
                    [min]="today">
           </div>
 
@@ -45,7 +44,7 @@
             <label class="form-label small fw-bold text-muted">Vizsgálat típusa</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedConsultationId" 
-                    (change)="onFilterChange()"
+                    (change)="onConsultationChange()"
                     [disabled]="!selectedStaffId">
 
             <option [ngValue]="null" disabled>-- Válasszon vizsgálatot --</option>
@@ -59,7 +58,7 @@
           </div>
 
           <button class="btn btn-elit w-100 mt-3 rounded-pill py-2 shadow-sm" 
-                  (click)="onFilterChange()" 
+                  (click)="loadSlots()" 
                   [disabled]="isLoading || !selectedConsultationId">
             @if (isLoading) {
               <span class="spinner-border spinner-border-sm me-2"></span> Frissítés...
@@ -73,51 +72,90 @@
 
     <div class="col-lg-8">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-bold">Elérhető időpontok</h4>
-        <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle">
-          {{ availableSlots.length }} szabad hely
-        </span>
+        <h4 class="mb-0 fw-bold">Heti naptárnézet</h4>
+        @if (selectedStaffName) {
+          <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle">
+            {{ selectedStaffName }}
+          </span>
+        }
       </div>
 
       @if (errorMessage) {
         <div class="alert alert-danger rounded-4 shadow-sm border-0">{{ errorMessage }}</div>
       }
 
-      <div class="row g-3">
-        @for (slot of availableSlots; track slot.id) {
-          <div class="col-md-6 col-xl-4">
-            <div class="card h-100 slot-card border-0 shadow-sm" 
-                 [class.available-border]="slot.isAvailable"
-                 (click)="slot.isAvailable && onReserve(slot)">
-              
-              <div class="card-body text-center p-4">
-                <div class="text-primary mb-2">
-                  <i class="bi bi-clock-fill fs-3"></i>
-                </div>
-                
-                <h5 class="mb-1 fw-bold text-dark" style="letter-spacing: -0.5px;">
-                  {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
-                </h5>
-                
-                <div class="badge bg-light text-muted mb-4 border border-light-subtle px-3 py-2">
-                  {{ slot.date }}
-                </div>
-                
-                <button class="btn slot-button btn-sm rounded-pill w-100 py-2 shadow-sm"
-                        [disabled]="!slot.isAvailable">
-                  {{ slot.isAvailable ? 'Időpont foglalása' : 'Már foglalt' }}
-                </button>
+      <div class="scheduler-toolbar mb-3">
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="goToPreviousWeek()">
+          <i class="bi bi-chevron-left"></i> Előző hét
+        </button>
+        <div class="week-label-box">
+          <i class="bi bi-calendar-range me-2 text-primary"></i>{{ getWeekLabel() }}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" (click)="goToCurrentWeek()">
+          <i class="bi bi-house me-1"></i>Aktuális hét
+        </button>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="goToNextWeek()">
+          Következő hét <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+
+      @if (isLoading) {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p class="text-muted mb-0">Időpontok betöltése...</p>
+        </div>
+      } @else if (!selectedStaffId || !selectedConsultationId) {
+        <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
+          <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
+          <h5 class="text-muted">Szűrők kitöltése szükséges</h5>
+          <p class="text-muted small">Válassz szakterületet, orvost és vizsgálatot.</p>
+        </div>
+      } @else {
+        <div class="week-scheduler-grid">
+          @for (date of getWeekDays(); track date) {
+            <div class="day-column" [class.today-column]="isToday(date)">
+              <div class="day-column-header" [class.today]="isToday(date)">
+                <div class="weekday-name">{{ getWeekdayLabel(date) }}</div>
+                <div class="day-date">{{ getDayMonthLabel(date) }}</div>
+                <span class="slot-badge" [class.slot-badge-empty]="getSlotsForDate(date).length === 0">
+                  {{ getSlotsForDate(date).length }} időpont
+                </span>
+              </div>
+
+              <div class="day-column-slots">
+                @if (canScrollDayEarlier(date)) {
+                  <button type="button" class="day-scroll-btn" (click)="scrollDayEarlier(date)">
+                    <i class="bi bi-chevron-up"></i> Korábban
+                  </button>
+                }
+
+                @for (slot of getVisibleSlotsForDate(date); track slot.id) {
+                  <button
+                    type="button"
+                    class="slot-option scheduler-slot"
+                    [class.selected]="isSlotSelected(slot)"
+                    (click)="slot.isAvailable && onReserve(slot)">
+                    {{ formatTimeRange(slot) }}
+                  </button>
+                }
+
+                @if (getSlotsForDate(date).length === 0) {
+                  <div class="no-day-slots">
+                    <i class="bi bi-calendar-x d-block mb-1"></i>
+                    Nincs rendelés
+                  </div>
+                }
+
+                @if (canScrollDayLater(date)) {
+                  <button type="button" class="day-scroll-btn" (click)="scrollDayLater(date)">
+                    <i class="bi bi-chevron-down"></i> Később
+                  </button>
+                }
               </div>
             </div>
-          </div>
-        } @empty {
-          <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
-            <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
-            <h5 class="text-muted">Nincs szabad időpont</h5>
-            <p class="text-muted small">Válassz szakterületet, orvost és vizsgálatot.</p>
-          </div>
-        }
+          }
       </div>
+      }
     </div>
 
   </div>

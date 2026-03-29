@@ -20,14 +20,21 @@ export class BookingService {
     });
   }
 
-  getAvailableSlots(staffId: number, consultationId: number, date: string): Observable<Slot[]> {
-    const params = new HttpParams()
+  getAvailableSlots(staffId: number, consultationId: number, date?: string): Observable<Slot[]> {
+    let params = new HttpParams()
       .set('staffId', staffId.toString())
-      .set('consultationId', consultationId.toString())
-      .set('date', date);
+      .set('consultationId', consultationId.toString());
+
+    if (date) {
+      params = params.set('date', date);
+    }
 
     return this.http.get<{ success: boolean; data: Slot[] }>(`${this.API_URL}/slots`, { params })
       .pipe(map(res => res.data));
+  }
+
+  getMyBookings(): Observable<any[]> {
+    return this.getUserBookings();
   }
 
   getUserBookings(): Observable<any[]> {
