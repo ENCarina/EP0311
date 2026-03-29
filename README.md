@@ -34,7 +34,7 @@ npm install
 Hozd létre a környezeti változókat tartalmazó fájlt az `.env.example` alapján:
 
 ```cmd
-copy .env.example .env
+cp .env.example .env
 ```
 
 Minimum ajánlott beállítások a `.env` fájlban:
