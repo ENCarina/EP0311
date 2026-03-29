@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit {
   protected upcomingBookingsCount = 0;
   protected latestBookingDateLabel = '';
   protected favoriteServiceName = '';
+  protected allBookings: any[] = [];
 
   protected topServices: Array<{ name: string; count: number }> = [];
   protected upcomingAppointments: Array<{
@@ -166,6 +167,95 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  protected cancelBooking(booking: any): void {
+    const bookingId = Number(booking?.id);
+    if (!bookingId || !this.canCancelRawBooking(booking) || this.cancellingBookingId !== null) {
+      return;
+    }
+
+    Swal.fire({
+      title: 'Időpont lemondása',
+      text: 'Biztosan lemondja ezt az időpontot?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Igen, lemondom',
+      cancelButtonText: 'Mégsem'
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cancellingBookingId = bookingId;
+      this.dashboardError = '';
+
+      this.bookingService.cancelBooking(bookingId).subscribe({
+        next: () => {
+          this.cancellingBookingId = null;
+          this.loadDashboardData();
+
+          Swal.fire({
+            title: 'Sikeres lemondás',
+            text: 'Az időpont törölve lett.',
+            icon: 'success',
+            confirmButtonText: 'Rendben'
+          });
+        },
+        error: (error) => {
+          this.cancellingBookingId = null;
+          this.dashboardError = error?.error?.error || error?.error?.message || 'Hiba történt a lemondás során.';
+
+          Swal.fire({
+            title: 'A lemondás sikertelen',
+            text: this.dashboardError,
+            icon: 'error',
+            confirmButtonText: 'Rendben'
+          });
+        }
+      });
+    });
+  }
+
+  protected canCancelRawBooking(booking: any): boolean {
+    const slotData = this.getBookingSlot(booking);
+    const bookingDate = slotData?.date || booking?.date;
+    const bookingTime = slotData?.startTime || booking?.startTime;
+
+    if (!bookingDate || !bookingTime) {
+      return false;
+    }
+
+    const appointmentDate = this.buildDateTime(bookingDate, bookingTime);
+    if (isNaN(appointmentDate.getTime())) {
+      return false;
+    }
+
+    const hoursDiff = (appointmentDate.getTime() - Date.now()) / (1000 * 60 * 60);
+    return hoursDiff >= 24;
+  }
+
+  protected getCancellationHintForBooking(booking: any): string {
+    return this.canCancelRawBooking(booking)
+      ? 'Az időpont még online lemondható.'
+      : '24 órán belül csak telefonon mondható le.';
+  }
+
+  protected getBookingSlot(booking: any): any {
+    return booking?.timeSlot || booking?.slot || booking?.Slot || null;
+  }
+
+  protected getDoctorName(booking: any): string {
+    return booking?.doctor?.user?.name || booking?.doctor?.name || booking?.staff?.name || 'Szakember';
+  }
+
+  protected getBookingServiceName(booking: any): string {
+    return booking?.treatment?.name || booking?.type?.name || booking?.name || 'Konzultáció';
+  }
+
+  protected getBookingPrice(booking: any): string {
+    const price = booking?.treatment?.price || booking?.type?.price || booking?.price || 0;
+    return this.formatPrice(Number(price));
+  }
+
   private loadDashboardData(): void {
     this.loadingDashboard = true;
     this.dashboardError = '';
@@ -190,6 +280,7 @@ export class DashboardComponent implements OnInit {
         const bookingsData = Array.isArray(bookings) ? bookings : bookings?.data || [];
         const consultationsData = Array.isArray(consultations) ? consultations : consultations?.data || [];
 
+        this.allBookings = bookingsData;
         this.totalBookings = bookingsData.length;
         this.upcomingAppointments = this.computeUpcomingAppointments(bookingsData);
         this.upcomingBookingsCount = this.upcomingAppointments.length;
@@ -292,14 +383,14 @@ export class DashboardComponent implements OnInit {
     this.updateConsultationFilter();
   }
 
-  private formatDate(date: string): string {
+  protected formatDate(date: string): string {
     if (!date) return '';
     const dateObj = this.buildDateTime(date, '00:00:00');
     if (isNaN(dateObj.getTime())) return date;
     return dateObj.toLocaleDateString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
 
-  private formatTime(time: string): string {
+  protected formatTime(time: string): string {
     return String(time || '').slice(0, 5);
   }
 
