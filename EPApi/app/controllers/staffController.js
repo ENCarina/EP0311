@@ -11,7 +11,15 @@ const StaffController = {
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
-                include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+                include: [
+                    { model: User, as: 'user', attributes: ['name', 'email', 'roleId'] },
+                    {
+                        model: Consultation,
+                        as: 'treatments',
+                        attributes: ['id', 'name', 'price'],
+                        through: { attributes: [] }
+                    }
+                ]
             });
             res.json({ success: true, data: staff });
         } catch (error) {
@@ -103,11 +111,69 @@ const StaffController = {
 
     // 6. ELŐLÉPTETÉS
     async promoteToStaff(req, res) {
+        let transaction;
+
         try {
-            const { userId, specialty } = req.body;
-            const newStaff = await Staff.create({ userId, specialty, isActive: true });
-            res.json({ success: true, data: newStaff });
+            const normalizedUserId = Number(req.body?.userId);
+            const specialty = String(req.body?.specialty || '').trim();
+
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return res.status(400).json({ success: false, message: 'Érvénytelen felhasználó azonosító.' });
+            }
+
+            if (!specialty) {
+                return res.status(400).json({ success: false, message: 'A szakterület megadása kötelező.' });
+            }
+
+            transaction = await db.sequelize.transaction();
+
+            const user = await User.findByPk(normalizedUserId, { transaction });
+            if (!user) {
+                await transaction.rollback();
+                return res.status(404).json({ success: false, message: 'A kiválasztott felhasználó nem található.' });
+            }
+
+            if (Number(user.roleId) === 2) {
+                await transaction.rollback();
+                return res.status(400).json({ success: false, message: 'Admin felhasználó nem nevezhető ki szakemberré.' });
+            }
+
+            const existingStaff = await Staff.findOne({
+                where: { userId: normalizedUserId },
+                transaction
+            });
+
+            let staffProfile;
+            if (existingStaff) {
+                await existingStaff.update({
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+                staffProfile = existingStaff;
+            } else {
+                staffProfile = await Staff.create({
+                    userId: normalizedUserId,
+                    specialty,
+                    isActive: true,
+                    isAvailable: true
+                }, { transaction });
+            }
+
+            if (Number(user.roleId) !== 1) {
+                await user.update({ roleId: 1 }, { transaction });
+            }
+
+            await transaction.commit();
+            res.json({
+                success: true,
+                message: existingStaff ? 'A szakember profil frissítve lett.' : 'A szakember profil sikeresen létrejött.',
+                data: staffProfile
+            });
         } catch (error) {
+            if (transaction) {
+                await transaction.rollback();
+            }
             res.status(500).json({ success: false, message: error.message });
         }
     },

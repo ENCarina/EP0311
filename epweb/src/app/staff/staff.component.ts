@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { BookingService } from '../shared/booking.service';
 import { ConsultationService } from '../shared/consultation.service';
 import { Router } from '@angular/router';
+import { AdminService } from '../shared/admin.service';
 
 @Component({
   selector: 'app-staff',
@@ -21,8 +22,10 @@ import { Router } from '@angular/router';
     protected readonly builder = inject(FormBuilder)
     public readonly auth = inject(AuthService);
     private readonly bookingApi = inject(BookingService);
+    private readonly adminService = inject(AdminService);
 
     protected staffs: any[] = [];
+    protected eligibleUsers: any[] = [];
     protected selectedStaffId: number | null = null;
     protected allConsultations: any[] = [];
     protected selectedTreatments: number[] = [];
@@ -31,6 +34,7 @@ import { Router } from '@angular/router';
 
     protected staffForm = this.builder.group({
       id:[0],
+      userId:[0],
       name:['', [Validators.required, Validators.minLength(3)]],
       email:['', [Validators.required, Validators.email]],
       password: [''],
@@ -41,10 +45,50 @@ import { Router } from '@angular/router';
       isActive:[true]
     })
 
+    private configureFormMode(addMode: boolean) {
+      const userIdControl = this.staffForm.get('userId');
+      const nameControl = this.staffForm.get('name');
+      const emailControl = this.staffForm.get('email');
+
+      if (addMode) {
+        userIdControl?.setValidators([Validators.required, Validators.min(1)]);
+        nameControl?.clearValidators();
+        emailControl?.clearValidators();
+      } else {
+        userIdControl?.clearValidators();
+        nameControl?.setValidators([Validators.required, Validators.minLength(3)]);
+        emailControl?.setValidators([Validators.required, Validators.email]);
+      }
+
+      userIdControl?.updateValueAndValidity();
+      nameControl?.updateValueAndValidity();
+      emailControl?.updateValueAndValidity();
+    }
+
     ngOnInit() {
       this.getStaffs();
       this.loadConsultations();
+      this.loadEligibleUsers();
+      this.configureFormMode(this.addMode);
     }
+
+    loadEligibleUsers() {
+      this.adminService.getAllUsers().subscribe({
+        next: (users: any[]) => {
+          this.eligibleUsers = (users || []).filter((user: any) => {
+            const hasStaffProfile = !!user.staffProfile;
+            const isAdmin = Number(user.roleId) === 2;
+            const isActive = user.isActive !== false;
+            return !hasStaffProfile && !isAdmin && isActive;
+          });
+        },
+        error: (err) => {
+          console.error('Nem sikerult a kinevezheto felhasznalok betoltese:', err);
+          this.eligibleUsers = [];
+        }
+      });
+    }
+
     loadConsultations() {
       this.consultationService.getConsultations().subscribe({
         next: (res: any) => this.allConsultations = Array.isArray(res) ? res : (res.data || [])
@@ -78,6 +122,7 @@ import { Router } from '@angular/router';
     startEdit(staff: any) {
     
         this.addMode = false;
+        this.configureFormMode(false);
         this.selectedStaffId = staff.id;  
         this.selectedTreatments = [];
 
@@ -105,42 +150,34 @@ import { Router } from '@angular/router';
         }
 
     addStaff() {
-      const rawData = this.staffForm.getRawValue();
-      
-      const { id, role, password, ...rest } = rawData;
+      const selectedUserId = Number(this.staffForm.get('userId')?.value);
+      const specialty = String(this.staffForm.get('specialty')?.value || '').trim();
 
-      // Payload összeállítása
-      const payload: any = {
-        ...rest,
-        roleId: Number(role), 
-        treatmentIds: this.selectedTreatments, 
-        isActive:true
-      };
-
-      if (password && password.trim() !== '') {
-        payload.password = password;
+      if (!selectedUserId) {
+        Swal.fire('Hiba', 'Válassz egy regisztrált felhasználót!', 'error');
+        return;
       }
 
-      console.log('Küldendő adatok (Új szakember):', payload);
+      if (!specialty) {
+        Swal.fire('Hiba', 'A szakterület megadása kötelező.', 'error');
+        return;
+      }
 
-      // 5. API hívás
-      this.api.addStaff(payload).subscribe({
-        next: (res: any) => {
-          // A backend visszaküldi az új STAFF rekord ID-ját
-          const newStaffId = res.data?.id || res.id;
-
-      if (this.selectedTreatments.length > 0 && newStaffId) {
-            this.api.assignTreatments(newStaffId, this.selectedTreatments).subscribe({
-              next: () => this.completeAction('Szakember és kezelések hozzáadva!'),
-              error: () => this.completeAction('Szakember hozzáadva, de a kezelések mentése sikertelen.')
+      this.adminService.promoteUser(selectedUserId, { specialty }).subscribe({
+        next: () => {
+          if (this.selectedTreatments.length > 0) {
+            this.api.assignTreatments(selectedUserId, this.selectedTreatments).subscribe({
+              next: () => this.completeAction('Szakember és kezelések sikeresen mentve!'),
+              error: () => this.completeAction('Szakember létrejött, de a kezelések mentése sikertelen.')
             });
-      } else {
-          this.completeAction('Szakember sikeresen hozzáadva!');
+            return;
           }
+
+          this.completeAction('Szakember sikeresen létrehozva!');
         },
         error: (err: any) => {
-          console.error('Mentési hiba:', err);
-          Swal.fire('Hiba', err.error?.message || 'Sikertelen mentés', 'error');
+          console.error('Kinevezési hiba:', err);
+          Swal.fire('Hiba', err.error?.message || 'Sikertelen kinevezés', 'error');
         }
       });
     }
@@ -155,9 +192,10 @@ import { Router } from '@angular/router';
     }
     completeAction(message: string) {
       this.showModal = false;
-      this.staffForm.reset({ id: 0, role: '1', isAvailable: true });
+      this.staffForm.reset({ id: 0, userId: 0, role: '1', isAvailable: true, isActive: true });
       this.selectedTreatments = [];
       this.getStaffs();
+      this.loadEligibleUsers();
       Swal.fire({ icon: 'success', title: message, timer: 1500, showConfirmButton: false });
     }
 
@@ -227,8 +265,9 @@ import { Router } from '@angular/router';
 
     startshowModal() {
       this.addMode = true;
+      this.configureFormMode(true);
       this.selectedTreatments = [];
-      this.staffForm.reset({ id: 0, role: '1', isAvailable: true, isActive: true });
+      this.staffForm.reset({ id: 0, userId: 0, role: '1', isAvailable: true, isActive: true });
       this.showModal = true;
     }
     closeModal() {
