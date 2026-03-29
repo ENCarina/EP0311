@@ -1,19 +1,23 @@
 <div class="container py-5 dashboard-page">
   <div class="dashboard-hero mb-4">
     <div>
-      <p class="eyebrow mb-2">Saját foglalásaim</p>
-      <h2 class="fw-bold mb-2">Áttekintés egy helyen</h2>
-      <p class="text-muted mb-0">Foglalások, közelgő időpontok és gyors újrafoglalás ugyanarról a felületről.</p>
+      <p class="eyebrow mb-2">{{ isDoctorView ? 'Orvosi nézet' : 'Saját foglalásaim' }}</p>
+      <h2 class="fw-bold mb-2">{{ isDoctorView ? 'Páciensek időpontjai egy helyen' : 'Áttekintés egy helyen' }}</h2>
+      <p class="text-muted mb-0">
+        {{ isDoctorView
+          ? 'Közelgő vizitek, páciensadatok és új időpontfoglalás ugyanarról a felületről.'
+          : 'Foglalások, közelgő időpontok és gyors újrafoglalás ugyanarról a felületről.' }}
+      </p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
       <button class="btn btn-light rounded-pill px-4 border" (click)="openBookingsPage()">
-        <i class="bi bi-list-ul me-2"></i>Összes foglalás
+        <i class="bi bi-list-ul me-2"></i>{{ isDoctorView ? 'Összes időpont' : 'Összes foglalás' }}
       </button>
       <button class="btn btn-outline-primary rounded-pill px-4" (click)="refreshDashboard()">
         <i class="bi bi-arrow-clockwise me-2"></i>Frissítés
       </button>
       <button class="btn btn-primary rounded-pill px-4" (click)="onStartBooking()">
-        <i class="bi bi-plus-lg me-2"></i>Új foglalás
+        <i class="bi bi-plus-lg me-2"></i>{{ isDoctorView ? 'Új páciens foglalás' : 'Új foglalás' }}
       </button>
       <button class="btn btn-light rounded-pill px-4 border" (click)="openProfileQuickView()">
         <i class="bi bi-person-circle me-2"></i>Profil
@@ -46,8 +50,10 @@
       </div>
       <div class="col-md-4">
         <div class="metric-card">
-          <span class="metric-label">Legutóbbi foglalás</span>
-          <strong class="metric-value metric-value-small">{{ latestBookingDateLabel || 'Nincs adat' }}</strong>
+          <span class="metric-label">{{ isDoctorView ? 'Egyedi páciensek' : 'Legutóbbi foglalás' }}</span>
+          <strong class="metric-value metric-value-small">
+            {{ isDoctorView ? uniquePatientsCount : (latestBookingDateLabel || 'Nincs adat') }}
+          </strong>
         </div>
       </div>
     </div>
@@ -56,7 +62,7 @@
       <div class="col-lg-5">
         <div class="panel-card h-100">
           <div class="panel-header">
-            <h5 class="mb-0">Közelgő időpontok</h5>
+            <h5 class="mb-0">{{ isDoctorView ? 'Közelgő vizitek' : 'Közelgő időpontok' }}</h5>
             <span class="badge rounded-pill text-bg-light">{{ upcomingAppointments.length }}</span>
           </div>
           @if (upcomingAppointments.length) {
@@ -65,22 +71,26 @@
                 <div class="list-group-item px-0 py-3 border-bottom">
                   <div class="fw-semibold">{{ item.serviceName }}</div>
                   <div class="small text-muted">{{ item.dateLabel }} · {{ item.timeLabel }}</div>
-                  <div class="small text-primary mb-3">{{ item.doctorName }}</div>
-                  <div class="appointment-actions">
-                    <button
-                      class="btn btn-sm btn-outline-danger rounded-pill"
-                      [disabled]="!canCancelBooking(item) || cancellingBookingId === item.id"
-                      (click)="cancelUpcomingBooking(item)">
-                      <i class="bi bi-trash3 me-2"></i>
-                      {{ cancellingBookingId === item.id ? 'Lemondás...' : 'Lemondás' }}
-                    </button>
-                    <span class="small text-muted">{{ getCancellationHint(item) }}</span>
+                  <div class="small text-primary mb-3">
+                    {{ isDoctorView ? item.patientName : item.doctorName }}
                   </div>
+                  @if (!isDoctorView) {
+                    <div class="appointment-actions">
+                      <button
+                        class="btn btn-sm btn-outline-danger rounded-pill"
+                        [disabled]="!canCancelBooking(item) || cancellingBookingId === item.id"
+                        (click)="cancelUpcomingBooking(item)">
+                        <i class="bi bi-trash3 me-2"></i>
+                        {{ cancellingBookingId === item.id ? 'Lemondás...' : 'Lemondás' }}
+                      </button>
+                      <span class="small text-muted">{{ getCancellationHint(item) }}</span>
+                    </div>
+                  }
                 </div>
               }
             </div>
           } @else {
-            <p class="text-muted mb-0">Nincs közelgő időpont.</p>
+            <p class="text-muted mb-0">{{ isDoctorView ? 'Nincs közelgő vizit.' : 'Nincs közelgő időpont.' }}</p>
           }
         </div>
       </div>
@@ -107,7 +117,7 @@
 
     <div class="panel-card mt-4">
       <div class="panel-header mb-3">
-        <h5 class="mb-0">Összes foglalásom</h5>
+        <h5 class="mb-0">{{ isDoctorView ? 'Összes páciens időpontja' : 'Összes foglalásom' }}</h5>
         <span class="badge rounded-pill text-bg-light">{{ allBookings.length }}</span>
       </div>
 
@@ -121,28 +131,31 @@
                   {{ formatDate(getBookingSlot(booking)?.date || booking.date) }} ·
                   {{ formatTime(getBookingSlot(booking)?.startTime || booking.startTime) }}
                 </span>
-                <small>{{ getDoctorName(booking) }}</small>
+                <small>{{ isDoctorView ? getPatientName(booking) : getDoctorName(booking) }}</small>
               </div>
               <div class="booking-meta">
                 <span>{{ getBookingPrice(booking) }} Ft</span>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger rounded-pill"
-                  [disabled]="!canCancelRawBooking(booking) || cancellingBookingId === booking.id"
-                  (click)="cancelBooking(booking)">
-                  <i class="bi bi-trash3 me-2"></i>
-                  {{ cancellingBookingId === booking.id ? 'Lemondás...' : 'Lemondás' }}
-                </button>
-                <small>{{ getCancellationHintForBooking(booking) }}</small>
+                @if (!isDoctorView) {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger rounded-pill"
+                    [disabled]="!canCancelRawBooking(booking) || cancellingBookingId === booking.id"
+                    (click)="cancelBooking(booking)">
+                    <i class="bi bi-trash3 me-2"></i>
+                    {{ cancellingBookingId === booking.id ? 'Lemondás...' : 'Lemondás' }}
+                  </button>
+                  <small>{{ getCancellationHintForBooking(booking) }}</small>
+                }
               </div>
             </div>
           }
         </div>
       } @else {
-        <p class="text-muted mb-0">Még nincs foglalása.</p>
+        <p class="text-muted mb-0">{{ isDoctorView ? 'Még nincs rögzített páciens időpont.' : 'Még nincs foglalása.' }}</p>
       }
     </div>
 
+    @if (!isDoctorView) {
     <div class="panel-card mt-4">
       <div class="panel-header mb-3">
         <h5 class="mb-0">Gyors foglalás szolgáltatás szerint</h5>
@@ -184,5 +197,6 @@
         }
       </div>
     </div>
+    }
   }
 </div>

@@ -78,6 +78,10 @@ const BookingController = {
             
             if (!selectedSlot) throw new Error("A választott időpont nem létezik!");
 
+            const targetPatientId = req.user.roleId === 1
+                ? Number(req.body.patientId)
+                : currentUserId;
+
             const existingConflict = await db.Booking.findOne({
                 include: [{
                     model: db.Slot,
@@ -88,7 +92,7 @@ const BookingController = {
                     }
                 }],
                 where: {
-                    patientId: currentUserId,
+                    patientId: targetPatientId,
                     status: { [Op.ne]: 'Cancelled' } // Csak az aktív foglalás számít
                 }
             });
@@ -101,7 +105,7 @@ const BookingController = {
 
             const bookingData = {
                 ...req.body,
-                patientId: currentUserId,
+                patientId: targetPatientId,
                 status: req.body.status || 'Confirmed'
             };
 

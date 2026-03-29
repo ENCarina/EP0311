@@ -38,8 +38,10 @@ export class BookingComponent implements OnInit {
   protected selectedStaffId: number | null = null;
   protected selectedDate: string = this.getInitialBookingDate();
   protected selectedConsultationId: number | null = null; 
+  protected selectedPatientId: number | null = null;
   protected filteredConsultations: Consultation[] = [];
   protected consultations: Consultation[] = [];
+  protected patients: Array<{ id: number; name: string; email: string }> = [];
   protected readonly today = new Date().toISOString().split('T')[0];
   protected currentWeekStart: Date = this.getWeekStart(new Date());
   protected selectedSlot: Slot | null = null;
@@ -53,6 +55,10 @@ export class BookingComponent implements OnInit {
 
   protected get selectedStaff(): any | undefined {
     return this.staffs.find(s => Number(s.id) === Number(this.selectedStaffId));
+  }
+
+  protected get isDoctorBooking(): boolean {
+    return this.auth.getRoleId() === 1;
   }
 
   protected get selectedStaffName(): string {
@@ -73,10 +79,16 @@ export class BookingComponent implements OnInit {
 
   loadInitialData(params?: any): void {
     this.isLoading = true;
-    forkJoin({
+    const requests: Record<string, any> = {
       staffs: this.staffApi.getStaff(),
       consultations: this.staffApi.getConsultations()
-    }).subscribe({
+    };
+
+    if (this.isDoctorBooking) {
+      requests['patients'] = this.staffApi.getPatients();
+    }
+
+    forkJoin(requests).subscribe({
       next: (res: any) => { 
         const rawStaffs = res.staffs?.data || res.staffs || [];
         this.staffs = rawStaffs.map((s: any) => ({
@@ -91,6 +103,16 @@ export class BookingComponent implements OnInit {
           id: Number(c.id)
         }));
 
+        if (this.isDoctorBooking) {
+          this.patients = (res.patients?.data || res.patients || []).map((patient: any) => ({
+            id: Number(patient.id),
+            name: patient.name,
+            email: patient.email
+          }));
+          this.selectedPatientId = this.patients.length ? Number(this.patients[0].id) : null;
+          this.lockDoctorToOwnProfile();
+        }
+
         this.specialties = [...new Set(this.staffs.map(s => s.specialty))].filter(Boolean);
 
         if (params && (params['staffId'] || params['treatmentId'] || params['consultationId'])) {
@@ -104,6 +126,23 @@ export class BookingComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private lockDoctorToOwnProfile(): void {
+    const currentUserId = this.auth.getUserId();
+    const ownStaff = this.staffs.find((staff) => Number(staff.userId) === Number(currentUserId));
+
+    if (ownStaff) {
+      this.selectedStaffId = Number(ownStaff.id);
+      if (ownStaff.specialty) {
+        this.selectedSpecialty = ownStaff.specialty;
+        this.filteredStaffs = this.staffs.filter((staff) => staff.specialty === ownStaff.specialty);
+      }
+      return;
+    }
+
+    this.selectedStaffId = null;
+    this.errorMessage = 'A saját orvosprofil nem található, ezért itt nem tud páciensnek foglalni.';
   }
 
   private syncSelectionFromParams(params: any): void {
@@ -164,6 +203,12 @@ export class BookingComponent implements OnInit {
   }
 
   protected onSpecialtyChange(): void {
+    if (this.isDoctorBooking) {
+      this.lockDoctorToOwnProfile();
+      this.updateFilteredConsultations();
+      return;
+    }
+
     this.filteredStaffs = this.staffs.filter(s => s.specialty === this.selectedSpecialty);
     this.selectedStaffId = null;
     this.filteredConsultations = [];
@@ -174,6 +219,10 @@ export class BookingComponent implements OnInit {
   }
 
   protected onStaffChange(): void {
+    if (this.isDoctorBooking) {
+      this.lockDoctorToOwnProfile();
+    }
+
     this.selectedSlot = null;
     this.daySlotStartIndexMap = {};
     this.updateFilteredConsultations();
@@ -331,6 +380,11 @@ export class BookingComponent implements OnInit {
   }
 
   protected onReserve(slot: Slot): void {
+    if (this.isDoctorBooking && !this.selectedPatientId) {
+      Swal.fire('Hiányzó páciens', 'Előbb válasszon ki egy regisztrált pácienst.', 'warning');
+      return;
+    }
+
     this.selectedSlot = slot;
     this.ensureSlotVisibleInDayPage(slot);
 
@@ -410,7 +464,7 @@ export class BookingComponent implements OnInit {
 
     const bookingData = {
       slotId: Number(slot.id),
-      patientId: Number(userId),
+      patientId: this.isDoctorBooking ? Number(this.selectedPatientId) : Number(userId),
       staffId: Number(slot.staffId || this.selectedStaffId), 
       consultationId: Number(this.selectedConsultationId),
       duration: Number(selectedTreatment?.duration || 30),
@@ -421,9 +475,20 @@ export class BookingComponent implements OnInit {
       isPublic: true
     };
 
+    if (this.isDoctorBooking && !bookingData.patientId) {
+      Swal.fire('Hiányzó páciens', 'Foglalás előtt válasszon ki egy pácienst.', 'warning');
+      return;
+    }
+
     this.bookingApi.createBooking(bookingData as any).subscribe({
       next: () => {
-        Swal.fire('Sikeres foglalás!', 'Az időpontot rögzítettük.', 'success')
+        Swal.fire(
+          'Sikeres foglalás!',
+          this.isDoctorBooking
+            ? 'Az időpontot a kiválasztott pácienshez rögzítettük.'
+            : 'Az időpontot rögzítettük.',
+          'success'
+        )
           .then(() => this.loadSlots());
       },
       error: (err) => {

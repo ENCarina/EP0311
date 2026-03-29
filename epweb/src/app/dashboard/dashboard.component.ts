@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit {
 
   protected totalBookings = 0;
   protected upcomingBookingsCount = 0;
+  protected uniquePatientsCount = 0;
   protected latestBookingDateLabel = '';
   protected favoriteServiceName = '';
   protected allBookings: any[] = [];
@@ -33,6 +34,7 @@ export class DashboardComponent implements OnInit {
     timeLabel: string;
     doctorName: string;
     serviceName: string;
+    patientName: string;
   }> = [];
   protected cancellingBookingId: number | null = null;
 
@@ -63,6 +65,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
+  }
+
+  protected get isDoctorView(): boolean {
+    return this.authService.getRoleId() === 1;
   }
 
   protected onStartBooking(): void {
@@ -110,6 +116,10 @@ export class DashboardComponent implements OnInit {
   }
 
   protected canCancelBooking(appointment: { appointmentDateTime: Date }): boolean {
+    if (this.isDoctorView) {
+      return false;
+    }
+
     if (!(appointment.appointmentDateTime instanceof Date) || isNaN(appointment.appointmentDateTime.getTime())) {
       return false;
     }
@@ -216,6 +226,10 @@ export class DashboardComponent implements OnInit {
   }
 
   protected canCancelRawBooking(booking: any): boolean {
+    if (this.isDoctorView) {
+      return false;
+    }
+
     const slotData = this.getBookingSlot(booking);
     const bookingDate = slotData?.date || booking?.date;
     const bookingTime = slotData?.startTime || booking?.startTime;
@@ -245,6 +259,10 @@ export class DashboardComponent implements OnInit {
 
   protected getDoctorName(booking: any): string {
     return booking?.doctor?.user?.name || booking?.doctor?.name || booking?.staff?.name || 'Szakember';
+  }
+
+  protected getPatientName(booking: any): string {
+    return booking?.patient?.name || booking?.patient?.email || 'Páciens';
   }
 
   protected getBookingServiceName(booking: any): string {
@@ -284,6 +302,7 @@ export class DashboardComponent implements OnInit {
         this.totalBookings = bookingsData.length;
         this.upcomingAppointments = this.computeUpcomingAppointments(bookingsData);
         this.upcomingBookingsCount = this.upcomingAppointments.length;
+        this.uniquePatientsCount = this.computeUniquePatientsCount(bookingsData);
         this.latestBookingDateLabel = this.computeLatestBookingDate(bookingsData);
         this.topServices = this.computeTopServices(bookingsData);
         this.favoriteServiceName = this.topServices[0]?.name || '';
@@ -313,7 +332,7 @@ export class DashboardComponent implements OnInit {
       .slice(0, 5);
   }
 
-  private computeUpcomingAppointments(bookingsData: any[]): Array<{ id: number; appointmentDateTime: Date; dateLabel: string; timeLabel: string; doctorName: string; serviceName: string }> {
+  private computeUpcomingAppointments(bookingsData: any[]): Array<{ id: number; appointmentDateTime: Date; dateLabel: string; timeLabel: string; doctorName: string; serviceName: string; patientName: string }> {
     const now = new Date();
 
     return bookingsData
@@ -330,20 +349,32 @@ export class DashboardComponent implements OnInit {
           dateLabel: this.formatDate(date),
           timeLabel: this.formatTime(startTime),
           doctorName: booking?.doctor?.user?.name || 'Szakember',
-          serviceName: booking?.treatment?.name || booking?.name || 'Konzultáció'
+          serviceName: booking?.treatment?.name || booking?.name || 'Konzultáció',
+          patientName: booking?.patient?.name || booking?.patient?.email || 'Páciens'
         };
       })
       .filter((item) => !!item.id && !isNaN(item.dateTime.getTime()) && item.dateTime >= now)
       .sort((left, right) => left.dateTime.getTime() - right.dateTime.getTime())
       .slice(0, 5)
-      .map(({ id, appointmentDateTime, dateLabel, timeLabel, doctorName, serviceName }) => ({
+      .map(({ id, appointmentDateTime, dateLabel, timeLabel, doctorName, serviceName, patientName }) => ({
         id,
         appointmentDateTime,
         dateLabel,
         timeLabel,
         doctorName,
         serviceName,
+        patientName,
       }));
+  }
+
+  private computeUniquePatientsCount(bookingsData: any[]): number {
+    const patientIds = new Set(
+      bookingsData
+        .map((booking: any) => Number(booking?.patient?.id || booking?.patientId || 0))
+        .filter((patientId: number) => patientId > 0)
+    );
+
+    return patientIds.size;
   }
 
   private computeLatestBookingDate(bookingsData: any[]): string {
