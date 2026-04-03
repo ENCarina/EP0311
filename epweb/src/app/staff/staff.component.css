@@ -152,6 +152,8 @@
     user-select: none;
     display: flex;
     align-items: center;
+    margin-right: 6px;
+    font-size: 0.9rem;
 }
 
 .treatment-badge:hover {

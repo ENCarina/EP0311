@@ -1,10 +1,11 @@
-
+/* --- Kártya stílusa --- */
 .card {
   border: none !important;
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(15px); /* Ha van alatta háttérkép, ...elmossa */
+  backdrop-filter: blur(15px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05) !important;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
+  border-radius: 20px; /* Lekerekített sarkok a modern hatáshoz */
 }
 
 .card:hover {
@@ -12,7 +13,7 @@
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Az ikon stílusa felül */
+/* --- Ikon és Fejléc --- */
 .bi-person-circle {
   background: linear-gradient(135deg, #007bff, #00d4ff);
   -webkit-background-clip: text;
@@ -20,7 +21,7 @@
   filter: drop-shadow(0 5px 15px rgba(0, 123, 255, 0.2));
 }
 
-/* Input csoportok (ikon + mező) */
+/* --- Input mezők és Csoportok --- */
 .input-group-text {
   background-color: #fcfcfc !important; 
   border-color: #f0f0f0 !important;
@@ -44,13 +45,22 @@
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.05) !important;
 }
 
-/* Hibaüzenetek stílusa */
-.invalid-feedback {
-  font-size: 0.75rem;
-  margin-left: 0.5rem;
+/* --- Jelszó feletti rész (Fix az összecsúszás ellen) --- */
+.d-flex.justify-content-between {
+  gap: 10px; /* Minimum távolság a felirat és a link között */
+  flex-wrap: wrap; /* Ha angolul nem fér el, biztonságosan töri */
 }
 
-/* A "Belépés" gomb - gradienssel */
+.hover-blue {
+  transition: color 0.2s ease;
+  white-space: nowrap; /* Ne törje ketté a link szövegét */
+}
+
+.hover-blue:hover {
+  color: #007bff !important;
+}
+
+/* --- Gombok (Belépés) --- */
 .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3) !important;
   border: none !important;
@@ -72,14 +82,24 @@
 .btn-primary:disabled {
   opacity: 0.6;
   background: #ccc !important;
+  cursor: not-allowed;
 }
 
-/* Regisztrációs link */
-.text-primary.text-decoration-none {
-  transition: all 0.2s ease;
-}
-
+/* --- Linkek és Visszajelzések --- */
 .text-primary.text-decoration-none:hover {
   color: #0056b3 !important;
   text-decoration: underline !important;
+}
+
+.invalid-feedback {
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+/* --- Reszponzív finomítás --- */
+@media (max-width: 380px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
 }

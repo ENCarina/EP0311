@@ -7,230 +7,219 @@ import { Op } from 'sequelize';
 const { Staff, User, Consultation, Slot } = db;
 
 const StaffController = {
-    // 1. Admin lista (Mindenki)
+    // 1. Admin lista 
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
-                include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+                include: [{ model: User, as: 'user', attributes: ['id', 'name', 'email'] }]
             });
-            res.json({ success: true, data: staff });
+            return res.json({ success: true, data: staff });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ 
+                success: false, 
+                message: 'STAFF.MESSAGES.RESTORE_ERROR', 
+                error: error.message 
+            });
         }
     },
+
+    // Kísérleti index (Kezelésekkel együtt, mélyebb asszociációval)
     async tryIndex(req, res) {
-        const staff = await Staff.findAll({
-            attributes: ['id', 'name'],
-            include: [
-                {
-                    model: Consultations,
-                    attributes: ['id', 'name'],
-                    through: {
-                        attributes: []
+        try {
+            const staff = await Staff.findAll({
+                attributes: ['id', 'specialty'],
+                include: [
+                    { model: User, as: 'user', attributes: ['name'] },
+                    {
+                        model: Consultation,
+                        as: 'treatments',
+                        attributes: ['id', 'name'],
+                        through: { attributes: [] }
                     }
-                }
-            ]
-        })
-        res.status(200)
-        res.json({
-            success: true,
-            data: staff
-        })
+                ]
+            });
+            return res.status(200).json({ success: true, data: staff });
+        } catch (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
     },
 
-    // 2. Publikus profilok (Csak az aktívak)
+    // 2. Publikus profilok (Csak az aktívak a pácienseknek)
     async getPublicProfiles(req, res) {
         try {
-        const staff = await Staff.findAll({
-            where: { isActive: true },
-            include: [
-                { model: User, as: 'user', attributes: ['name'] },
-                { 
-                    model: Consultation, 
-                    as: 'treatments', 
-                    through: { attributes: [] } 
-                }
-            ]
-        });
-        res.json({ success: true, data: staff });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+            const staff = await Staff.findAll({
+                where: { isActive: true },
+                include: [
+                    { model: User, as: 'user', attributes: ['name'] },
+                    { 
+                        model: Consultation, 
+                        as: 'treatments', 
+                        through: { attributes: [] } 
+                    }
+                ]
+            });
+            return res.json({ success: true, data: staff });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: 'COMMON.ERROR_GENERAL' });
         }
     },
 
-    // 3. Egy szakember adatai
+    // 3. Egy konkrét szakember adatlapja
     async show(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id, {
                 include: [{ model: User, as: 'user' }]
             });
-            if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
-            res.json({ success: true, data: staff });
+            if (!staff) {
+                return res.status(404).json({ success: false, message: 'USERS.MESSAGES.PROFILE_NOT_FOUND' });
+            }
+            return res.json({ success: true, data: staff });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 4. KEZELÉSEK LEKÉRÉSE
+    // 4. Szakemberhez tartozó kezelések lekérése
     async getTreatmentsForStaff(req, res) {
         try {
             const { id } = req.params;
             const staff = await Staff.findByPk(id, {
                 include: [{ model: Consultation, as: 'treatments', through: { attributes: [] } }]
             });
-            if (!staff) return res.status(404).json({ success: false, message: 'Nincs ilyen szakember' });
-            res.json({ success: true, data: staff.treatments || [] });
+            if (!staff) return res.status(404).json({ success: false, message: 'STAFF.MESSAGES.INVALID_ID' });
+            return res.json({ success: true, data: staff.treatments || [] });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: 'SERVICES.MESSAGES.TREATMENTS_LOAD_ERROR' });
         }
     },
 
-    // 5. KEZELÉSEK HOZZÁADÁSA
+    // 5. Kezelések hozzárendelése (M:N kapcsolat frissítése)
     async assignTreatments(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.params; // userId jön az URL-ből
             const { treatmentIds } = req.body;
             const staff = await Staff.findOne({ where: { userId: id } });
-            if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
-            // Hozzárendelt vizsgálat
-            await staff.setTreatments(treatmentIds);
             
-            res.json({ success: true, message: 'Kezelések frissítve' });
+            if (!staff) return res.status(404).json({ success: false, message: 'STAFF.MESSAGES.INVALID_ID' });
+            
+            await staff.setTreatments(treatmentIds);
+            return res.json({ success: true, message: 'STAFF.MESSAGES.ASSIGN_SUCCESS' });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: 'STAFF.MESSAGES.ASSIGN_ERROR' });
         }
     },
 
-    // 6. ELŐLÉPTETÉS
+    // 6. Felhasználó előléptetése szakemberré
     async promoteToStaff(req, res) {
         try {
             const { userId, specialty } = req.body;
-            const newStaff = await Staff.create({ userId, specialty, isActive: true });
-            res.json({ success: true, data: newStaff });
+            const newStaff = await Staff.create({ 
+                userId, 
+                specialty: specialty || 'General', 
+                isActive: true 
+            });
+            return res.json({ success: true, message: 'COMMON.SUCCESS', data: newStaff });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 7. Mentés (Új szakember közvetlen létrehozása)
+    // 7. Új szakember létrehozása (User + Staff egyben)
     async store(req, res) {
         try {
-            const { name, email, password, specialty, bio, roleId} = req.body;
+            const { name, email, password, specialty, bio, roleId } = req.body;
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password || 'doctor123', salt);
 
             const newUser = await User.create({
-            name,
-            email,
-            password: hashedPassword, 
-            roleId: roleId || 1, 
-        });
-        
+                name,
+                email,
+                password: hashedPassword,
+                roleId: roleId || 1,
+            });
+
             const staff = await Staff.create({
-            userId: newUser.id,
-            specialty: specialty || 'Általános szakorvos',
-            bio: bio || '',
-            isActive: true
-        });
-
-            res.status(201).json({ 
-                success: true, 
-                message: 'Szakember sikeresen létrehozva!',
-                data: {
-                    id: staff.id,
-                    name: newUser.name,
-                    email: newUser.email,
-                    specialty: staff.specialty,
-                    userId: newUser.id
-                }
+                userId: newUser.id,
+                specialty: specialty || 'Általános szakorvos',
+                bio: bio || '',
+                isActive: true
             });
 
+            return res.status(201).json({
+                success: true,
+                message: 'STAFF.MESSAGES.ADD_SUCCESS',
+                data: { id: staff.id, name: newUser.name, email: newUser.email }
+            });
         } catch (error) {
-            console.error("MENTÉSI HIBA:", error);
             if (error.name === 'SequelizeUniqueConstraintError') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Ez az e-mail cím már használatban van!' 
-            });
-        }
-            res.status(500).json({ success: false, message: error.message });
+                return res.status(400).json({ success: false, message: 'MESSAGES.AUTH.EMAIL_ALREADY_TAKEN' });
+            }
+            return res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 8. Frissítés
+    // 8. Összetett frissítés (User és Staff adatok egyszerre)
     async update(req, res) {
         try {
-            const { id } = req.params; // Ez a userId
+            const { id } = req.params; // userId
             const { name, email, specialty, bio, isActive, isAvailable } = req.body;
-            
-            console.log(`--- FRISSÍTÉS INDUL: User ID ${id} ---`);
-            console.log("Beérkező specialty:", specialty);
-            
-            // 1. User tábla frissítése 
-            await User.update(
-                { name, email },
-                { where: { id:id } }
-            );
-            // 2. Staff tábla frissítése 
+
+            // 1. User tábla frissítése
+            await User.update({ name, email }, { where: { id: id } });
+
+            // 2. Staff tábla frissítése
             const [updatedRows] = await Staff.update(
                 { specialty, bio, isActive, isAvailable },
                 { where: { userId: id } }
             );
 
             if (updatedRows === 0) {
-                console.warn(`Figyelem: A Staff táblában nem frissült sor. Létezik rekord ehhez a userId-hoz (${id})?`);
-            } else {
-                console.log("Sikeres Staff frissítés!");
+                console.warn(`Nincs módosítandó staff rekord a userId-hoz: ${id}`);
             }
 
-            res.json({ success: true, message: "Minden adat sikeresen frissítve!" });
-        
+            return res.json({ success: true, message: "STAFF.MESSAGES.UPDATE_SUCCESS" });
         } catch (error) {
-            console.error("FRISSÍTÉSI HIBA A BACKENDEN:", error);
-            res.status(500).json({ success: false, message: error.message });
+            console.error("Update hiba:", error);
+            return res.status(500).json({ success: false, message: 'COMMON.ERROR_GENERAL' });
         }
     },
 
-    // 9. Törlés (Fizikai törlés)
+    // 9. Fizikai törlés
     async destroy(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id);
-            if (staff) {
-                await staff.destroy();
-                res.json({ success: true, message: 'Szakember profil törölve' });
-            } else {
-                res.status(404).json({ success: false, message: 'Nem található' });
+            if (!staff) {
+                return res.status(404).json({ success: false, message: 'STAFF.MESSAGES.INVALID_ID' });
             }
+            await staff.destroy();
+            return res.json({ success: true, message: 'SERVICES.MESSAGES.DELETE_SUCCESS' });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     },
 
-    // 10. STÁTUSZ KEZELÉS (Archiválás és Visszaállítás)
+    // 10. Státusz kezelés (Aktiválás/Archiválás)
     async updateStatus(req, res) {
         try {
-            const { id } = req.params; // a userId-t kapjuk az Angulartól
+            const { id } = req.params; // userId
             const { isActive } = req.body;
 
             const staffProfile = await Staff.findOne({ where: { userId: id } });
 
             if (!staffProfile) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: 'Ehhez a felhasználóhoz nem tartozik szakmai profil.' 
-                });
+                return res.status(404).json({ success: false, message: 'STAFF.MESSAGES.INVALID_ID' });
             }
 
             staffProfile.isActive = isActive;
             await staffProfile.save();
 
-            res.json({ 
-                success: true, 
-                message: isActive ? 'Szakember aktiválva' : 'Szakember archiválva', 
-                data: staffProfile 
+            return res.json({
+                success: true,
+                message: isActive ? 'STAFF.MESSAGES.RESTORE_SUCCESS' : 'USERS.MESSAGES.ARCHIVE_SUCCESS',
+                data: staffProfile
             });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 };

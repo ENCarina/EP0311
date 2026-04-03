@@ -1,28 +1,31 @@
-import Consultation from '../models/consultation.js'
+import Consultation from '../models/consultation.js';
 
 const ConsultationController = {
-    // Központi hibakezelő metódus
+    // Központi hibakezelő metódus 
     handleError(res, error) {
         let status = 500;
-        let message = error.message || 'Hiba történt a művelet során!';
+        let message = 'COMMON.ERROR_GENERAL'; 
 
         if (error.message === 'Fail! Record not found!') {
             status = 404;
-            message = 'A kért kezelés nem található.';
+            message = 'SERVICES.MESSAGES.MISSING_ID'; 
         } else if (error.name === 'SequelizeUniqueConstraintError') {
             status = 400;
-            message = 'Ez a név már foglalt! Kérlek, válassz másikat.';
+            message = 'MESSAGES.AUTH.EMAIL_ALREADY_TAKEN'; 
         } else if (error.name === 'SequelizeValidationError') {
             status = 400;
-            message = error.errors.map(e => e.message).join(', ');
+            // Validációs hibáknál visszaadjuk a konkrét mező hibáját, vagy egy általános kulcsot
+            message = 'USERS.MESSAGES.ALL_FIELDS_REQUIRED';
         }
 
         return res.status(status).json({
             success: false,
-            message: message,
-            error: error.name || 'UnknownError'
+            message: message, // Ez egy kulcs (pl. SERVICES.MESSAGES.MISSING_ID)
+            error: error.name || 'UnknownError',
+            originalError: error.message // Debug célból
         });
     },
+
 
     async index(req, res) {
         try {
@@ -49,7 +52,11 @@ const ConsultationController = {
     async store(req, res) {
         try {
             const consultation = await Consultation.create(req.body);
-            return res.status(201).json({ success: true, data: consultation });
+            return res.status(201).json({ 
+                success: true, 
+                message: 'SERVICES.MESSAGES.ADD_SUCCESS',
+                data: consultation 
+            });
         } catch (error) {
             return ConsultationController.handleError(res, error);
         }
@@ -57,7 +64,6 @@ const ConsultationController = {
 
     async update(req, res) {
         try {
-            // Kiszűrjük az ID-t a body-ból, hogy ne próbáljuk meg módosítani a PK-t
             const { id, ...updateData } = req.body;
 
             const [updatedRows] = await Consultation.update(updateData, {
@@ -67,7 +73,11 @@ const ConsultationController = {
             if (updatedRows === 0) throw new Error('Fail! Record not found!');
 
             const updatedConsultation = await Consultation.findByPk(req.params.id);
-            return res.status(200).json({ success: true, data: updatedConsultation });
+            return res.status(200).json({ 
+                success: true, 
+                message: 'SERVICES.MESSAGES.UPDATE_SUCCESS',
+                data: updatedConsultation 
+            });
         } catch (error) {
             return ConsultationController.handleError(res, error);
         }
@@ -79,7 +89,11 @@ const ConsultationController = {
                 where: { id: req.params.id }
             });
             if (!deleted) throw new Error('Fail! Record not found!');
-            return res.status(200).json({ success: true, message: 'Kezelés sikeresen törölve.' });
+            
+            return res.status(200).json({ 
+                success: true, 
+                message: 'SERVICES.MESSAGES.DELETE_SUCCESS' 
+            });
         } catch (error) {
             return ConsultationController.handleError(res, error);
         }

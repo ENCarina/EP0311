@@ -1,0 +1,3 @@
+-- database: c:\Users\etelk\Dev\EPort\EPApi\database.sqlite
+
+ALTER TABLE users ADD COLUMN resetPasswordExpires DATETIME;

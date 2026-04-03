@@ -1,4 +1,5 @@
 -- database: ./database.sqlite
 
 
-UPDATE staff SET isActive = true WHERE archivedAt IS NULL;
+--UPDATE staff SET isActive = true WHERE archivedAt IS NULL;
+UPDATE consultations SET specialty = 'CARDIOLOGY' WHERE specialty = 'Kardiológia' OR specialty = 'KARDIOLÓGIA';

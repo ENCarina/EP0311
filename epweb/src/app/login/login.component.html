@@ -2,47 +2,52 @@
   <div class="col-12 col-md-6 col-lg-4">
     <div class="card shadow-lg border-0 rounded-4">
       <div class="card-body p-5">
+        
         <div class="text-center mb-4">
           <i class="bi bi-person-circle text-primary display-1"></i>
-          <h2 class="fw-bold mt-2">Bejelentkezés</h2>
-          <p class="text-muted">Üdvözöljük az ElitPort rendszerében!</p>
+          <h2 class="fw-bold mt-2">{{ 'LOGIN.TITLE' | translate }}</h2>
+          <p class="text-muted">{{ 'LOGIN.SUBTITLE' | translate }}</p>
         </div>
 
         <form [formGroup]="loginForm" (ngSubmit)="login()">
+          
           <div class="mb-3">
-            <label for="email" class="form-label fw-medium">Email cím</label>
+            <label for="email" class="form-label fw-medium">{{ 'LOGIN.EMAIL_LABEL' | translate }}</label>
             <div class="input-group has-validation">
               <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
               <input type="email" id="email" name="email" autocomplete="email"
                      class="form-control bg-light border-start-0"
                      formControlName="email"
-                     [class.is-invalid]="f.email.invalid && f.email.touched"
-                     placeholder="test@email.hu">
+                     [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                     [placeholder]="'LOGIN.EMAIL_PLACEHOLDER' | translate">
+              
               <div class="invalid-feedback">
-                @if (f.email.errors?.['required']) { Kötelező megadni! }
-                @if (f.email.errors?.['email']) { Érvénytelen formátum! }
+                @if (f['email'].errors?.['required']) { {{ 'ERRORS.REQUIRED' | translate }} }
+                @if (f['email'].errors?.['email']) { {{ 'ERRORS.EMAIL_FORMAT' | translate }} }
               </div>
             </div>
           </div>
 
           <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-end mb-2">
-              <label for="password" class="form-label fw-medium">Jelszó</label>
+            <div class="d-flex justify-content-between align-items-center w-100 mb-2">
+              <label for="password" class="form-label fw-medium">{{ 'LOGIN.PASSWORD_LABEL' | translate }}</label>
               <a routerLink="/forgot-password" class="text-muted small text-decoration-none hover-blue">
-                Elfelejtette a jelszavát?
+                {{ 'LOGIN.FORGOT_PASSWORD' | translate }}
               </a>
             </div>
             <div class="input-group has-validation">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
                 <input type="password" id="password" formControlName="password"
-                      class="form-control bg-light border-start-0" 
-                      placeholder="••••••••">
+                       class="form-control bg-light border-start-0" 
+                       placeholder="••••••••"
+                       [class.is-invalid]="f['password'].invalid && f['password'].touched">
+                
                 <div class="invalid-feedback">
-                  @if (loginForm.get('password')?.errors?.['required']) { A jelszó megadása kötelező!}
-                  @if (loginForm.get('password')?.errors?.['minlength']) { Legalább 6 karakter! }
+                  @if (f['password'].errors?.['required']) { {{ 'ERRORS.REQUIRED' | translate }} }
                 </div>
             </div>
           </div>   
+
           @if (errorMessage) {
             <div class="alert alert-danger py-2 mb-3 border-0 small text-center">
               <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
@@ -51,20 +56,22 @@
 
           <button type="submit" [disabled]="isLoading || loginForm.invalid" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm">
             @if (!isLoading) {
-              <span class="fw-bold">Belépés</span>
+              <span class="fw-bold">{{ 'LOGIN.SUBMIT_BTN' | translate }}</span>
             } @else {
-              <span class="spinner-border spinner-border-sm me-2"></span> Folyamatban...
+              <span class="spinner-border spinner-border-sm me-2"></span> {{ 'COMMON.LOADING' | translate }}
             }
           </button>
         </form>
         
         <div class="text-center mt-4">
-          <small class="text-muted"> Nincs még fiókja? 
+          <small class="text-muted"> 
+            {{ 'LOGIN.NO_ACCOUNT' | translate }} 
             <a routerLink="/register" class="text-primary text-decoration-none fw-bold ms-1">
-              Regisztráció itt!
+              {{ 'LOGIN.REGISTER_HERE' | translate }}
             </a>
           </small>
         </div>
+
       </div>
     </div>
   </div>

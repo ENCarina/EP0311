@@ -5,11 +5,12 @@ import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../shared/auth.service';
 import Swal from 'sweetalert2';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-my-booking',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './my-booking.component.html',
   styleUrl: './my-booking.component.css',
 })
@@ -20,6 +21,7 @@ export class MyBookingComponent implements OnInit {
 
   private readonly bookingService = inject(BookingService);
   public readonly auth = inject (AuthService);
+  private translate = inject(TranslateService);
   
   ngOnInit(): void {
     this.loadMyBookings();
@@ -31,29 +33,36 @@ export class MyBookingComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    const todayStr = new Date().toISOString().split('T')[0];
 
   this.bookingService.getUserBookings()
-    .pipe(
-      finalize(() => {
-        console.log('HTTP kérés lezárult.');
+    .pipe( finalize(() => {
         this.loading = false; 
       })
     )
     .subscribe({
       next: (res: any) => {
-        console.log('Backend válasz megérkezett:', res);
-        
-        if (res && res.data) {
-          this.bookings = res.data;
-        } else if (Array.isArray(res)) {
-          this.bookings = res;
-        }
-        
-        console.log('Feldolgozott foglalások:', this.bookings);
+        let rawData = [];
+          if (res && res.data) {
+            rawData = res.data;
+          } else if (Array.isArray(res)) {
+            rawData = res;
+          }
+
+          this.bookings = rawData.filter((b: any) => {
+            const bDate = b.date || b.timeSlot?.date;
+            if (!bDate) return true; 
+
+            const bookingDate = new Date(bDate);
+            bookingDate.setHours(0, 0, 0, 0);
+
+            return bDate >= todayStr;
+          });
       },
       error: (err: any) => {
-        console.error('Hiba a foglalásoknál:', err);
-        this.errorMessage = 'Nem sikerült betölteni a foglalásokat. ' + (err.error?.message || '');
+        const baseError = this.translate.instant('MY_BOOKINGS.ERROR_LOAD');
+        const serverError = err.error?.message || '';
+        this.errorMessage = `${baseError} ${serverError}`;
       }
     });
 }
@@ -71,25 +80,42 @@ export class MyBookingComponent implements OnInit {
     const slot = booking?.timeSlot;
     if (!slot?.date || !slot?.startTime) return false;
 
-    const appointmentDate = new Date(`${slot.date}T${slot.startTime}`);
+    try {
+    const time = slot.startTime.slice(0, 5);
+    const appointmentDate = new Date(`${slot.date}T${time}:00`);
 
+    if (isNaN(appointmentDate.getTime())) {
+      console.error('Hibás dátum formátum:', slot.date, slot.startTime);
+      return false;
+    }
+    const now = new Date();
+    const diffInMs = appointmentDate.getTime() - now.getTime();
     const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
 
-    return (appointmentDate.getTime() - Date.now()) >= twentyFourHoursInMs;
+    return diffInMs >= twentyFourHoursInMs;
+  } catch (e) {
+    console.error('Hiba a számítás közben:', e);
+    return false;
+  }
 }
 
   cancelBooking(id: number): void {
     if (!id) return;
 
+    const title = this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_TITLE');
+    const text = this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_TEXT');
+    const confirmBtn = this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_BTN');
+    const cancelBtn = this.translate.instant('MY_BOOKINGS.CANCEL_CANCEL_BTN');
+
     Swal.fire({
-    title: 'Biztosan lemondod?',
-    text: "Ezt a műveletet nem lehet visszavonni!",
+    title: title,
+    text: text,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Igen, lemondom!',
-    cancelButtonText: 'Mégse'
+    confirmButtonText: confirmBtn,
+    cancelButtonText: cancelBtn
   }).then((result) => {
     if (result.isConfirmed) {
       this.loading = true;
@@ -97,20 +123,23 @@ export class MyBookingComponent implements OnInit {
       this.bookingService.cancelBooking(id).subscribe({
         next: (res) => {
           if (res.success) {
-            // UI frissítése: kivesszük a listából a törölt elemet
             this.bookings = this.bookings.filter(b => b.id !== id);
             
-            Swal.fire('Sikeres lemondás!', res.message || 'Az időpontod felszabadult.', 'success');
+            Swal.fire(
+              this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
+              res.message || this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT'),
+              'success'
+            );
           }
           this.loading = false;
         },
         error: (err) => {
           this.loading = false; 
-          // Elérjük a backendről jövő üzenetet ("24 órán belül nem mondható le")
-          const errorMsg = err.error?.message || 'Hiba történt a lemondás során.';
+          const backendCode = err.error?.message;
+          const translatedMessage = this.translate.instant(`MESSAGES.${backendCode}`) || 
+                            this.translate.instant('MY_BOOKINGS.ERROR_CANCEL_GENERAL');
           
-          Swal.fire('Hiba', errorMsg, 'error');
-          this.errorMessage = errorMsg; 
+          Swal.fire(this.translate.instant('MY_BOOKINGS.ERROR_TITLE'), translatedMessage, 'error');
         }
       });
     }

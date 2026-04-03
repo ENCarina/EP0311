@@ -17,7 +17,6 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
-
     { path: 'home', component:HomeComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent },
@@ -31,15 +30,15 @@ export const routes: Routes = [
     //publikus kártya
     { path: 'staffCard', component: StaffCardComponent }, 
     //{ path: 'staff/:id', component: StaffDetailComponent }, 
-   
+    
     { path: 'booking/:id', component: BookingComponent, canActivate: [authGuard] },
     { path: 'booking', component:BookingComponent, canActivate: [authGuard]},
-    
+        
     //admin
     { path: 'admin/users', component: UserListComponent, canActivate: [authGuard] }, 
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
     { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
-    
+
     { path: '**', component: NopageComponent },
 
 ];

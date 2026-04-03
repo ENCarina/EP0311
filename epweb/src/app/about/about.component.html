@@ -7,41 +7,41 @@
                 <i class="bi bi-shield-check text-primary"></i>
             </div>
             <h1>ElitPort <span class="badge-custom">EP</span></h1>
-            <p class="tagline">Intelligens Foglalási Rendszer</p>
+            <p class="tagline">{{ 'ABOUT.TAGLINE' | translate }}</p>
             <div class="title-divider mx-auto"></div>
         </div>
 
         <div class="about-grid mt-4">
             <div class="info-box">
-                <span class="label">Verzió</span>
+                <span class="label">{{ 'ABOUT.VERSION' | translate }}</span>
                 <span class="value v-tag">0.3.4 <small>(Beta)</small></span>
             </div>
             <div class="info-box">
-                <span class="label">Fejlesztők</span>
-                <span class="value fw-bold">NJE</span>
+                <span class="label">{{ 'ABOUT.DEVELOPERS' | translate }}</span>
+                <span class="value fw-bold">NJE & VL</span>
             </div>
             <div class="info-box">
-                <span class="label">Állapot</span>
+                <span class="label">{{ 'ABOUT.STATUS' | translate }}</span>
                 <span class="value status-online">
-                    <span class="pulse-dot"></span> Rendszer aktív
+                    <span class="pulse-dot"></span> {{ 'ABOUT.SYSTEM_ACTIVE' | translate }}
                 </span>
             </div>
         </div>
 
         <div class="about-description">
-            <h3 class="letter-spacing-1">A projektről</h3>
-            <p>Az <strong>ElitPort</strong> egy modern, skálázható megoldás az időpontfoglalási folyamatok kezelésére. A fejlesztés fókuszában az <strong>adatbiztonság</strong> és a prémium <strong>felhasználói élmény</strong> áll.</p>
+            <h3 class="letter-spacing-1">{{ 'ABOUT.PROJECT_TITLE' | translate }}</h3>
+            <p [innerHTML]="'ABOUT.PROJECT_DESC' | translate"></p>
         </div>
 
         <div class="about-footer">
             <div class="links mb-4">
-                <a href="#" class="btn-link-custom">Dokumentáció</a>
+                <a href="#" class="btn-link-custom">{{ 'ABOUT.DOCS' | translate }}</a>
                 <span class="dot-separator">•</span>
-                <a href="mailto:support@elitport.hu" class="btn-link-custom">Támogatás</a>
+                <a href="mailto:support@elitport.hu" class="btn-link-custom">{{ 'ABOUT.SUPPORT' | translate }}</a>
                 <span class="dot-separator">•</span>
                 <a href="#" class="btn-link-custom">GitHub</a>
             </div>
-            <p class="copyright">&copy; 2026 EN. Minden jog fenntartva.</p>
+            <p class="copyright">&copy; 2026 EN. {{ 'ABOUT.ALL_RIGHTS' | translate }}</p>
         </div>
     </div>
 </div>

@@ -2,8 +2,18 @@ import db from '../models/modrels.js';
 import { EmailService } from './emailService.js';
 
 export const BookingService = {
+    async getUserBookings(userId) {
+        return await db.Booking.findAll({
+            where: { patientId: userId },
+            include: [{
+                model: db.Slot,
+                as: 'timeSlot' 
+            }],
+            order: [['date', 'ASC'], ['startTime', 'ASC']]
+            });
+        },
 
-    async createBooking(bookingData, user) {
+    async createBooking(bookingData, user , lang = 'hu') {
         let t;
         try {
             t = await db.sequelize.transaction();
@@ -11,10 +21,10 @@ export const BookingService = {
             const slot = await db.Slot.findByPk(bookingData.slotId, { transaction: t });
 
             if (!slot) {
-                throw new Error('A választott időpont nem található!');
+                throw new Error('SLOTS.MESSAGES.NOT_FOUND');
             }
             if (!slot.isAvailable) {
-                throw new Error('Ez az időpont már foglalt!');
+                throw new Error('BOOKING.CONFLICT');
             }
 
             const newBooking = await db.Booking.create({
@@ -32,21 +42,22 @@ export const BookingService = {
 
             const emailData = {
                 ...newBooking.get({ plain: true }),
-                name: bookingData.name || 'Orvosi vizsgálat'
+                name: bookingData.name || 'Medical Appointment',
+                appointment_date: `${slot.date} ${slot.startTime}`
             };
 
             const dateVal = slot.date;
-            const timeVal = slot.startTime || slot.StartTime;
+            const timeVal = slot.startTime;
 
             if (dateVal && timeVal) {
                 emailData.appointment_date = `${dateVal} ${timeVal}`;
             } else {
-                emailData.appointment_date = "Időpont visszaigazolás alatt";
+                emailData.appointment_date = "COMMON.ATTENTION";
             }
 
             if (EmailService && user?.email) {
-                EmailService.sendBookingConfirmation(user.email, emailData).catch(err => {
-                    console.error('E-mail hiba:', err);
+                EmailService.sendBookingConfirmation(user.email, emailData, lang).catch(err => {
+                    console.error('E-mail error:', err);
                 });
             }
 
@@ -74,18 +85,18 @@ export const BookingService = {
         try {
             const booking = await db.Booking.findByPk(bookingId, { transaction: t });
 
-            if (!booking) throw new Error('Foglalás nem található!');
-            if (booking.patientId !== userId) throw new Error('Nincs jogosultságod a lemondáshoz!');
+            if (!booking) throw new Error('BOOKING.NOT_FOUND');
+            if (booking.patientId !== userId) throw new Error('BOOKING.UNAUTHORIZED');
 
             const slot = await db.Slot.findByPk(booking.slotId, { transaction: t });
             
             if (slot) {
                 const now = new Date();
-                const bookingFullDate = new Date(`${slot.date} ${slot.startTime}`);
+                const bookingFullDate = new Date(`${slot.date}T${slot.startTime}`);
                 const hoursDiff = (bookingFullDate - now) / (1000 * 60 * 60);
 
                 if (hoursDiff < 24) {
-                    throw new Error('24 órán belüli lemondás csak telefonon lehetséges!');
+                    throw new Error('BOOKING.CANNOT_CANCEL_WITHIN_24H');
                 }
 
                 await slot.update({ isAvailable: true }, { transaction: t });
@@ -94,7 +105,7 @@ export const BookingService = {
             await booking.destroy({ transaction: t });
 
             await t.commit();
-            return { message: 'Sikeres lemondás' };
+            return { message: 'BOOKING.DELETE_SUCCESS' };
 
         } catch (error) {
             if (t) await t.rollback();

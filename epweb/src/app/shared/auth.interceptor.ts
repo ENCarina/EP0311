@@ -14,7 +14,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (isPlatformBrowser(platformId)) {
     const token = localStorage.getItem('token');
-    
+
+    const lang = localStorage.getItem('lang') || 'hu';
+
+    const headers: any = {
+      'Accept-Language': lang
+    };
+
     if (token) {
       authReq = req.clone({
         setHeaders: {

@@ -1,46 +1,72 @@
 import { BookingService } from '../services/bookingService.js';
 import db from '../models/modrels.js'; 
-import {Op} from 'sequelize';
+import { Op } from 'sequelize';
 import { EmailService } from '../services/emailService.js';
 
 const BookingController = {
+    // 1. Összes foglalás listázása (Szerepkör alapú szűréssel)
     async index(req, res) {
         try {
             let whereCondition = {};
-            if (req.user.roleId === 1) {
-                const staff = await db.Staff.findOne({ where: { userId: req.user.id } });
+            const roleId = Number(req.user.roleId); 
+            const currentUserId = req.user.id;
+
+            // Szűrési logika: Páciens csak a sajátját, Szakember a hozzárendeltet, Admin mindet
+            if (roleId === 1) { // STAFF
+                const staff = await db.Staff.findOne({ where: { userId: currentUserId } });
                 whereCondition = { staffId: staff ? staff.id : null };
-            } else if (req.user.roleId === 0) {
-                whereCondition = { patientId: req.user.id };
-            } else if (req.user.roleId === 2) {
+            } else if (roleId === 0) { // PATIENT
+                whereCondition = { patientId: currentUserId };
+            } else if (roleId === 2) { // ADMIN
                 whereCondition = {};
             }
 
             const bookings = await db.Booking.findAll({
                 where: whereCondition,
                 include: [
-                    { model: db.User, as: 'patient', attributes: ['id','name', 'email'] },
                     { 
-                        model: db.Staff, as: 'doctor', attributes: ['id', 'specialty'], 
+                        model: db.User, 
+                        as: 'patient', 
+                        attributes: ['id', 'name', 'email'] 
+                    },
+                    { 
+                        model: db.Staff, 
+                        as: 'doctor', 
+                        attributes: ['id', 'specialty'], 
                         include: [{ model: db.User, as: 'user', attributes: ['name'] }] 
                     },
-                    { model: db.Slot, as: 'timeSlot', attributes: ['id', 'date', 'startTime', 'endTime'] },
-                    { model: db.Consultation, as: 'treatment', attributes: ['id', 'name', 'price'] }
+                    { 
+                        model: db.Slot, 
+                        as: 'timeSlot',
+                        required: false, 
+                        attributes: ['id', 'date', 'startTime', 'endTime'] 
+                    },
+                    { 
+                        model: db.Consultation, 
+                        as: 'treatment', 
+                        attributes: ['id', 'name', 'price'] 
+                    }
                 ],
                 order: [['createdAt', 'DESC']]
             });
+
             return res.status(200).json({ success: true, data: bookings });
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message });
+            console.error('Hiba az index lekérésnél:', error);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'BOOKING.ERROR_LOAD', 
+                error: error.message 
+            });
         }
     },
-   
+
     // 2. Egy konkrét foglalás megtekintése
     async show(req, res) {
         try {
             const booking = await db.Booking.findByPk(req.params.id, {
                 include: [
-                    { model: db.User, as: 'patient', attributes: ['id','name', 'email'] },
+                    { model: db.User, as: 'patient', attributes: ['id', 'name', 'email'] },
                     { 
                         model: db.Staff, as: 'doctor', 
                         include: [{ model: db.User, as: 'user', attributes: ['name'] }] 
@@ -51,33 +77,38 @@ const BookingController = {
             });
             
             if (!booking) {
-                return res.status(404).json({ success: false, message: 'Nincs ilyen foglalás.' });
+                return res.status(404).json({ success: false, message: 'BOOKING.NOT_FOUND' });
             }
 
             return res.status(200).json({ success: true, data: booking });
         } catch (error) {
             return res.status(500).json({
                 success: false,
-                message: 'Hiba a lekérés során!',
+                message: 'BOOKING.ERROR_LOAD',
                 error: error.message
             });
         }
     },
 
-    // 3. Új foglalás létrehozása
+    // 3. Új foglalás létrehozása (Conflict check-el)
     async store(req, res) {
         try {
             const currentUserId = req.user?.id || req.userId;
-            if (!currentUserId) throw new Error("Nincs bejelentkezett felhasználó!");
+            if (!currentUserId) {
+                return res.status(401).json({ success: false, message: 'AUTH.INVALID_CREDENTIALS' });
+            }
            
             const user = await db.User.findByPk(currentUserId);
-            if (!user) throw new Error("A felhasználó nem található!");
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'USERS.MESSAGES.PROFILE_NOT_FOUND' });
+            }
 
-            // Megnézi, h a páciensnek van-e már foglalása UGYANEBBEN az időpontban
             const selectedSlot = await db.Slot.findByPk(req.body.slotId);
-            
-            if (!selectedSlot) throw new Error("A választott időpont nem létezik!");
+            if (!selectedSlot) {
+                return res.status(400).json({ success: false, message: 'BOOKING.NO_SLOTS_TITLE' });
+            }
 
+            // Ütközésvizsgálat: ne legyen ugyanarra az időpontra más aktív foglalása a páciensnek
             const existingConflict = await db.Booking.findOne({
                 include: [{
                     model: db.Slot,
@@ -89,13 +120,14 @@ const BookingController = {
                 }],
                 where: {
                     patientId: currentUserId,
-                    status: { [Op.ne]: 'Cancelled' } // Csak az aktív foglalás számít
+                    status: { [Op.ne]: 'Cancelled' }
                 }
             });
+
             if (existingConflict) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Ekkor már van egy másik lefoglalt időpontod! Nem lehetsz két helyen egyszerre.'
+                    message: 'BOOKING.CONFLICT'
                 });
             }
 
@@ -105,17 +137,20 @@ const BookingController = {
                 status: req.body.status || 'Confirmed'
             };
 
-            const newBooking = await BookingService.createBooking(bookingData, user);
+            // Itt hívjuk meg a Service-t a tényleges mentéshez
+            const lang = req.headers['accept-language'] || 'hu';
+            const newBooking = await BookingService.createBooking(bookingData, user, lang);
 
             return res.status(201).json({
                 success: true,
-                message: 'Sikeres foglalás!',
+                message: 'BOOKING.SUCCESS_MSG',
                 data: newBooking
             });
         } catch (error) {
             return res.status(400).json({
                 success: false,
-                error: error.message || 'Sajnáljuk, a foglalás nem sikerült.'
+                message: 'BOOKING.ERROR_MSG',
+                error: error.message
             });
         }
     },
@@ -128,72 +163,96 @@ const BookingController = {
             });
             
             if (recordNumber === 0) {
-                return res.status(404).json({ success: false, message: 'Foglalás nem található!' });
+                return res.status(404).json({ success: false, message: 'BOOKING.NOT_FOUND' });
             }
             
             const booking = await db.Booking.findByPk(req.params.id);
-            return res.status(200).json({ success: true, data: booking });
+            return res.status(200).json({ 
+                success: true, 
+                message: 'COMMON.SUCCESS', 
+                data: booking 
+            });
         } catch (error) {
             return res.status(500).json({
                 success: false,
-                message: 'Hiba a frissítés során!',
+                message: 'SERVICES.MESSAGES.UPDATE_SUCCESS', // vagy BOOKING.ERROR_MSG
                 error: error.message
             });
         }
     },
 
-    // 5. Foglalás törlése (Transaction-nel)
+    // 5. Foglalás törlése (Tranzakcióval és 24h szabály ellenőrzéssel)
     async destroy(req, res) {
         const t = await db.sequelize.transaction();
         try {
             const booking = await db.Booking.findByPk(req.params.id, {
-                include: [{ model: db.Slot }]
+                include: [{ 
+                    model: db.Slot,
+                    as: 'timeSlot' 
+                }]
             });
             
+            // 1. Foglalás létezésének ellenőrzése
             if (!booking) {
                 await t.rollback();
-                return res.status(404).json({ success: false, message: "Foglalás nem található!" });
+                return res.status(404).json({ success: false, message: "BOOKING.BOOKING_NOT_FOUND" });
             }
 
-             // Jogosultság: Csak Admin (2) vagy a tulajdonos törölhet
-            if (req.user.roleId !== 2 && booking.patientId != req.user.id) {
+            const requesterRoleId = Number(req.user.roleId);
+            const isAdmin = requesterRoleId === 2;
+
+            // 2. Jogosultság ellenőrzése (Admin vagy saját foglalás)
+            if (!isAdmin && booking.patientId != req.user.id) {
                 await t.rollback();
-                return res.status(403).json({ success: false, message: "Nincs jogosultsága a törléshez!" });
+                return res.status(403).json({ success: false, message: "BOOKING.UNAUTHORIZED" });
             }
 
-            // 24 ÓRÁS SZABÁLY ELLENŐRZÉSE - ha nem Admin
-            if (req.user.roleId !== 2) {
+            // 3. 24 órás szabály (Csak páciensre vonatkozik, Adminra NEM)
+            if (!isAdmin && booking.timeSlot) {
                 const now = new Date();
-                const appointmentDate = new Date(booking.Slot.startTime); 
+                // Időpont összerakása a dátumból és a kezdési időből
+                const appointmentDate = new Date(`${booking.timeSlot.date}T${booking.timeSlot.startTime}`);
                 
-                const diffInMs = appointmentDate - now;
-                const diffInHours = diffInMs / (1000 * 60 * 60);
-
-                if (diffInHours < 24) {
-                    await t.rollback();
-                    return res.status(403).json({ 
-                        success: false, 
-                        message: "Az időpont 24 órán belül már nem mondható le online. Kérjük, hívjon!!" 
-                    });
+                if (!isNaN(appointmentDate.getTime())) {
+                    const diffInHours = (appointmentDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+                    
+                    if (diffInHours < 24) {
+                        await t.rollback();
+                        return res.status(403).json({ 
+                            success: false, 
+                            message: "BOOKING.CANNOT_CANCEL_WITHIN_24H" 
+                        });
+                    }
                 }
-            }
-            // TÖRLÉSI FOLYAMAT (ha átment az ellenőrzéseken)
+        }
+
+            // 4. Slot felszabadítása (Ha van hozzárendelt slot)
+            if (booking.slotId) {
                 await db.Slot.update(
                     { isAvailable: true },
                     { where: { id: booking.slotId }, transaction: t }
-                    );
-
-                await booking.destroy({ transaction: t });
-                await t.commit();
-
-                return res.status(200).json({ success: true, message: 'Foglalás sikeresen törölve.' });
-
-                } catch (error) {
-                    if (t) await t.rollback();
-                    return res.status(500).json({ success: false, error: error.message });
-                }
+                );
             }
+
+            // 5. Foglalás törlése
+            await booking.destroy({ transaction: t });
+
+            await t.commit();
+            
+            return res.status(200).json({ 
+                success: true, 
+                message: isAdmin ? "BOOKING.ADMIN_DELETE_SUCCESS" : "BOOKING.DELETE_SUCCESS" 
+            });
+
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error("Backend hiba a törlésnél:", error);
+            return res.status(500).json({ 
+                success: false, 
+                message: "BOOKING.SERVER_ERROR", 
+                error: error.message 
+            });
         }
-
-
+    }
+};
 export default BookingController;

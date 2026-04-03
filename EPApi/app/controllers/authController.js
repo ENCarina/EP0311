@@ -12,21 +12,22 @@ dotenvFlow.config();
 const AuthController = {
     // 1. REGISZTRÁCIÓ
     async register(req, res) {
+        const lang = req.headers['accept-language'] || 'hu';
         try {
             const { name, email, password, confirmPassword } = req.body;
 
-            // validációk
+            // Validációk kódokkal
             if (!name || !email || !password || !confirmPassword) {
-                return res.status(400).json({ success: false, message: 'Minden mező kitöltése kötelező!' });
+                return res.status(400).json({ success: false, message: 'AUTH.MISSING_FIELDS' });
             }
 
             if (password !== confirmPassword) {
-                return res.status(400).json({ success: false, message: 'A két jelszó nem egyezik!' });
+                return res.status(400).json({ success: false, message: 'AUTH.PASSWORD_MISMATCH' });
             }
 
             const userExists = await db.User.findOne({ where: { email } });
             if (userExists) {
-                return res.status(400).json({ success: false, message: 'Ez az email cím már foglalt!' });
+                return res.status(400).json({ success: false, message: 'AUTH.EMAIL_ALREADY_TAKEN' });
             }
             
             // Token generálás az email megerősítéshez
@@ -39,73 +40,73 @@ const AuthController = {
                 email,
                 password: bcrypt.hashSync(password, 10),
                 roleId: 0, 
-                verificationToken:verificationToken,
+                verificationToken: verificationToken,
                 verified: false,
                 isActive: true
             });
 
-            // Email küldés 
-            EmailService.sendWelcomeEmail(newUser.email, newUser.name, verifyUrl)
-                .catch(err => console.error("Email küldési hiba a regisztrációnál:", err.message));
+            // Email küldés (háttérben, nem blokkolja a választ)
+            EmailService.sendWelcomeEmail(newUser.email, newUser.name, verifyUrl, lang)
+                .catch(err => console.error("Email error during registration:", err.message));
 
             return res.status(201).json({
                 success: true,
-                message: 'Regisztráció sikeres! Kérjük, igazolja vissza email címét.',
+                message: 'AUTH.REGISTRATION_SUCCESS_VERIFY',
                 data: { id: newUser.id, name: newUser.name, email: newUser.email }
             });
 
         } catch (error) {
-            console.error("REGISZTRÁCIÓS HIBA:", error);
-            return res.status(500).json({ success: false, message: 'Hiba a regisztráció során!', error: error.message });
+            console.error("REGISTRATION ERROR:", error);
+            return res.status(500).json({ success: false, message: 'AUTH.ERROR_GENERAL' });
         }
     },
 
     // 2. EMAIL VISSZAIGAZOLÁS
     async verifyEmail(req, res) {
         try {
-            const user = await User.findOne({ where: { verificationToken: req.params.token } });
+            const user = await db.User.findOne({ where: { verificationToken: req.params.token } });
             
             if (!user) {
-                return res.status(400).json({ success: false, message: 'Érvénytelen vagy lejárt megerősítő token!' });
+                return res.status(400).json({ success: false, message: 'AUTH.INVALID_TOKEN' });
             }
 
             user.verified = true;
             user.verificationToken = null;
             await user.save();
 
-            return res.status(200).json({ success: true, message: 'Email cím sikeresen visszaigazolva!' });
+            return res.status(200).json({ success: true, message: 'AUTH.EMAIL_VERIFIED_SUCCESS' });
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message });
+            console.error("VERIFY ERROR:", error);
+            return res.status(500).json({ success: false, message: 'AUTH.ERROR_GENERAL' });
         }
     },
 
     // 3. BEJELENTKEZÉS
     async login(req, res) {
         try {
-            const { email, password } = req.body
+            const { email, password, lang } = req.body;
+            const currentLang = lang || 'hu';
 
-            const user = await User.findOne({ where: { email } });
+            const user = await db.User.findOne({ where: { email } });
 
             if (!user) {
-                return res.status(401).json({ success: false, message: 'Érvénytelen e-mail!' });
+                return res.status(401).json({ success: false, message: 'AUTH.INVALID_CREDENTIALS' });
             }
 
             if (user.isActive === false) { 
-                return res.status(401).json({ success: false, message: 'Inaktív fiók!' });
+                return res.status(401).json({ success: false, message: 'AUTH.ACCOUNT_INACTIVE' });
             }
 
             const passwordIsValid = await bcrypt.compare(password, user.password);
 
             if (!passwordIsValid) {
-                return res.status(401).json({ success: false, message: 'Érvénytelen jelszó!'});
+                return res.status(401).json({ success: false, message: 'AUTH.INVALID_CREDENTIALS' });
             } 
 
             if (!user.verified) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Kérjük, igazolja vissza email címét a belépés előtt!' 
-            });
-        }
+                return res.status(403).json({ success: false, message: 'AUTH.EMAIL_NOT_VERIFIED' });
+            }
+
             // Token generálás
             const secretKey = process.env.APP_KEY || 'default_secret_key';
             const token = jwt.sign(
@@ -126,65 +127,66 @@ const AuthController = {
             });
 
         } catch (error) {
-            return res.status(500).json({ success: false, message: 'Hiba a bejelentkezés során!', error: error.message });
+            console.error("LOGIN ERROR:", error);
+            return res.status(500).json({ success: false, message: 'AUTH.ERROR_GENERAL' });
         }
     },
-     // 4. ELFELEJTETT JELSZÓ - Token generálás és Email küldés
+
+    // 4. ELFELEJTETT JELSZÓ
     async forgotPassword(req, res) {
         try {
-            const { email } = req.body;
+            const { email, lang } = req.body;
+            const userLang = lang || 'hu';
+
             if (!email) {
-                return res.status(400).json({ success: false, message: 'Email megadása kötelező!' });
+                return res.status(400).json({ success: false, message: 'AUTH.EMAIL_REQUIRED' });
             }
 
             const user = await db.User.findOne({ where: { email } });
 
+            // Biztonsági okokból: ugyanazt a választ adjuk, ha nincs user
             if (!user) {
-                return res.status(200).json({ success: true, message: 'Ha létezik fiók ezzel az email címmel, elküldtük a tájékoztatót.' });
+                return res.status(200).json({ success: true, message: 'AUTH.FORGOT_PASSWORD_SENT' });
             }
 
-            // Token generálás (32 bájtos véletlen string)
             const resetToken = crypto.randomBytes(32).toString('hex');
-            
-            // Hash-eljük a tokent mielőtt mentjük 
             const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-            // Mentés az adatbázisba (30 perc lejárattal)
             user.resetPasswordToken = hashedToken;
             user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; 
             await user.save();
 
             const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/reset-password/${resetToken}`;
 
-            // Email küldés
-            EmailService.sendPasswordResetEmail(user.email, resetUrl)
-                .catch(err => console.error("Email hiba elfelejtett jelszónál:", err.message));
+            EmailService.sendPasswordResetEmail(user.email, resetUrl, userLang)
+                .catch(err => console.error("Email error during forgot password:", err.message));
 
             return res.status(200).json({
                 success: true,
-                message: 'A jelszó visszaállító linket elküldtük az email címére.'
+                message: 'AUTH.FORGOT_PASSWORD_SENT'
             });
 
         } catch (error) {
-            console.error("FORGOT PASSWORD HIBA:", error);
-            return res.status(500).json({ success: false, message: 'Hiba a folyamat során!' });
+            console.error("FORGOT PASSWORD ERROR:", error);
+            return res.status(500).json({ success: false, message: 'AUTH.ERROR_GENERAL' });
         }
     },
 
-    // 5. JELSZÓ VISSZAÁLLÍTÁS - Új jelszó mentése
+    // 5. JELSZÓ VISSZAÁLLÍTÁS
     async resetPassword(req, res) {
         try {
-            const { token } = req.params;
-            const { password, confirmPassword } = req.body;
+           const { token, password, password_confirmation } = req.body;
 
-            if (!password || password !== confirmPassword) {
-                return res.status(400).json({ success: false, message: 'A jelszavak nem egyeznek!' });
+           if (!token) {
+            return res.status(400).json({ success: false, message: 'AUTH.TOKEN_REQUIRED' });
             }
 
-            // A kapott tokent is hash-eljük, hogy összevessük a tárolttal
+            if (!password || password !== password_confirmation) {
+                return res.status(400).json({ success: false, message: 'AUTH.PASSWORD_MISMATCH' });
+            }
+
             const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-            // Keresés érvényes és még le nem járt token alapján
             const user = await db.User.findOne({
                 where: {
                     resetPasswordToken: hashedToken,
@@ -193,10 +195,9 @@ const AuthController = {
             });
 
             if (!user) {
-                return res.status(400).json({ success: false, message: 'A link érvénytelen vagy lejárt!' });
+                return res.status(400).json({ success: false, message: 'AUTH.INVALID_OR_EXPIRED_TOKEN' });
             }
 
-            // Új jelszó mentése (bcrypt-tel hash-elve)
             user.password = bcrypt.hashSync(password, 10);
             user.resetPasswordToken = null;
             user.resetPasswordExpires = null;
@@ -204,12 +205,12 @@ const AuthController = {
 
             return res.status(200).json({
                 success: true,
-                message: 'A jelszó sikeresen megváltoztatva! Most már bejelentkezhet.'
+                message: 'AUTH.PASSWORD_RESET_SUCCESS'
             });
 
         } catch (error) {
-            console.error("RESET PASSWORD HIBA:", error);
-            return res.status(500).json({ success: false, message: 'Hiba a jelszó visszaállítása során!' });
+            console.error("RESET PASSWORD ERROR:", error);
+            return res.status(500).json({ success: false, message: 'AUTH.ERROR_GENERAL' });
         }
     }      
 };

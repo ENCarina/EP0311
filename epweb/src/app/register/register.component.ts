@@ -5,11 +5,13 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, TranslateModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
@@ -18,6 +20,7 @@ export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
   
   isLoading = false;
   errorMessage = '';
@@ -74,8 +77,8 @@ export class RegisterComponent {
         next: (res:any) => {
           this.isLoading = false;
           Swal.fire({
-            title:'Sikeres regisztráció!', 
-            text: 'Üdvözöljük!', 
+            title: this.translate.instant('REGISTER.SWAL.SUCCESS_TITLE'),
+            text: this.translate.instant('REGISTER.SWAL.SUCCESS_TEXT'), 
             icon:'success',
             confirmButtonColor:'#003366'
           }).then(() => { 
@@ -85,7 +88,8 @@ export class RegisterComponent {
         },
         error: (err:any) => {
           this.isLoading = false;
-          Swal.fire('Hiba!', err.error?.message || 'Sikertelen regisztráció!', 'error');
+          const errorMsg = err.error?.message || this.translate.instant('REGISTER.SWAL.ERROR_DEFAULT');
+          Swal.fire(this.translate.instant('REGISTER.SWAL.ERROR_TITLE'), errorMsg, 'error');
         }
       });
     }

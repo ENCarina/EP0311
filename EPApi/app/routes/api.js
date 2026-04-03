@@ -15,7 +15,7 @@ router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 router.get('/verify-email/:token', AuthController.verifyEmail);
 router.post('/forgot-password', AuthController.forgotPassword);
-router.post('/reset-password/:token', AuthController.resetPassword);
+router.post('/reset-password', AuthController.resetPassword);
 
 // --- MY PROFILE ---
 router.get('/profile/me', [verifyToken], UserController.getMyProfile); 
@@ -33,16 +33,15 @@ router.delete('/users/:id', [verifyToken, checkRole(2)], UserController.destroy)
 
 // --- STAFF (Szakemberek) ---
 router.get('/staff', StaffController.index); 
-router.get('/staff/public', StaffController.getPublicProfiles); // Publikus lista
+router.get('/staff/public', StaffController.getPublicProfiles); 
+router.get('/staff/:id/treatments', StaffController.getTreatmentsForStaff); 
+router.post('/staff/:id/treatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
 router.get('/staff/:id', StaffController.show);
 router.post('/staff', [verifyToken, checkRole(2)], StaffController.store);
 router.put('/staff/:id', [verifyToken, checkRole(2)], StaffController.update);
 router.delete('/staff/:id', [verifyToken, checkRole(2)], StaffController.destroy);
 
 router.post('/staff/promote', [verifyToken, checkRole(2)], StaffController.promoteToStaff);
-router.get('/staff/:id/treatments', StaffController.getTreatmentsForStaff); 
-router.post('/staff/:id/treatments', [verifyToken, checkRole(2)], StaffController.assignTreatments);
- 
 
 // --- CONSULTATIONS, SLOTS, BOOKINGS (Maradnak változatlanul) ---
 router.get('/consultations', ConsultationController.index);

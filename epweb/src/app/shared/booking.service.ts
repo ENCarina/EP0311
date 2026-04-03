@@ -49,6 +49,7 @@ export class BookingService {
   }
 
   cancelBooking(bookingId: number): Observable<any> {
+    console.log('Törlendő URL:', `${this.API_URL}/bookings/${bookingId}`);
     return this.http.delete(`${this.API_URL}/bookings/${bookingId}`, { 
       headers: this.getHeaders() 
     }).pipe(

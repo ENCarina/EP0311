@@ -5,11 +5,11 @@
       <div class="card shadow-sm border-0 mb-4 rounded-4">
         <div class="card-body p-4">
           <h5 class="card-title mb-4 fw-bold">
-            <i class="bi bi-filter-left me-2 text-primary"></i>Foglalási adatok
+            <i class="bi bi-filter-left me-2 text-primary"></i>{{ 'BOOKING.SIDEBAR_TITLE' | translate }}
           </h5>
           
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Dátum kiválasztása</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SELECT_DATE' | translate }}</label>
             <input type="date" class="form-control border-light-subtle shadow-sm" 
                    [(ngModel)]="selectedDate" 
                    (change)="onFilterChange()"
@@ -17,43 +17,41 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Szakterület</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SPECIALTY' | translate }}</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedSpecialty" 
                     (change)="onSpecialtyChange()">
-              <option value="" disabled selected>-- Válasszon szakterületet --</option>
+              <option value="" disabled selected>{{ 'BOOKING.SPECIALTY_PLACEHOLDER' | translate }}</option>
               @for (spec of specialties; track spec) {
-                <option [value]="spec">{{ spec }}</option>
+                <option [value]="spec">{{ 'SPECIALTIES.' + spec + '.NAME' | translate }}</option>
               }
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Szakember</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.STAFF' | translate }}</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedStaffId" 
                     (change)="onStaffChange()"
                     [disabled]="!selectedSpecialty">
-              <option [ngValue]="null" disabled>-- Válasszon orvost --</option>
+              <option [ngValue]="null" disabled>{{ 'BOOKING.STAFF_PLACEHOLDER' | translate }}</option>
               @for (staff of filteredStaffs; track staff.id) {
-                <option [ngValue]="staff.id">{{ staff.user?.name || staff.name }} </option>
+                <option [ngValue]="staff.id">{{ staff.user?.name || staff.name }}</option>
               }
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Vizsgálat típusa</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.TREATMENT' | translate }}</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedConsultationId" 
                     (change)="onFilterChange()"
                     [disabled]="!selectedStaffId">
-
-            <option [ngValue]="null" disabled>-- Válasszon vizsgálatot --</option>
-            
-            @for (cons of filteredConsultations; track cons.id) {
-              <option [ngValue]="cons.id">
-                {{ cons.name }}
-              </option>
+              <option [ngValue]="null" disabled>{{ 'BOOKING.TREATMENT_PLACEHOLDER' | translate }}</option>
+              @for (cons of filteredConsultations; track cons.id) {
+                <option [ngValue]="cons.id">
+                  {{ 'SERVICES.' + cons.name | translate }}
+                </option>
               }
             </select>
           </div>
@@ -62,9 +60,9 @@
                   (click)="onFilterChange()" 
                   [disabled]="isLoading || !selectedConsultationId">
             @if (isLoading) {
-              <span class="spinner-border spinner-border-sm me-2"></span> Frissítés...
+              <span class="spinner-border spinner-border-sm me-2"></span> {{ 'BOOKING.UPDATING' | translate }}
             } @else {
-              <i class="bi bi-search me-2"></i>Időpontok keresése
+              <i class="bi bi-search me-2"></i>{{ 'BOOKING.SEARCH_BTN' | translate }}
             }
           </button>
         </div>
@@ -73,9 +71,9 @@
 
     <div class="col-lg-8">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-bold">Elérhető időpontok</h4>
+        <h4 class="mb-0 fw-bold">{{ 'BOOKING.AVAILABLE_SLOTS' | translate }}</h4>
         <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle">
-          {{ availableSlots.length }} szabad hely
+          {{ 'BOOKING.FREE_PLACES' | translate: { count: availableSlots.length } }}
         </span>
       </div>
 
@@ -95,7 +93,7 @@
                   <i class="bi bi-clock-fill fs-3"></i>
                 </div>
                 
-                <h5 class="mb-1 fw-bold text-dark" style="letter-spacing: -0.5px;">
+                <h5 class="mb-1 fw-bold text-dark">
                   {{ slot.startTime.slice(0, 5) }} - {{ slot.endTime.slice(0, 5) }}
                 </h5>
                 
@@ -105,7 +103,7 @@
                 
                 <button class="btn slot-button btn-sm rounded-pill w-100 py-2 shadow-sm"
                         [disabled]="!slot.isAvailable">
-                  {{ slot.isAvailable ? 'Időpont foglalása' : 'Már foglalt' }}
+                  {{ slot.isAvailable ? ('BOOKING.BOOK_NOW' | translate) : ('BOOKING.ALREADY_BOOKED' | translate) }}
                 </button>
               </div>
             </div>
@@ -113,8 +111,8 @@
         } @empty {
           <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
             <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
-            <h5 class="text-muted">Nincs szabad időpont</h5>
-            <p class="text-muted small">Válassz szakterületet, orvost és vizsgálatot.</p>
+            <h5 class="text-muted">{{ 'BOOKING.NO_SLOTS_TITLE' | translate }}</h5>
+            <p class="text-muted small">{{ 'BOOKING.NO_SLOTS_SUBTITLE' | translate }}</p>
           </div>
         }
       </div>

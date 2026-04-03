@@ -2,204 +2,250 @@ import { Component, OnInit } from '@angular/core';
 import { AdminService } from '../../shared/admin.service';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './user-list.component.html'
 })
 export class UserListComponent implements OnInit {
   users: any[] = [];
   private readonly navyColor = '#001f3f';
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers() {
-   this.adminService.getAllUsers().subscribe({
-    next: (res: any) => {
-     
-      const data = Array.isArray(res) ? res : (res.data || []);
-       
-      this.users = data.map((u: any) => {
-        const hasStaffProfile = !!u.staffProfile;
-        let activeStatus: boolean;
-        if (hasStaffProfile) {
-          activeStatus = u.staffProfile.isActive === true || u.staffProfile.isActive === 1;
-        } else {
-          // Sima felhasználóknál (vagy Adminnál staff profil nélkül)
-          activeStatus = u.isActive !== undefined ? Boolean(u.isActive) : true;
-        }
-        return{
-          ...u,
-          isActive: activeStatus
-        };
-    }),
-    console.log('Sikeresen feldolgozott felhasználók:', this.users)
-  },
-    error: (err) => {
-      console.error('Hiba a betöltésnél:', err);
-      Swal.fire('Hiba', 'Nem sikerült betölteni a listát', 'error');
-    }
-  });
-}
-onToggleActive(user: any) {
-  // 1. Meghatározzuk az új státuszt 
-  const newStatus = !user.isActive;
-  const userId = user.id;
+    this.adminService.getAllUsers().subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : (res.data || []);
 
-  this.adminService.updateUserStatus(userId, newStatus).subscribe({
-    next: () => {
-      user.isActive = newStatus;
-      
-      if (user.staffProfile) {
-        user.staffProfile.isActive = newStatus;
-      }
-      const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true
-      });
-
-      Toast.fire({
-        icon: 'success',
-        title: `Felhasználó ${newStatus ? 'aktiválva' : 'archiválva'}`
-      });
-    },
-    error: (err) => {
-      console.error('Státuszmódosítási hiba:', err);
-      if (err.status === 404) {
-        Swal.fire({
-          title: 'Hiba',
-          text: 'A rendszer nem találta a felhasználóhoz tartozó szakmai profilt.',
-          icon: 'error'
+        this.users = data.map((u: any) => {
+          const hasStaffProfile = !!u.staffProfile;
+          let activeStatus: boolean;
+          
+          if (hasStaffProfile) {
+            activeStatus = u.staffProfile.isActive === true || u.staffProfile.isActive === 1;
+          } else {
+            activeStatus = u.isActive !== undefined ? Boolean(u.isActive) : true;
+          }
+          
+          return { 
+            ...u, 
+            isActive: activeStatus,
+            roleId: u.roleId ?? (u.staffProfile ? 1 : 0)
+          };
         });
-      } else {
+      },
+      error: (err) => {
+        Swal.fire(
+          this.translate.instant('COMMON.ERROR'),
+          this.translate.instant('COMMON.LOADING_ERROR'),
+          'error'
+        );
+      }
+    });
+  }
+
+  onToggleActive(user: any) {
+    const newStatus = !user.isActive;
+    const userId = user.id;
+
+    this.adminService.updateUserStatus(userId, newStatus).subscribe({
+      next: () => {
+        user.isActive = newStatus;
+        if (user.staffProfile) {
+          user.staffProfile.isActive = newStatus;
+        }
+
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
+
+        Toast.fire({
+          icon: 'success',
+          title: this.translate.instant(newStatus ? 'USERS.MESSAGES.STATUS_ACTIVATED' : 'USERS.MESSAGES.STATUS_DEACTIVATED')
+        });
+      },
+      error: (err) => {
         Swal.fire({
-          title: 'Hiba',
-          text: 'A státusz módosítása sikertelen volt a szerver oldalon.',
+          title: this.translate.instant('COMMON.ERROR'),
+          text: err.status === 404 
+            ? this.translate.instant('USERS.MESSAGES.PROFILE_NOT_FOUND') 
+            : this.translate.instant('COMMON.GENERIC_ERROR'),
           icon: 'error',
-          confirmButtonColor: '#001f3f'
+          confirmButtonColor: this.navyColor
         });
       }
-    }
-  });
-}
+    });
+  }
 
-onResetPassword(user: any) {
-  Swal.fire({
-    title: `Jelszó visszaállítása: ${user.name}`,
-    input: 'password',
-    inputLabel: 'Új jelszó megadása',
-    inputPlaceholder: 'Legalább 6 karakter...',
-    showCancelButton: true,
-    confirmButtonText: 'Módosítás',
-    cancelButtonText: 'Mégse',
-    inputValidator: (value) => {
-      if (!value || value.length < 6) return 'Legalább 6 karakter kell!';
-        return null;
-    }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const payload = { password: result.value, confirmPassword: result.value };
-      
-      this.adminService.resetPassword(user.id, payload).subscribe({
-        next: (res) => {
-          Swal.fire('Siker!', 'A jelszó sikeresen módosítva.', 'success');
-        },
-        error: (err) => {
-          Swal.fire('Hiba', err.error.message || 'Nem sikerült a módosítás', 'error');
-        }
-      });
-    }
-  });
-}
-onPromoteToStaff(user: any) {
-  Swal.fire({
-    title: 'Szakember kinevezése',
-    text: `Adja meg a munkakört (pl. Asszisztens vagy Orvos) a következőhöz: ${user.name}`,
-    input: 'text',
-    inputLabel: 'Szakterület (pl. Fogorvos)',
-    inputPlaceholder: 'Munkakör megnevezése...',
-    showCancelButton: true,
-    confirmButtonText: 'Kinevezés',
-    cancelButtonText: 'Mégse',
-    confirmButtonColor: this.navyColor,
-    inputValidator: (value) => {
-      if (!value) return 'A munkakör megadása kötelező!';
-      return null;
-      }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      this.adminService.promoteUser(user.id, { specialty: result.value }).subscribe({
-        next: () => {
-          Swal.fire('Siker!', 'A státusz módosítva.', 'success');
-          this.loadUsers(); // Lista frissítése
-        },
-        error: (err:any) => Swal.fire('Hiba', err.error.message || 'Sikertelen művelet', 'error')
-      });
-    }
-  });
-}
-
-onEditUser(user: any) {
+  onResetPassword(user: any) {
     Swal.fire({
-      title: `${user.name} adatainak szerkesztése`,
+      title: `${this.translate.instant('USERS.ACTIONS.RESET_PWD')}: ${user.name}`,
+      input: 'password',
+      inputLabel: this.translate.instant('USERS.MESSAGES.PWD_INPUT_LABEL'),
+      inputPlaceholder: this.translate.instant('USERS.MESSAGES.PWD_PLACEHOLDER'),
+      showCancelButton: true,
+      confirmButtonText: this.translate.instant('COMMON.SAVE'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL'),
+      confirmButtonColor: this.navyColor,
+      inputValidator: (value) => {
+        if (!value || value.length < 6) {
+          return this.translate.instant('USERS.MESSAGES.PWD_VALIDATION');
+        }
+        return null;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const payload = { password: result.value, confirmPassword: result.value };
+        this.adminService.resetPassword(user.id, payload).subscribe({
+          next: () => {
+            Swal.fire(
+              this.translate.instant('COMMON.SUCCESS'),
+              this.translate.instant('USERS.MESSAGES.PWD_SUCCESS'),
+              'success'
+            );
+          },
+          error: (err) => {
+            Swal.fire(
+              this.translate.instant('COMMON.ERROR'),
+              err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR'),
+              'error'
+            );
+          }
+        });
+      }
+    });
+  }
+
+  onPromoteToStaff(user: any) {
+    Swal.fire({
+      title: this.translate.instant('USERS.ACTIONS.PROMOTE'),
+      text: `${this.translate.instant('USERS.MESSAGES.PROMOTE_TEXT')}: ${user.name}`,
+      input: 'text',
+      inputLabel: this.translate.instant('USERS.TABLE.ROLE'),
+      inputPlaceholder: this.translate.instant('USERS.MESSAGES.ROLE_PLACEHOLDER'),
+      showCancelButton: true,
+      confirmButtonText: this.translate.instant('USERS.ACTIONS.PROMOTE'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL'),
+      confirmButtonColor: this.navyColor,
+      inputValidator: (value) => {
+        if (!value) return this.translate.instant('USERS.MESSAGES.ROLE_REQUIRED');
+        return null;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.adminService.promoteUser(user.id, { specialty: result.value }).subscribe({
+          next: () => {
+            Swal.fire(
+              this.translate.instant('COMMON.SUCCESS'),
+              this.translate.instant('USERS.MESSAGES.UPDATE_SUCCESS'),
+              'success'
+            );
+            this.loadUsers();
+          },
+          error: (err: any) => {
+            Swal.fire(
+              this.translate.instant('COMMON.ERROR'),
+              err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR'),
+              'error'
+            );
+          }
+        });
+      }
+    });
+  }
+
+  onEditUser(user: any) {
+    Swal.fire({
+      title: `${user.name} - ${this.translate.instant('USERS.ACTIONS.EDIT')}`,
       html: `
         <div class="mb-3 text-start">
-          <label class="form-label small fw-bold">Név</label>
+          <label class="form-label small fw-bold">${this.translate.instant('USERS.TABLE.USER')}</label>
           <input type="text" id="edit-name" class="swal2-input m-0 w-100" value="${user.name}">
         </div>
         <div class="mb-3 text-start">
-          <label class="form-label small fw-bold">Email</label>
+          <label class="form-label small fw-bold">${this.translate.instant('USERS.TABLE.EMAIL') || 'Email'}</label>
           <input type="email" id="edit-email" class="swal2-input m-0 w-100" value="${user.email}">
         </div>
       `,
-      confirmButtonText: 'Mentés',
+      confirmButtonText: this.translate.instant('COMMON.SAVE'),
       confirmButtonColor: this.navyColor,
       showCancelButton: true,
+      cancelButtonText: this.translate.instant('COMMON.CANCEL'),
       preConfirm: () => {
         const name = (document.getElementById('edit-name') as HTMLInputElement).value;
         const email = (document.getElementById('edit-email') as HTMLInputElement).value;
-        if (!name || !email) Swal.showValidationMessage('Minden mezőt töltsön ki!');
+        if (!name || !email) {
+          Swal.showValidationMessage(this.translate.instant('USERS.MESSAGES.ALL_FIELDS_REQUIRED'));
+          return false;
+        }
         return { name, email };
       }
     }).then((result) => {
       if (result.isConfirmed) {
-        // Itt hívjuk meg a backendet
-      this.adminService.updateUser(user.id, result.value).subscribe({
-        next: () => {
-          Swal.fire('Siker!', 'Az adatok frissültek.', 'success');
-          this.loadUsers(); // Frissítjük a listát, hogy lássuk a változást
-        },
-        error: (err:any) => Swal.fire('Hiba', 'Nem sikerült a mentés', 'error')
-      });
-    }
-  });
-}
+        this.adminService.updateUser(user.id, result.value).subscribe({
+          next: () => {
+            Swal.fire(
+              this.translate.instant('COMMON.SUCCESS'),
+              this.translate.instant('USERS.MESSAGES.UPDATE_SUCCESS'),
+              'success'
+            );
+            this.loadUsers();
+          },
+          error: (err: any) => {
+            Swal.fire(
+              this.translate.instant('COMMON.ERROR'),
+              err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR'),
+              'error'
+            );
+          }
+        });
+      }
+    });
+  }
+
   onArchive(id: number) {
     Swal.fire({
-      title: 'Biztosan archiválod?',
-      text: "A felhasználó nem tud majd belépni!",
+      title: this.translate.instant('USERS.MESSAGES.ARCHIVE_CONFIRM_TITLE'),
+      text: this.translate.instant('USERS.MESSAGES.ARCHIVE_CONFIRM_TEXT'),
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Igen, archiváld!'
+      confirmButtonText: this.translate.instant('USERS.ACTIONS.ARCHIVE'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL'),
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6'
     }).then((result) => {
       if (result.isConfirmed) {
         this.adminService.archiveUser(id).subscribe({
           next: () => {
-            Swal.fire('Sikeres!', 'Felhasználó archiválva.', 'success');
-            this.loadUsers(); 
+            Swal.fire(
+              this.translate.instant('COMMON.SUCCESS'),
+              this.translate.instant('USERS.MESSAGES.ARCHIVE_SUCCESS'),
+              'success'
+            );
+            this.loadUsers();
           },
           error: (err) => {
-          Swal.fire('Hiba', err.error?.message || 'Sikertelen művelet', 'error');
-        }
+            Swal.fire(
+              this.translate.instant('COMMON.ERROR'),
+              err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR'),
+              'error'
+            );
+          }
         });
       }
     });

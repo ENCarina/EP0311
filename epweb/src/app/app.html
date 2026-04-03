@@ -55,17 +55,33 @@
             </a>
           </li>
           
-          @if (auth.getRoleId() === 2) {
-            <li class="nav-item">
-              <a class="nav-link text-warning fw-bold px-3" routerLink="/admin/staff">{{ 'MENU.ADMIN.STAFF' | translate }}</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-warning fw-bold px-3" routerLink="/admin/consultation">{{ 'MENU.ADMIN.SERVICES' | translate }}</a>
-            </li>
-             <li class="nav-item">
-              <a class="nav-link text-warning fw-bold px-3" routerLink="/admin/users">
-                <i class="bi bi-speedometer2 me-1"></i>{{ 'MENU.ADMIN.DASHBOARD' | translate }}
+          @if (auth.isAuthenticated() && auth.getRoleId() === 2) {
+            <li class="nav-item dropdown ms-lg-2">
+              <a class="nav-link dropdown-toggle text-warning fw-bold px-3 border border-warning rounded-pill" 
+                (click)="toggleAdminMenu($event)"
+                href="javascript:void(0)" 
+                role="button">
+                <i class="bi bi-shield-lock me-1"></i>Admin
               </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" 
+                  [class.show]="isAdminMenuOpen()">
+                <li>
+                  <a class="dropdown-item py-2" routerLink="/admin/staff"(click)="isAdminMenuOpen.set(false)">
+                    <i class="bi bi-person-badge me-2"></i>{{ 'MENU.ADMIN.STAFF' | translate }}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2" routerLink="/admin/consultation">
+                    <i class="bi bi-journal-medical me-2"></i>{{ 'MENU.ADMIN.SERVICES' | translate }}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item py-2 text-primary fw-bold" routerLink="/admin/users">
+                    <i class="bi bi-speedometer2 me-2"></i>{{ 'MENU.ADMIN.DASHBOARD' | translate }}
+                  </a>
+                </li>
+              </ul>
             </li>
           }
         }
@@ -101,14 +117,12 @@
             <button (click)="switchLanguage('hu')" 
                     class="btn btn-sm rounded-pill px-2 py-1 text-white border-0 transition-all"
                     [class.bg-white]="translate.currentLang === 'hu'"
-                    [class.text-primary]="translate.currentLang === 'hu'">
-              HU
+                    [class.text-primary]="translate.currentLang === 'hu'">HU
             </button>
             <button (click)="switchLanguage('en')" 
                     class="btn btn-sm rounded-pill px-2 py-1 text-white border-0 transition-all"
                     [class.bg-white]="translate.currentLang === 'en'"
-                    [class.text-primary]="translate.currentLang === 'en'">
-              EN
+                    [class.text-primary]="translate.currentLang === 'en'">EN
             </button>
           </div>
         </li>

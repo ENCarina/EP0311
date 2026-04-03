@@ -1,21 +1,25 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../shared/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule],
+  standalone: true,
+  imports: [ReactiveFormsModule, TranslateModule, CommonModule],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.css',
 })
-export class ResetPasswordComponent implements OnInit{
-  private route = inject (ActivatedRoute);
-  private router = inject (Router);
+export class ResetPasswordComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private translate = inject(TranslateService);
 
-  token: string = '';
+  token: string | null = null;
   errorMessage: string = '';
   isLoading: boolean = false;
 
@@ -23,40 +27,53 @@ export class ResetPasswordComponent implements OnInit{
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]]
   }, {
-    validators: (group) => group.get('password')?.value === group.get('confirmPassword')?.value ? null : { notSame: true }
+    validators: this.passwordMatchValidator 
   });
 
+  get f() { return this.resetForm.controls; }
+
   ngOnInit() {
-    this.token = this.route.snapshot.paramMap.get('token') || '';
-    //this.token = this.route.snapshot.params['token'];
-    console.log('--- RESET PASSWORD DEBUG ---');
-    console.log('Teljes URL:', window.location.href);
-    console.log('Kinyert token:', this.token);
+    this.token = this.route.snapshot.queryParamMap.get('token');
+    //this.token = this.route.snapshot.paramMap.get('token') || '';
     
     if (!this.token) {
-      this.errorMessage = 'Hiányzó vagy érvénytelen visszaállító kulcs!';
-      console.error('Hiba: Nem található token az URL-ben.');
+      this.errorMessage = this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
     }
   }
-  onSubmit() {
-    if (this.resetForm.valid && this.token) {
-      this.isLoading = true;
 
-      const resetData = {
-        token: this.token,
-        password: this.resetForm.get('password')?.value
-      };
-      this.authService.resetPassword(this.token, this.resetForm.value).subscribe({
-        next: (response) => {
-          alert('Sikeres jelszó módosítás!');
+  passwordMatchValidator(group: FormGroup) {
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { mismatch: true };
+  }
+ 
+  onSubmit() {
+    if (this.resetForm.valid) {
+      if (!this.token) {
+        this.errorMessage = this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
+        return;
+      }
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      const passwordData = {
+        password: this.resetForm.value.password,
+        password_confirmation: this.resetForm.value.confirmPassword,
+        lang: this.translate.currentLang || 'hu'
+      };;
+
+      this.authService.resetPassword(this.token, passwordData).subscribe({
+        next: () => {
+          this.isLoading = false;
           this.router.navigate(['/login'], { queryParams: { resetSuccess: true } });
         },
         error: (err) => {
           this.isLoading = false;
-          console.error('Szerver hiba:', err);
-          this.errorMessage = err.error.message || 'A jelszó visszaállítása sikertelen.';
+          this.errorMessage = err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR');
         }
       });
+    } else {
+      this.resetForm.markAllAsTouched();
     }
   }
 }

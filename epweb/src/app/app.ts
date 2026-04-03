@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from './shared/auth.service';
 import { filter } from 'rxjs';
@@ -13,34 +13,46 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit {
   private readonly router = inject(Router);
   public readonly auth = inject(AuthService);
   public readonly translate = inject(TranslateService);
-
+  
   protected readonly title = signal('epweb');
-  isBookingPage = signal(false);
+  protected isBookingPage = signal(false);
 
+  public isAdminMenuOpen = signal(false);
+ 
   constructor() {
-    // --- NYELVI BEÁLLÍTÁSOK ---
-    this.translate.addLangs(['hu', 'en']);
-    this.translate.use('hu'); 
-
-    // --- ROUTER FIGYELÉS ---
-    this.router.events.pipe(
+     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       takeUntilDestroyed()
     ).subscribe((event: NavigationEnd) => {
       const url = event.urlAfterRedirects;
       const isSpecialPage = url.includes('booking') || url.includes('login');
-      
       this.isBookingPage.set(isSpecialPage);
+
+      this.isAdminMenuOpen.set(false);
     });
   }
-    switchLanguage(lang: string) {
-      console.log('Nyelvváltás ide:', lang); 
-      this.translate.use(lang).subscribe(() => {
-        console.log('Sikeres váltás a következőre:', this.translate.currentLang);
-      });
-    }
+  
+  ngOnInit(): void {
+    this.translate.addLangs(['hu', 'en']);
+    this.translate.use('hu'); 
   }
+  switchLanguage(lang: string): void {
+    this.translate.use(lang);
+    localStorage.setItem('lang', lang);
+  }
+
+  toggleAdminMenu(event: Event): void {
+    event.stopPropagation();
+    this.isAdminMenuOpen.update(v => !v);
+  }
+
+  @HostListener('document:click')
+  closeMenus(): void {
+    this.isAdminMenuOpen.set(false);
+  }
+} 
+ 
