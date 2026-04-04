@@ -3,8 +3,8 @@ import dotenvFlow from 'dotenv-flow';
 dotenvFlow.config();
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.freemail.hu', 
-    port: 587,
+    host: process.env.EMAIL_HOST || 'smtp.freemail.hu', 
+    port: process.env.EMAIL_PORT || 587,
     secure: process.env.EMAIL_SECURE === 'false', 
     auth: {
         user: process.env.EMAIL_USER, 

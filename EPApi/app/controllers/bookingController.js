@@ -185,38 +185,43 @@ const BookingController = {
     async destroy(req, res) {
         const t = await db.sequelize.transaction();
         try {
-            const booking = await db.Booking.findByPk(req.params.id, {
+            const { id } = req.params;
+            const forceDelete = req.query.force === 'true'; // ?force=true a végleges törléshez
+
+            const booking = await db.Booking.findByPk(id, {
                 include: [{ 
-                    model: db.Slot,
+                    model: db.Slot, 
                     as: 'timeSlot' 
-                }]
+                }],
+                transaction: t
             });
-            
-            // 1. Foglalás létezésének ellenőrzése
+
+            // 1. Létezés ellenőrzése
             if (!booking) {
                 await t.rollback();
-                return res.status(404).json({ success: false, message: "BOOKING.BOOKING_NOT_FOUND" });
+                return res.status(404).json({ success: false, message: "BOOKING.NOT_FOUND" });
             }
 
             const requesterRoleId = Number(req.user.roleId);
             const isAdmin = requesterRoleId === 2;
 
-            // 2. Jogosultság ellenőrzése (Admin vagy saját foglalás)
+            // 2. Jogosultság ellenőrzése
             if (!isAdmin && booking.patientId != req.user.id) {
                 await t.rollback();
                 return res.status(403).json({ success: false, message: "BOOKING.UNAUTHORIZED" });
             }
 
-            // 3. 24 órás szabály (Csak páciensre vonatkozik, Adminra NEM)
-            if (!isAdmin && booking.timeSlot) {
+            // 3. 24 ÓRÁS SZABÁLY (Csak páciensre vonatkozik!)
+            if (!isAdmin && booking.timeSlot && booking.status !== 'cancelled') {
                 const now = new Date();
-                // Időpont összerakása a dátumból és a kezdési időből
+                // Időpont összeállítása (Dátum + Kezdési idő)
                 const appointmentDate = new Date(`${booking.timeSlot.date}T${booking.timeSlot.startTime}`);
                 
                 if (!isNaN(appointmentDate.getTime())) {
                     const diffInHours = (appointmentDate.getTime() - now.getTime()) / (1000 * 60 * 60);
                     
-                    if (diffInHours < 24) {
+                    // Ha kevesebb mint 24 óra van hátra, a páciens nem mondhatja le
+                    if (diffInHours < 24 && diffInHours > 0) {
                         await t.rollback();
                         return res.status(403).json({ 
                             success: false, 
@@ -224,9 +229,9 @@ const BookingController = {
                         });
                     }
                 }
-        }
+            }
 
-            // 4. Slot felszabadítása (Ha van hozzárendelt slot)
+            // 4. Slot felszabadítása (isAvailable = true)
             if (booking.slotId) {
                 await db.Slot.update(
                     { isAvailable: true },
@@ -234,25 +239,33 @@ const BookingController = {
                 );
             }
 
-            // 5. Foglalás törlése
-            await booking.destroy({ transaction: t });
+            // 5. Törlés vagy Státuszváltás
+            if (isAdmin && forceDelete) {
+                // Admin kérésére végleges törlés (pl. tesztadat takarítás)
+                await booking.destroy({ transaction: t });
+            } else {
+                // Normál üzemmód: Soft Delete (Lemondott állapot)
+                await booking.update({ 
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    cancelledBy: req.user.id
+                }, { transaction: t });
+            }
 
             await t.commit();
             
             return res.status(200).json({ 
                 success: true, 
-                message: isAdmin ? "BOOKING.ADMIN_DELETE_SUCCESS" : "BOOKING.DELETE_SUCCESS" 
+                message: isAdmin ? "BOOKING.ADMIN_CANCEL_SUCCESS" : "BOOKING.CANCEL_SUCCESS" 
             });
 
         } catch (error) {
             if (t) await t.rollback();
-            console.error("Backend hiba a törlésnél:", error);
-            return res.status(500).json({ 
-                success: false, 
-                message: "BOOKING.SERVER_ERROR", 
-                error: error.message 
-            });
+            console.error("Cancellation error:", error);
+            return res.status(500).json({ success: false, message: "BOOKING.SERVER_ERROR" });
         }
     }
 };
+
+
 export default BookingController;

@@ -15,7 +15,11 @@
     "UNKNOWN_ERROR": "Váratlan hiba történt.",
     "UNKNOWN_NAME": "Névtelen",
     "NO_EMAIL": "Nincs megadva email",
-    "NOT_FOUND": "Az erőforrás nem található"
+    "NOT_FOUND": "Az erőforrás nem található",
+    "YES_DELETE": "Igen, törlöm",
+    "ACTIONS": "Műveletek",
+    "REFRESH": "Frissítés",
+    "DELETE": "Törlés"
   },
   "MENU": {
     "HOME": "Kezdőlap",
@@ -29,12 +33,45 @@
     "ADMIN": {
       "STAFF": "Személyzet",
       "SERVICES": "Szolgáltatások",
-      "DASHBOARD": "Vezérlőpult"
+      "DASHBOARD": "Vezérlőpult",
+      "BOOKINGS": "Foglalások kezelése"
     },
     "FOOTER": {
       "ADDRESS": "1125 Budapest, Szinapszis u. 7.",
       "HOURS": "H-P: 08:00-19:00",
       "RIGHTS": "Minden jog fenntartva"
+    }
+  },
+  "BOOKINGS": {
+    "SUBTITLE": "Rendszerben lévő összes foglalás kezelése",
+    "NO_DATA": "Nincsenek aktív foglalások a rendszerben.",
+    "TABLE": {
+      "PATIENT": "Páciens neve",
+      "DATE": "Dátum",
+      "TIME": "Időpont",
+      "STATUS": "Állapot",
+      "CREATED": "Létrehozva"
+    },
+    "STATUS": {
+      "CONFIRMED": "Aktív",
+      "CANCELLED": "Lemondva",
+      "COMPLETED": "Befejezett"
+    },
+    "ACTIONS": {
+      "CANCEL": "Időpont lemondása",
+      "CONFIRM_CANCEL": "Igen, lemondom"
+    },
+    "MESSAGES": {
+      "CANCEL_CONFIRM_TITLE": "Biztos benne?",
+      "CANCEL_CONFIRM_TEXT": "Ez a művelet adminisztrátori felülbírálással törli a foglalást!",
+      "CANCEL_SUCCESS": "A foglalás sikeresen törölve.",
+      "ARCHIVED": "Archiválva",
+      "NOT_FOUND": "A foglalás nem található.",
+      "UNAUTHORIZED": "Nincs jogosultsága a művelethez.",
+      "ALREADY_CANCELLED": "Ez a foglalás már korábban lemondásra került.",
+      "CANNOT_CANCEL_WITHIN_24H": "Az időpont 24 órán belül már nem mondható le online.",
+      "ADMIN_CANCEL_SUCCESS": "Adminisztrátori lemondás sikeres.",
+      "HARD_DELETE_SUCCESS": "A tesztadat véglegesen törölve az adatbázisból."
     }
   },
   "SERVICES": {

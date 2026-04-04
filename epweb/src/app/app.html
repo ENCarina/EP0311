@@ -66,6 +66,11 @@
               <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" 
                   [class.show]="isAdminMenuOpen()">
                 <li>
+                  <a class="dropdown-item py-2" routerLink="/admin/bookings" (click)="isAdminMenuOpen.set(false)">
+                    <i class="bi bi-calendar-check me-2"></i>{{ 'MENU.ADMIN.BOOKINGS' | translate }}
+                  </a>
+                </li>
+                <li>
                   <a class="dropdown-item py-2" routerLink="/admin/staff"(click)="isAdminMenuOpen.set(false)">
                     <i class="bi bi-person-badge me-2"></i>{{ 'MENU.ADMIN.STAFF' | translate }}
                   </a>

@@ -59,4 +59,21 @@ export class AdminService {
       map(res => res.data)
     );
   }
+  // --- Foglalások kezelése (Admin) ---
+
+  /** Összes foglalás lekérése az admin felületre */
+  getAllBookings(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/bookings`, { headers: this.getHeaders() }).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /** Foglalás törlése (Admin felülbírálással) */
+  deleteBooking(bookingId: number): Observable<any> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.apiUrl}/bookings/${bookingId}`, 
+      { headers: this.getHeaders() }
+    );
+  }
+
 }

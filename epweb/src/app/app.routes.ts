@@ -14,6 +14,7 @@ import { MyBookingComponent } from './my-booking/my-booking.component';
 import { NopageComponent } from './nopage/nopage.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { BookingListComponent } from './admin/booking-list/booking-list.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -38,7 +39,8 @@ export const routes: Routes = [
     { path: 'admin/users', component: UserListComponent, canActivate: [authGuard] }, 
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
     { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},
-
+    { path: 'admin/bookings', component: BookingListComponent, canActivate: [authGuard]},
+    
     { path: '**', component: NopageComponent },
 
 ];

@@ -15,7 +15,11 @@
     "UNKNOWN_ERROR": "An unexpected error occurred.",
     "UNKNOWN_NAME": "Unnamed",
     "NO_EMAIL": "No email provided",
-    "NOT_FOUND": "Resource not found"
+    "NOT_FOUND": "Resource not found",
+    "YES_DELETE": "Yes, delete it",
+    "ACTIONS": "Actions",
+    "REFRESH": "Refresh",
+    "DELETE": "Delete"
   },
   "MENU": {
     "HOME": "Home",
@@ -27,14 +31,47 @@
     "LOGOUT": "Logout",
     "GREETING": "Hi",
     "ADMIN": {
-      "STAFF": "Staff",
+      "STAFF": "Staff Management",
       "SERVICES": "Services",
-      "DASHBOARD": "Dashboard"
+      "DASHBOARD": "Dashboard",
+      "BOOKINGS": "Manage Bookings"
     },
     "FOOTER": {
       "ADDRESS": "7 Szinapszis St, Budapest 1125",
       "HOURS": "M-F: 08:00-19:00",
       "RIGHTS": "All rights reserved"
+    }
+  },
+  "BOOKINGS": {
+    "SUBTITLE": "Manage all bookings in the system",
+    "NO_DATA": "No active bookings found.",
+    "TABLE": {
+      "PATIENT": "Patient Name",
+      "DATE": "Date",
+      "TIME": "Time",
+      "STATUS": "Status",
+      "CREATED": "Created At"
+    },
+    "STATUS": {
+      "CONFIRMED": "Active",
+      "CANCELLED": "Cancelled",
+      "COMPLETED": "Completed"
+    },
+    "ACTIONS": {
+      "CANCEL": "Cancel Appointment",
+      "CONFIRM_CANCEL": "Yes, cancel it"
+    },
+    "MESSAGES": {
+      "CANCEL_CONFIRM_TITLE": "Are you sure?",
+      "CANCEL_CONFIRM_TEXT": "This action will cancel the booking with administrator override!",
+      "CANCEL_SUCCESS": "Booking successfully cancelled.",
+      "ARCHIVED": "Archived",
+      "NOT_FOUND": "Booking not found.",
+      "UNAUTHORIZED": "Unauthorized action.",
+      "ALREADY_CANCELLED": "This booking has already been cancelled.",
+      "CANNOT_CANCEL_WITHIN_24H": "Appointments cannot be cancelled within 24 hours.",
+      "ADMIN_CANCEL_SUCCESS": "Administrator cancellation successful.",
+      "HARD_DELETE_SUCCESS": "Test data permanently deleted from database."
     }
   },
   "SERVICES": {

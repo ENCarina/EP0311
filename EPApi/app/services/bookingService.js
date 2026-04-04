@@ -80,14 +80,16 @@ export const BookingService = {
         });
     },
 
-    async cancelBooking(bookingId, userId) {
+    async cancelBooking(bookingId, userId, userRole) {
         const t = await db.sequelize.transaction();
         try {
             const booking = await db.Booking.findByPk(bookingId, { transaction: t });
 
             if (!booking) throw new Error('BOOKING.NOT_FOUND');
-            if (booking.patientId !== userId) throw new Error('BOOKING.UNAUTHORIZED');
-
+            const isAdmin = userRole === 2;
+            
+            if (booking.patientId !== userId && !isAdmin) throw new Error('BOOKING.UNAUTHORIZED');
+            
             const slot = await db.Slot.findByPk(booking.slotId, { transaction: t });
             
             if (slot) {
@@ -95,7 +97,7 @@ export const BookingService = {
                 const bookingFullDate = new Date(`${slot.date}T${slot.startTime}`);
                 const hoursDiff = (bookingFullDate - now) / (1000 * 60 * 60);
 
-                if (hoursDiff < 24) {
+                if (!isAdmin && hoursDiff < 24) {
                     throw new Error('BOOKING.CANNOT_CANCEL_WITHIN_24H');
                 }
 
