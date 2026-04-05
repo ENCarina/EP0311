@@ -43,7 +43,7 @@
               </td>
               <td>
                 <span class="text-secondary small">
-                  {{ 'SPECIALTIES.' + (staff.specialty || 'GENERAL' | uppercase) + '.DOCTOR' | translate }}
+                  {{ 'SPECIALTIES.' + ((staff.specialty || 'GENERAL') | uppercase) + '.DOCTOR' | translate }}
                 </span>
               </td>
               <td> 
@@ -61,6 +61,9 @@
                 <div class="btn-group shadow-sm border rounded-3 overflow-hidden">
                   <button class="btn btn-light btn-sm text-primary border-end" (click)="viewBookings(staff.id)" [title]="'STAFF.TOOLTIPS.APPOINTMENTS' | translate">
                     <i class="bi bi-calendar-event"></i>
+                  </button>
+                  <button class="btn btn-light btn-sm text-warning border-end" (click)="generateAutoSlots(staff)"[title]="'STAFF.TOOLTIPS.GENERATE_SLOTS' | translate">
+                    <i class="bi bi-calendar-plus-fill"></i>
                   </button>
                   <button class="btn btn-light btn-sm text-secondary border-end" (click)="startEdit(staff)" [title]="'STAFF.TOOLTIPS.EDIT' | translate">
                     <i class="bi bi-pencil"></i>

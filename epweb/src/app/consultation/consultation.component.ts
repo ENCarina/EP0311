@@ -17,7 +17,7 @@ export class ConsultationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private consultationService = inject(ConsultationService);
   private router = inject(Router);
-  private translate = inject(TranslateService); 
+  public translate = inject(TranslateService); 
 
   allConsultations: any[] = [];     
   filteredConsultations: any[] = [];

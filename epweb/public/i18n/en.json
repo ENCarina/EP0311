@@ -19,7 +19,10 @@
     "YES_DELETE": "Yes, delete it",
     "ACTIONS": "Actions",
     "REFRESH": "Refresh",
-    "DELETE": "Delete"
+    "DELETE": "Delete", 
+    "GENERATE": "Generate",
+    "WARNING": "Warning",
+    "OK": "OK"
   },
   "MENU": {
     "HOME": "Home",
@@ -88,6 +91,7 @@
     "VISION_TEST": "Vision Test",
     "JOINT_INJECTION": "Joint Injection",
     "POSTOP_CONTROL": "Post-operative Control",
+    "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digital Dermoscopy & Mole Mapping",
     "TITLE": "Services",
     "SUBTITLE": "Manage price list for examinations and consultations",
     "ADD_NEW": "New Service",
@@ -156,8 +160,10 @@
     },
     "TABLE": {
       "ID": "#ID",
-      "USER": "User",
+      "USER": "Name",
+      "EMAIL": "Email Address",
       "ROLE": "Role",
+      "SPECIALTY": "Specialty key (e.g. DERMATOLOGY)",
       "STATUS": "Status",
       "ACTIONS": "Actions",
       "EMPTY": "No users to display."
@@ -236,13 +242,14 @@
       "DR_BARNA": "Expert in urological tumors and pelvic screenings.",
       "DR_VARGA": "Gynecological endocrinology and infertility counseling."
     },
-    "TITLE": "Specialists",
+    "TITLE": "Staff Management",
     "SUBTITLE": "Manage doctors and assistants in the system",
     "NEW_BUTTON": "New Specialist",
     "TABLE": {
       "ID": "ID",
       "NAME_EMAIL": "Name & Email",
       "ROLE": "Role",
+      "EMAIL": "Email",
       "SPECIALTY": "Specialty",
       "STATUS": "Status",
       "ACTIONS": "Actions",
@@ -284,13 +291,18 @@
       "PROMOTE_SUCCESS": "User successfully promoted to staff member!",
       "TREATMENTS_NOT_FOUND": "No treatments found for this staff member.",
       "STATUS_ACTIVE": "Staff profile is now active.",
-      "STATUS_ARCHIVED": "Staff profile archived (inactive)."
+      "STATUS_ARCHIVED": "Staff profile archived (inactive).",
+      "GENERATE_TITLE": "Generate Weekly Slots",
+      "GENERATE_SUCCESS": "Slots successfully created for 30 days!",
+      "GENERATE_ERROR": "Error occurred while generating slots.",
+      "NO_SLOTS_GENERATED": "No slots could be generated with the given parameters."
     },
     "TOOLTIPS": {
       "APPOINTMENTS": "Appointments",
       "EDIT": "Edit",
       "DEACTIVATE": "Deactivate",
-      "RESTORE": "Restore"
+      "RESTORE": "Restore", 
+      "GENERATE_SLOTS": "Auto-generate slots"
     }
   },
   "SPECIALTIES": {
@@ -427,47 +439,53 @@
     "LOGIN_REQUIRED": "Login required for booking"
   },
   "BOOKING": {
+    "TODAY": "Current week",
     "SIDEBAR_TITLE": "Booking Details",
-    "SELECT_DATE": "Select Date",
+    "SELECT_DATE": "Period",
     "SPECIALTY": "Specialty",
     "SPECIALTY_PLACEHOLDER": "-- Select specialty --",
     "STAFF": "Specialist",
     "STAFF_PLACEHOLDER": "-- Select doctor --",
-    "TREATMENT": "Examination Type",
-    "TREATMENT_PLACEHOLDER": "-- Select examination --",
-    "SEARCH_BTN": "Search Appointments",
+    "TREATMENT": "Treatment",
+    "TREATMENT_PLACEHOLDER": "-- Select treatment --",
+    "SEARCH_BTN": "Search",
     "UPDATING": "Updating...",
-    "AVAILABLE_SLOTS": "Available Appointments",
+    "AVAILABLE_SLOTS": "Available Slots",
+    "TIME": "Time",
     "FREE_PLACES": "{{count}} slots available",
     "BOOK_NOW": "Book Appointment",
     "ALREADY_BOOKED": "Booked",
     "NO_SLOTS_TITLE": "No available slots",
     "NO_SLOTS_SUBTITLE": "Please select specialty, doctor, and examination.",
-    "CONFIRM_PROMPT": "Are you sure you want to book this appointment?",
-    "SUCCESS_MSG": "Booking successful!",
+    "CONFIRM_PROMPT": "Booking Appointment",
+    "CONFIRM_TITLE": "Confirm Your Booking",
+    "CONFIRM_QUESTION": "Are you sure you want to book the following appointment: {{date}} at {{time}}?",
+    "SUCCESS_MSG": "Booking successful!We look forward to seeing you.",
     "ERROR_MSG": "An error occurred during booking.",
     "NOT_FOUND": "Booking not found!",
     "UNAUTHORIZED": "You don't have permission to manage this booking!",
     "CONFLICT": "This slot has been taken in the meantime!",
     "CANNOT_CANCEL_WITHIN_24H": "Cancellation within 24 hours is only possible via phone!",
     "DELETE_SUCCESS": "Successful cancellation. The slot is now available."
-  },
+    },
   "MESSAGES": {
     "AUTH": {
-      "MISSING_FIELDS": "All fields are required!",
-      "PASSWORD_MISMATCH": "The passwords do not match!",
-      "EMAIL_ALREADY_TAKEN": "This email address is already taken!",
+      "MISSING_FIELDS": "Please fill in all fields!",
+      "PASSWORD_MISMATCH": "Passwords do not match!",
+      "EMAIL_ALREADY_TAKEN": "This email is already in use!",
       "REGISTRATION_SUCCESS_VERIFY": "Registration successful! Please verify your email address.",
-      "INVALID_TOKEN": "Invalid or expired confirmation token!",
-      "EMAIL_VERIFIED_SUCCESS": "Email address verified successfully!",
+      "INVALID_TOKEN": "Invalid or expired token!",
+      "EMAIL_VERIFIED_SUCCESS": "Email address successfully verified!",
       "INVALID_CREDENTIALS": "Invalid email or password!",
-      "ACCOUNT_INACTIVE": "Inactive account!",
+      "ACCOUNT_INACTIVE": "This account is currently inactive.",
       "EMAIL_NOT_VERIFIED": "Please verify your email address before logging in!",
       "EMAIL_REQUIRED": "Email address is required!",
-      "FORGOT_PASSWORD_SENT": "The password reset link has been sent to your email address.",
-      "INVALID_OR_EXPIRED_TOKEN": "The link is invalid or has expired!",
-      "PASSWORD_RESET_SUCCESS": "Password changed successfully! You can now log in.",
-      "ERROR_GENERAL": "An error occurred during the process!"
+      "FORGOT_PASSWORD_SENT": "If the address exists, we have sent a password reset link.",
+      "TOKEN_REQUIRED": "Reset token is missing!",
+      "INVALID_OR_EXPIRED_TOKEN": "The link is invalid or has expired.",
+      "PASSWORD_RESET_SUCCESS": "Password successfully reset!",
+      "ERROR_GENERAL": "An unexpected error occurred. Please try again later!",
+      "VALIDATION_ERROR": "Please fill in the login details correctly!"
     },
     "BOOKING": {
       "CANCEL_SUCCESS": "Successfully cancelled the appointment.",
@@ -493,6 +511,21 @@
       "PAST_DATE_ERROR": "You cannot create appointments in the past!",
       "UNAUTHORIZED": "You can only manage your own calendar!",
       "LOAD_ERROR": "Failed to load time slots."
+    }
+  },
+  "VERIFY_EMAIL": {
+    "LOADING_TITLE": "Account Activation",
+    "LOADING_SUB": "Please wait while we verify your data...",
+    "SUCCESS_TITLE": "Successful Confirmation!",
+    "SUCCESS_SUB": "Thank you for your trust! Your account is now active, and all our services are available to you.",
+    "SUCCESS_BTN": "CONTINUE TO LOGIN",
+    "ERROR_TITLE": "Activation Failed",
+    "ERROR_SUB": "The confirmation link is unfortunately invalid or has expired. Please try registering again.",
+    "ERROR_BTN_RETRY": "START NEW REGISTRATION",
+    "ERROR_LINK_HOME": "Back to home page",
+    "LOG": {
+      "SUCCESS": "Activation successful:",
+      "ERROR": "Activation error:"
     }
   }
 }

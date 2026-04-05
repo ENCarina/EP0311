@@ -14,7 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class ForgotPasswordComponent {
   private authService = inject(AuthService);
-  private translate = inject(TranslateService);
+  public translate = inject(TranslateService);
   
   email: string = '';
   isLoading: boolean = false;

@@ -7,7 +7,7 @@ import { Op } from 'sequelize';
 const { Staff, User, Consultation, Slot } = db;
 
 const StaffController = {
-    // 1. Admin lista 
+    // Admin lista 
     async index(req, res) {
         try {
             const staff = await Staff.findAll({
@@ -44,7 +44,7 @@ const StaffController = {
         }
     },
 
-    // 2. Publikus profilok (Csak az aktívak a pácienseknek)
+    // Publikus profilok (Csak az aktívak a pácienseknek)
     async getPublicProfiles(req, res) {
         try {
             const staff = await Staff.findAll({
@@ -64,7 +64,7 @@ const StaffController = {
         }
     },
 
-    // 3. Egy konkrét szakember adatlapja
+    // Egy konkrét szakember adatlapja
     async show(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id, {
@@ -79,7 +79,7 @@ const StaffController = {
         }
     },
 
-    // 4. Szakemberhez tartozó kezelések lekérése
+    // Szakemberhez tartozó kezelések lekérése
     async getTreatmentsForStaff(req, res) {
         try {
             const { id } = req.params;
@@ -93,7 +93,7 @@ const StaffController = {
         }
     },
 
-    // 5. Kezelések hozzárendelése (M:N kapcsolat frissítése)
+    // Kezelések hozzárendelése (M:N kapcsolat frissítése)
     async assignTreatments(req, res) {
         try {
             const { id } = req.params; // userId jön az URL-ből
@@ -109,7 +109,7 @@ const StaffController = {
         }
     },
 
-    // 6. Felhasználó előléptetése szakemberré
+    // Felhasználó előléptetése szakemberré
     async promoteToStaff(req, res) {
         try {
             const { userId, specialty } = req.body;
@@ -124,7 +124,7 @@ const StaffController = {
         }
     },
 
-    // 7. Új szakember létrehozása (User + Staff egyben)
+    // Új szakember létrehozása (User + Staff egyben)
     async store(req, res) {
         try {
             const { name, email, password, specialty, bio, roleId } = req.body;
@@ -136,19 +136,20 @@ const StaffController = {
                 email,
                 password: hashedPassword,
                 roleId: roleId || 1,
-            });
+                }, { transaction: t });
 
             const staff = await Staff.create({
                 userId: newUser.id,
                 specialty: specialty || 'Általános szakorvos',
                 bio: bio || '',
                 isActive: true
-            });
+                }, { transaction: t });
 
+            await t.commit();
             return res.status(201).json({
                 success: true,
                 message: 'STAFF.MESSAGES.ADD_SUCCESS',
-                data: { id: staff.id, name: newUser.name, email: newUser.email }
+                data: { id: staff.id, userId: newUser.id, name: newUser.name, email: newUser.email, specialty: staff.specialty }
             });
         } catch (error) {
             if (error.name === 'SequelizeUniqueConstraintError') {
@@ -158,25 +159,28 @@ const StaffController = {
         }
     },
 
-    // 8. Összetett frissítés (User és Staff adatok egyszerre)
+    // Összetett frissítés (User és Staff adatok egyszerre)
     async update(req, res) {
         try {
             const { id } = req.params; // userId
-            const { name, email, specialty, bio, isActive, isAvailable } = req.body;
+            const { name, email, specialty, bio, isActive, isAvailable, roleId } = req.body;
 
             // 1. User tábla frissítése
-            await User.update({ name, email }, { where: { id: id } });
+            await User.update({ name, email, roleId: roleId || 1 }, { where: { id: id } });
 
-            // 2. Staff tábla frissítése
-            const [updatedRows] = await Staff.update(
-                { specialty, bio, isActive, isAvailable },
-                { where: { userId: id } }
-            );
+            let staff = await Staff.findOne({ where: { userId: id } });
 
-            if (updatedRows === 0) {
-                console.warn(`Nincs módosítandó staff rekord a userId-hoz: ${id}`);
+            if (staff) {
+                await staff.update({ specialty, bio, isActive, isAvailable });
+                } else {
+                    await Staff.create({ 
+                        userId:id, 
+                        specialty, 
+                        bio, 
+                        isActive: isActive ?? true, 
+                        isAvailable: isAvailable ?? true 
+                    });
             }
-
             return res.json({ success: true, message: "STAFF.MESSAGES.UPDATE_SUCCESS" });
         } catch (error) {
             console.error("Update hiba:", error);
@@ -184,7 +188,7 @@ const StaffController = {
         }
     },
 
-    // 9. Fizikai törlés
+    // Fizikai törlés
     async destroy(req, res) {
         try {
             const staff = await Staff.findByPk(req.params.id);
@@ -198,7 +202,7 @@ const StaffController = {
         }
     },
 
-    // 10. Státusz kezelés (Aktiválás/Archiválás)
+    // Státusz kezelés (Aktiválás/Archiválás)
     async updateStatus(req, res) {
         try {
             const { id } = req.params; // userId

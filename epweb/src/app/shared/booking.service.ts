@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, catchError, throwError } from 'rxjs';
 import { Booking } from './interfaces/booking.interface';
 import { Slot } from './interfaces/slot.interface';
+import Swal from 'sweetalert2';
 
 @Injectable({
   providedIn: 'root',
@@ -20,14 +21,22 @@ export class BookingService {
     });
   }
 
-  getAvailableSlots(staffId: number, consultationId: number, date: string): Observable<Slot[]> {
-    const params = new HttpParams()
-      .set('staffId', staffId.toString())
-      .set('consultationId', consultationId.toString())
-      .set('date', date);
-
-    return this.http.get<{ success: boolean; data: Slot[] }>(`${this.API_URL}/slots`, { params })
-      .pipe(map(res => res.data));
+ getAvailableSlots(staffId: number, startDate: string, endDate: string, consultationId: number) {
+  return this.http.get<any>(`${this.API_URL}/slots`, {
+    params: { 
+      staffId: staffId.toString(),
+      startDate: startDate,
+      endDate: endDate,
+      //consultationId: consultationId.toString()
+    }
+  });
+}
+  generateStaffSlots(payload: any): Observable<any> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.API_URL}/slots/generate`, 
+      payload, 
+      { headers: this.getHeaders() }
+    );
   }
 
   getUserBookings(): Observable<any[]> {
@@ -59,20 +68,4 @@ export class BookingService {
     );
   }
 
-  getBookingById(id: number): Observable<Booking> {
-    return this.http.get<{ success: boolean; data: Booking }>(`${this.API_URL}/bookings/${id}`, {
-      headers: this.getHeaders() 
-    }).pipe(map(res => res.data));
-  }
-
-  updateBooking(booking: Booking): Observable<Booking> {
-    return this.http.put<{ success: boolean; data: Booking }>(
-      `${this.API_URL}/bookings/${booking.id}`, 
-      booking,
-      { headers: this.getHeaders() } 
-    ).pipe(map(res => res.data));
-  }
-  // deleteBooking(id: number): Observable<any> {
-  //   return this.http.delete(`${this.API_URL}/bookings/${id}`);
-  // }
 }

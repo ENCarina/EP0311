@@ -8,6 +8,7 @@ import { BookingService } from '../shared/booking.service';
 import { ConsultationService } from '../shared/consultation.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { interval } from 'rxjs';
 
 @Component({
   selector: 'app-staff',
@@ -31,6 +32,7 @@ export class StaffComponent implements OnInit {
   protected selectedTreatments: number[] = [];
   protected showModal = false;
   protected addMode = true;
+  protected isLoading = false;
 
   protected staffForm = this.builder.group({
     id: [0],
@@ -41,8 +43,13 @@ export class StaffComponent implements OnInit {
     specialty: ['', Validators.required],
     bio: [''],
     isAvailable: [true],
-    isActive: [true]
-  });
+    isActive: [true],
+    generateSlots: [false],
+    slotDuration: [60],     
+    startTime: ['08:00'],   
+    endTime: ['19:00'],     
+    days: [['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']] 
+    });
 
   ngOnInit() {
     this.getStaffs();
@@ -206,19 +213,86 @@ export class StaffComponent implements OnInit {
       next: () => {
         this.api.assignTreatments(targetUserId, this.selectedTreatments).subscribe({
           next: () => {
-            this.completeAction(this.translate.instant('STAFF.MESSAGES.UPDATE_SUCCESS'));
-          },
+            this.completeAction(this.translate.instant('STAFF.MESSAGES.UPDATE_SUCCESS'));},
           error: () => {
             this.completeAction(this.translate.instant('STAFF.MESSAGES.ASSIGN_ERROR'));
           }
-        });
+          });
       },
       error: (err: any) => {
         Swal.fire(this.translate.instant('COMMON.ERROR'), err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR'), 'error');
       }
     });
   }
+   generateAutoSlots(staff: any) {
+      console.log('Orvos objektum:', staff);
+      console.log('Küldött Staff ID:', staff.id);
+    Swal.fire({
+      title: this.translate.instant('STAFF.GENERATE_SLOTS_TITLE') || 'Generate Weekly Slots',
+      html: `
+       <div style="display: flex; flex-direction: column; gap: 10px;">
+        <label>Start Time: <input type="time" id="start" class="swal2-input" value="08:00"></label>
+        <label>End Time: <input type="time" id="end" class="swal2-input" value="19:00"></label>
+        <label>Duration: 
+          <select id="duration" class="swal2-input">
+            <option value="15">15 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="60">60 min</option>
+          </select>
+        </label>
+      </div>
+      `,
+      confirmButtonText: this.translate.instant('COMMON.GENERATE') || 'Generate',
+      showCancelButton: true,
+      preConfirm: () => {
+        return {
+          startTime: (document.getElementById('start') as HTMLInputElement).value,
+          endTime: (document.getElementById('end') as HTMLInputElement).value,
+          interval: (document.getElementById('duration') as HTMLSelectElement).value
+        }
+      }
+   }).then((result) => {
+      if (result.isConfirmed) {
+        const today = new Date();
+        const startDate = today.toLocaleDateString('sv-SE');
 
+        const thirtyDaysLater = new Date();
+        thirtyDaysLater.setDate(today.getDate() + 30);
+        const endDate = thirtyDaysLater.toLocaleDateString('sv-SE');
+
+        const payload = {
+          staffId: Number(staff.id),
+          startTime: result.value.startTime,
+          endTime: result.value.endTime,
+          interval: Number(result.value.interval),
+          startDate: startDate,
+          endDate: endDate,
+          consultationId: Number(
+            (this.selectedTreatments && this.selectedTreatments.length > 0) 
+              ? this.selectedTreatments[0] 
+              : (staff.consultationId || 1)
+          )
+        };
+
+        this.isLoading = true;
+        this.bookingApi.generateStaffSlots(payload).subscribe({
+          next: (res: any) => {
+            this.isLoading = false;
+            const successMsg = this.translate.instant(res.message || 'STAFF.MESSAGES.ADD_SUCCESS');
+            Swal.fire(this.translate.instant('COMMON.SUCCESS'), successMsg, 'success');
+        },
+          error: (err: any) => {
+            this.isLoading = false;
+            console.error('Slot generation error:', err);
+
+            const errorKey = err.error?.message || 'COMMON.ERROR';
+            Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant(errorKey), 'error');
+          }
+        });
+      }
+    });
+  }
+ 
   viewBookings(staffId: number): void {
     this.router.navigate(['/booking'], { queryParams: { staffId: staffId } });
   }

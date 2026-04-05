@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import Slot from '../models/slot.js';
 
 const SlotController = {
-    // Egységesített válaszkezelés a hibákhoz - Nyelvi kulcsokkal
+    // Egységesített válaszkezelés a hibákhoz 
     sendError(res, error) {
         const isNotFound = error.message === 'Fail! Record not found!';
         return res.status(isNotFound ? 404 : 500).json({
@@ -11,26 +11,118 @@ const SlotController = {
             error: error.message
         });
     },
+    async bulkGenerate(req, res) {
+        try {
+            const { staffId, consultationId, startDate, endDate, startTime, endTime, interval } = req.body;
+            const requester = req.user;
+
+            // Jogosultság ellenőrzés (Admin vagy saját maga)
+            if (requester.roleId !== 2 && (!requester.staffId || Number(requester.staffId) !== Number(staffId))) {
+                return res.status(403).json({ success: false, message: "BOOKING.UNAUTHORIZED" });
+            }
+
+
+            let current = new Date(startDate);
+            const last = new Date(endDate);
+
+            current.setHours(0, 0, 0, 0);
+            last.setHours(0, 0, 0, 0);
+            const slotsData = [];
+
+            while (current <= last) {
+                // Hétvége kihagyása (0: Vasárnap, 6: Szombat)
+                const dayOfWeek = current.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    const dateStr = current.toISOString().split('T')[0];
+                    
+                    let [startH, startM] = startTime.split(':').map(Number);
+                    let [endH, endM] = endTime.split(':').map(Number);
+                    
+                    let currentTime = new Date(current);
+                    currentTime.setHours(startH, startM, 0, 0);
+                    
+                    let finishTime = new Date(current);
+                    finishTime.setHours(endH, endM, 0);
+
+                    while (currentTime < finishTime) {
+                        const slotStart = currentTime.toTimeString().split(' ')[0].substring(0, 5); 
+                        // Időpont léptetése 
+                        const nextTime = new Date(currentTime);
+                        nextTime.setMinutes(nextTime.getMinutes() + Number(interval));
+                        const slotEnd = nextTime.toTimeString().split(' ')[0].substring(0, 5);
+
+                        // Csak akkor adjuk hozzá, ha a slot vége sem lépi túl a munkaidőt
+                       if (nextTime <= finishTime) {
+                            slotsData.push({
+                                staffId: Number(staffId),
+                                consultationId: Number(consultationId),
+                                date: dateStr,
+                                startTime: slotStart,
+                                endTime: slotEnd,
+                                isAvailable: true
+                            });
+                        }
+                        currentTime = new Date(nextTime);
+                    }
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            if (slotsData.length === 0) {
+            return res.status(400).json({ success: false, message: "STAFF.MESSAGES.NO_SLOTS_GENERATED" });
+        }
+
+            // Tömeges mentés az adatbázisba
+            const createdSlots = await Slot.bulkCreate(slotsData);
+
+            return res.status(201).json({ 
+                success: true, 
+                message: 'COMMON.SUCCESS',
+                count: createdSlots.length 
+            });
+
+        } catch (error) {
+            console.error("Bulk generate error:", error);
+            return SlotController.sendError(res, error);
+        }
+    },
 
     async index(req, res) {
         try {
-            const { staffId, date } = req.query;
+            const { staffId, date, startDate, endDate } = req.query;
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('sv-SE');
 
-            // Alap feltételek: csak elérhető és jövőbeli (vagy mai) időpontok
             const whereClause = {
                 isAvailable: true,
-                date: { [Op.gte]: new Date().setHours(0, 0, 0, 0) }
             };
 
-            if (staffId) whereClause.staffId = Number(staffId);
-            if (date) whereClause.date = date;
+            if (startDate && endDate) {
+                whereClause.date = {
+                    [Op.between]: [startDate, endDate]
+                };
+            } else {
+                whereClause.date = { 
+                    [Op.gte]: todayStr
+                };
+            }
+            if (staffId && staffId !== 'null' && staffId !== 'undefined') {
+            whereClause.staffId = Number(staffId);
+            }
 
             const slots = await Slot.findAll({
                 where: whereClause,
-                order: [['date', 'ASC'], ['startTime', 'ASC']],
+                order: [
+                    ['date', 'ASC'], 
+                    ['startTime', 'ASC']
+                ],
             });
             
-            return res.status(200).json({ success: true, data: slots });
+            return res.status(200).json({ 
+                success: true, 
+                count: slots.length,
+                data: slots 
+            });
+
         } catch (error) {
             return SlotController.sendError(res, error);
         }

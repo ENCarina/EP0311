@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { leadingComment } from '@angular/compiler';
+
 
 @Component({
   selector: 'app-booking',
@@ -25,7 +25,7 @@ export class BookingComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   public readonly auth = inject(AuthService);
-  private readonly translate = inject(TranslateService);
+  public translate = inject(TranslateService);
 
   protected staffs: any[] = [];
   protected filteredStaffs: any[] = [];
@@ -35,17 +35,72 @@ export class BookingComponent implements OnInit {
   protected isLoading = false;
   protected errorMessage = '';
   protected selectedStaffId: number | null = null;
-  protected selectedDate: string = new Date().toISOString().split('T')[0];
   protected selectedConsultationId: number | null = null; 
   protected filteredConsultations: Consultation[] = [];
   protected consultations: Consultation[] = [];
+
   protected readonly today = new Date().toISOString().split('T')[0];
+  protected selectedDate: string = this.today;
+  protected hours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+  protected weekDays: Date[] = [];
+  protected currentDate = new Date();
 
   ngOnInit(): void {
+    this.generateWeek(this.currentDate);
     this.route.queryParams.subscribe(params => {
       this.loadInitialData(params); 
     });
   } 
+
+  generateWeek(refDate: Date) {
+    const start = new Date(refDate);
+    const day = start.getDay();
+   
+    if (day === 6) start.setDate(start.getDate() + 2);
+      else if (day === 0) start.setDate(start.getDate() + 1);
+      else {
+        
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+        start.setDate(diff);
+      }
+
+      this.weekDays = [];
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        this.weekDays.push(d);
+      }
+    }
+
+  changeWeek(days: number) {
+    this.currentDate.setDate(this.currentDate.getDate() + days);
+    this.generateWeek(this.currentDate);
+    this.loadSlots();
+  }
+
+  goToToday(): void {
+    this.currentDate = new Date();
+    this.generateWeek(this.currentDate);
+    this.loadSlots();
+  }
+
+  getSlotsForHour(day: Date, hour: string) {
+  
+  const targetDateStr = day.toLocaleDateString('sv-SE');
+  
+  const targetHour = parseInt(hour.split(':')[0], 10);
+  
+  return this.availableSlots.filter(s => {
+    if (!s.date || !s.startTime) return false;
+
+    const slotDateStr = s.date.toString().substring(0, 10);
+    const slotHourStr = s.startTime.split(':')[0];
+    const slotHour = parseInt(slotHourStr, 10);
+    
+    return slotDateStr === targetDateStr && slotHour === targetHour;
+  });
+}
+
   loadInitialData(params?: any): void {
     this.isLoading = true;
     forkJoin({
@@ -53,11 +108,14 @@ export class BookingComponent implements OnInit {
       consultations: this.staffApi.getConsultations()
     }).subscribe({
       next: (res: any) => { 
-        const rawStaffs = res.staffs?.data || res.staffs || [];
+        const rawStaffs = res.staffs?.data || [];
+
         this.staffs = rawStaffs.map((s: any) => ({
           ...s,
           id: Number(s.id),
-          userId: Number(s.userId)
+          userId: Number(s.userId),
+          name: s.user?.name || 'COMMON.UNKNOWN',
+          specialty: s.specialty || ''
         }));
 
         const rawConsultations = res.consultations?.data || res.consultations || [];
@@ -128,49 +186,31 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  protected onSpecialtyChange(): void {
-    this.filteredStaffs = this.staffs.filter(s => s.specialty === this.selectedSpecialty);
-    this.selectedStaffId = null;
-    this.filteredConsultations = [];
-    this.selectedConsultationId = null;
-    this.availableSlots = [];
-  }
-
-  protected onStaffChange(): void {
-    this.updateFilteredConsultations();
-  }
-
-  protected onFilterChange(): void {
-    this.loadSlots();
-  }
-
-  loadSlots(): void {
+    loadSlots(): void {
     if (!this.selectedStaffId || !this.selectedConsultationId) {
       this.availableSlots = [];
       return;
     }
 
     this.isLoading = true;
-    this.bookingApi.getAvailableSlots(
-      Number(this.selectedStaffId), 
-      Number(this.selectedConsultationId), 
-      this.selectedDate
-    ).subscribe({
+    const start = this.weekDays[0].toLocaleDateString('sv-SE');
+    const end = this.weekDays[4].toLocaleDateString('sv-SE');
+
+    const sId: number = Number(this.selectedStaffId);
+    const cId: number = Number(this.selectedConsultationId);
+
+    this.bookingApi.getAvailableSlots(sId, start, end, cId).subscribe({
       next: (res: any) => {
         const allData = res.data || res;
         const now = new Date();
-
-        const minimumLeadTimeHours = 3;
-        const limitTime = new Date(now.getTime() + (minimumLeadTimeHours * 60 * 60 * 1000));
+        const minimumLeadTimeHours = 0;
+        const limitTime = new Date(now.getTime() + ( minimumLeadTimeHours* 60 * 60 * 1000));
         
-        let filtered = allData.filter((slot: any) => {
-          if (slot.date !== this.selectedDate) return false;
+        this.availableSlots = allData.filter((slot: any) => {
           const slotDateTime = new Date(`${slot.date}T${slot.startTime}`);
-          // A SZABÁLY ALKALMAZÁSA:
           return slotDateTime > limitTime;
-          });
-
-        this.availableSlots = filtered;
+        });
+ 
         this.isLoading = false;
 
         if (this.availableSlots.length === 0) {
@@ -187,10 +227,44 @@ export class BookingComponent implements OnInit {
     });
   }
 
+  protected onSpecialtyChange(): void {
+    this.filteredStaffs = this.staffs.filter(s => s.specialty === this.selectedSpecialty);
+    this.selectedStaffId = null;
+    this.filteredConsultations = [];
+    this.selectedConsultationId = null;
+    this.availableSlots = [];
+  }
+
+  protected onStaffChange(): void {
+    this.updateFilteredConsultations();
+  }
+
+  protected onFilterChange(): void {
+    this.loadSlots();
+  }
+
+  get dayFormat(): string {
+    return this.translate.currentLang === 'hu' ? 'EEEE' : 'EEEE'; 
+  }
+  get dateFormat(): string {
+     return this.translate.currentLang === 'hu' ? 'MMM d.' : 'MMM d';
+  }
+  get currentLocale(): string {
+    return this.translate.currentLang === 'hu' ? 'hu' : 'en';
+  }
+
   onReserve(slot: any): void {
+    const dateStr = new Date(slot.date).toLocaleDateString(this.translate.currentLang === 'hu' ? 'hu-HU' : 'en-US');
+    const timeStr = slot.startTime.slice(0, 5);
+
+    const confirmMessage = this.translate.instant('BOOKING.CONFIRM_QUESTION', { 
+      date: dateStr, 
+      time: timeStr 
+    });
+    
     Swal.fire({
-      title: this.translate.instant('CONFIRM_PROMPT'),
-      text: `${this.translate.instant('BOOKING.SELECT_DATE')}: ${slot.date} ${slot.startTime.slice(0, 5)}`,
+      title: this.translate.instant('BOOKING.CONFIRM_TITLE'),
+      text: confirmMessage,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#003366',

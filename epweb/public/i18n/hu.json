@@ -19,7 +19,10 @@
     "YES_DELETE": "Igen, törlöm",
     "ACTIONS": "Műveletek",
     "REFRESH": "Frissítés",
-    "DELETE": "Törlés"
+    "DELETE": "Törlés",
+    "GENERATE": "Generálás",
+    "WARNING": "Figyelem",
+    "OK": "Rendben"
   },
   "MENU": {
     "HOME": "Kezdőlap",
@@ -88,6 +91,7 @@
     "VISION_TEST": "Látásvizsgálat",
     "JOINT_INJECTION": "Ízületi injekció",
     "POSTOP_CONTROL": "Műtét utáni kontroll",
+    "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digitális dermatoszkópia és anyajegyszűrés",
     "TITLE": "Szolgáltatások",
     "SUBTITLE": "Vizsgálatok és konzultációk árlistájának kezelése",
     "ADD_NEW": "Új szolgáltatás",
@@ -156,8 +160,10 @@
     },
     "TABLE": {
       "ID": "#ID",
-      "USER": "Felhasználó",
+      "USER": "Név",
+      "EMAIL": "Email cím",
       "ROLE": "Szerepkör",
+      "SPECIALTY": "Szakterület kulcsa (pl. DERMATOLOGY)",
       "STATUS": "Állapot",
       "ACTIONS": "Műveletek",
       "EMPTY": "Nincsenek megjeleníthető felhasználók."
@@ -236,7 +242,7 @@
       "DR_BARNA": "Urológiai daganatok és kismedencei szűrések szakértője.",
       "DR_VARGA": "Nőgyógyászati endokrinológia és meddőségi tanácsadás."
     },
-    "TITLE": "Szakemberek",
+    "TITLE": "Szakemberek Kezelése",
     "SUBTITLE": "Orvosok és asszisztensek kezelése a rendszerben",
     "NEW_BUTTON": "Új szakember",
     "TABLE": {
@@ -250,6 +256,7 @@
       "AVAILABLE": "Elérhető",
       "NOT_AVAILABLE": "Nem elérhető",
       "BIO": "Bemutatkozás"
+      
     },
     "ROLES": {
       "DOCTOR": "Orvos",
@@ -284,13 +291,18 @@
       "PROMOTE_SUCCESS": "A felhasználó sikeresen előléptetve szakemberré!",
       "TREATMENTS_NOT_FOUND": "Nem találhatók kezelések ehhez a szakemberhez.",
       "STATUS_ACTIVE": "A szakmai profil mostantól aktív.",
-      "STATUS_ARCHIVED": "A szakmai profil archiválva (inaktív)."
+      "STATUS_ARCHIVED": "A szakmai profil archiválva (inaktív).",
+      "GENERATE_TITLE": "Heti időpontok generálása",
+      "GENERATE_SUCCESS": "Időpontok sikeresen létrehozva 30 napra!",
+      "GENERATE_ERROR": "Hiba történt az időpontok generálása során.",
+      "NO_SLOTS_GENERATED": "Nincs generálható időpont a megadott feltételekkel."
     },
     "TOOLTIPS": {
       "APPOINTMENTS": "Időpontok",
       "EDIT": "Szerkesztés",
       "DEACTIVATE": "Deaktiválás",
-      "RESTORE": "Visszaállítás"
+      "RESTORE": "Visszaállítás",
+      "GENERATE_SLOTS": "Időpontok automatikus generálása"
     }
   },
   "SPECIALTIES": {
@@ -427,23 +439,27 @@
     "LOGIN_REQUIRED": "Bejelentkezés szükséges a foglaláshoz"
   },
   "BOOKING": {
+    "TODAY": "Aktuális hét",
     "SIDEBAR_TITLE": "Foglalási adatok",
-    "SELECT_DATE": "Dátum kiválasztása",
+    "SELECT_DATE": "Időszak választása",
     "SPECIALTY": "Szakterület",
     "SPECIALTY_PLACEHOLDER": "-- Válasszon szakterületet --",
     "STAFF": "Szakember",
     "STAFF_PLACEHOLDER": "-- Válasszon orvost --",
     "TREATMENT": "Vizsgálat típusa",
     "TREATMENT_PLACEHOLDER": "-- Válasszon vizsgálatot --",
-    "SEARCH_BTN": "Időpontok keresése",
+    "SEARCH_BTN": "Keresés",
     "UPDATING": "Frissítés...",
     "AVAILABLE_SLOTS": "Elérhető időpontok",
+    "TIME": "Idő",
     "FREE_PLACES": "{{count}} szabad hely",
     "BOOK_NOW": "Időpont foglalása",
     "ALREADY_BOOKED": "Már foglalt",
     "NO_SLOTS_TITLE": "Nincs szabad időpont",
     "NO_SLOTS_SUBTITLE": "Válassz szakterületet, orvost és vizsgálatot.",
-    "CONFIRM_PROMPT": "Biztosan lefoglalja ezt az időpontot?",
+    "CONFIRM_PROMPT": "Időpont foglalása",
+    "CONFIRM_TITLE": "Foglalás megerősítése",
+    "CONFIRM_QUESTION":"Biztosan lefoglalod az alábbi időpontot: {{date}} {{time}}?",
     "SUCCESS_MSG": "Sikeres foglalás!",
     "ERROR_MSG": "Hiba történt a foglalás során.",
     "NOT_FOUND": "A foglalás nem található!",
@@ -454,20 +470,22 @@
   },
   "MESSAGES": {
     "AUTH": {
-      "MISSING_FIELDS": "Minden mező kitöltése kötelező!",
-      "PASSWORD_MISMATCH": "A két jelszó nem egyezik!",
-      "EMAIL_ALREADY_TAKEN": "Ez az email cím már foglalt!",
-      "REGISTRATION_SUCCESS_VERIFY": "Regisztráció sikeres! Kérjük, igazolja vissza email címét.",
-      "INVALID_TOKEN": "Érvénytelen vagy lejárt megerősítő token!",
-      "EMAIL_VERIFIED_SUCCESS": "Email cím sikeresen visszaigazolva!",
-      "INVALID_CREDENTIALS": "Hibás email vagy jelszó!",
-      "ACCOUNT_INACTIVE": "Inaktív fiók!",
-      "EMAIL_NOT_VERIFIED": "Kérjük, igazolja vissza email címét a belépés előtt!",
-      "EMAIL_REQUIRED": "Email megadása kötelező!",
-      "FORGOT_PASSWORD_SENT": "A jelszóvisszaállító linket elküldtük az email címére.",
-      "INVALID_OR_EXPIRED_TOKEN": "A link érvénytelen vagy lejárt!",
-      "PASSWORD_RESET_SUCCESS": "A jelszó sikeresen megváltoztatva! Most már bejelentkezhet.",
-      "ERROR_GENERAL": "Hiba történt a folyamat során!"
+      "MISSING_FIELDS": "Kérjük, töltsön ki minden mezőt!",
+      "PASSWORD_MISMATCH": "A jelszavak nem egyeznek!",
+      "EMAIL_ALREADY_TAKEN": "Ez az e-mail cím már használatban van!",
+      "REGISTRATION_SUCCESS_VERIFY": "Sikeres regisztráció! Kérjük, igazolja vissza e-mail címét.",
+      "INVALID_TOKEN": "Érvénytelen vagy lejárt token!",
+      "EMAIL_VERIFIED_SUCCESS": "E-mail cím sikeresen megerősítve!",
+      "INVALID_CREDENTIALS": "Hibás e-mail cím vagy jelszó!",
+      "ACCOUNT_INACTIVE": "Ez a fiók jelenleg nem aktív.",
+      "EMAIL_NOT_VERIFIED": "Kérjük, igazolja vissza e-mail címét a belépés előtt!",
+      "EMAIL_REQUIRED": "E-mail cím megadása kötelező!",
+      "FORGOT_PASSWORD_SENT": "Ha a cím létezik, elküldtük a jelszó-visszaállító linket.",
+      "TOKEN_REQUIRED": "A visszaállító token hiányzik!",
+      "INVALID_OR_EXPIRED_TOKEN": "A link érvénytelen vagy már lejárt.",
+      "PASSWORD_RESET_SUCCESS": "A jelszó sikeresen megváltoztatva!",
+      "ERROR_GENERAL": "Váratlan hiba történt. Kérjük, próbálja meg később!",
+      "VALIDATION_ERROR": "Kérjük, megfelelően töltse ki a belépési adatokat!"
     },
     "BOOKING": {
       "CANCEL_SUCCESS": "Sikeresen lemondta az időpontot.",
@@ -493,6 +511,21 @@
       "PAST_DATE_ERROR": "Nem hozhat létre időpontot a múltban!",
       "UNAUTHORIZED": "Csak a saját naptárát kezelheti!",
       "LOAD_ERROR": "Az időpontok betöltése sikertelen."
+    }
+  },
+  "VERIFY_EMAIL": {
+    "LOADING_TITLE": "Fiók aktiválása",
+    "LOADING_SUB": "Kérjük, várjon, amíg hitelesítjük adatait...",
+    "SUCCESS_TITLE": "Sikeres visszaigazolás!",
+    "SUCCESS_SUB": "Köszönjük bizalmát! Fiókja mostantól aktív, és minden szolgáltatásunk elérhető az Ön számára.",
+    "SUCCESS_BTN": "TOVÁBB A BELÉPÉSHEZ",
+    "ERROR_TITLE": "Sikertelen aktiválás",
+    "ERROR_SUB": "A megerősítő link sajnos érvénytelen vagy már lejárt. Kérjük, próbálja meg újra a regisztrációt.",
+    "ERROR_BTN_RETRY": "ÚJ REGISZTRÁCIÓ INDÍTÁSA",
+    "ERROR_LINK_HOME": "Vissza a főoldalra",
+     "LOG": {
+      "SUCCESS": "Sikeres aktiválás:",
+      "ERROR": "Aktiválási hiba:"
     }
   }
 }

@@ -38,15 +38,19 @@ export class LoginComponent implements OnInit {
   login() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched(); 
-      // FORDÍTÁS: Mezők kitöltése hiba
       this.errorMessage = this.translate.instant('AUTH.VALIDATION_ERROR');
+      Swal.fire({
+        title: this.translate.instant('COMMON.WARNING'),
+        text: this.errorMessage,
+        icon: 'warning',
+        confirmButtonText: this.translate.instant('COMMON.OK')
+      });
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // ADATOK ÖSSZEÁLLÍTÁSA + LANG HOZZÁADÁSA
     const loginPayload = {
       ...this.loginForm.getRawValue(),
       lang: this.translate.currentLang || 'hu'
@@ -54,6 +58,8 @@ export class LoginComponent implements OnInit {
 
     this.auth.login(loginPayload).subscribe({
       next: (res: any) => {
+        this.isLoading = false;
+
         if (res.accessToken) {
           localStorage.setItem('token', res.accessToken);
           localStorage.setItem('user', JSON.stringify(res.user)); 
@@ -80,16 +86,14 @@ export class LoginComponent implements OnInit {
       }, 
       error: (err: any) => {
         this.isLoading = false;
-        
-        // DINAMIKUS HIBAÜZENETEK KEZELÉSE
-        if (err.status === 403 || (err.status === 401 && err.error?.message?.includes('verified'))) {
-          this.errorMessage = this.translate.instant('AUTH.EMAIL_NOT_VERIFIED');
-        } else if (err.status === 401) {
-          this.errorMessage = this.translate.instant('AUTH.INVALID_CREDENTIALS');
+       // DINAMIKUS HIBAÜZENETEK KEZELÉSE
+        const serverKey = err.error?.message;
+
+        if (serverKey && serverKey.startsWith('AUTH.')) {
+          this.errorMessage = this.translate.instant(serverKey);
         } else {
-          // Ha a szerverről jön kulcs, azt próbáljuk fordítani, egyébként egy általános hiba
-          const serverMsg = err.error?.message;
-          this.errorMessage = serverMsg ? this.translate.instant(serverMsg) : this.translate.instant('AUTH.ERROR_GENERAL');
+          // Tartalék terv, ha a szerver nem küld specifikus kulcsot
+          this.errorMessage = this.translate.instant('AUTH.ERROR_GENERAL');
         }
 
         Swal.fire(

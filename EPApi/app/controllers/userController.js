@@ -44,11 +44,26 @@ const UserController = {
     // --- LÉTREHOZÁS ---
     async create(req, res) {
         try {
-            const { name, email, password, roleId } = req.body;
+            const { name, email, password, roleId, role, specialty } = req.body;
             const hashedPassword = bcrypt.hashSync(password, 10);
+
+            let finalRoleId = roleId;
+            if (role === 'STAFF') finalRoleId = 1;
+            else if (role === 'ADMIN') finalRoleId = 2;
+            else if (role === 'USER') finalRoleId = 0;
+
             const newUser = await User.create({ name, email, password: hashedPassword, roleId: roleId || 0 });
+            if (finalRoleId === 1 || role === 'STAFF') {
+                await Staff.create({
+                    userId: newUser.id,
+                    specialty: specialty || '', 
+                    isActive: true
+                });
+            }
+            
             const result = newUser.toJSON();
             delete result.password;
+            
             res.status(201).json({ success: true, data: result });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -104,11 +119,34 @@ const UserController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { name, email, roleId } = req.body;
+            const { name, email, roleId, role, specialty } = req.body;
             const user = await User.findByPk(id);
             if (!user) return res.status(404).json({ success: false, message: 'Felhasználó nem található!' });
-            await user.update({ name: name || user.name, email: email || user.email, roleId: roleId !== undefined ? roleId : user.roleId });
-            res.status(200).json({ success: true, data: user });
+            
+            let finalRoleId = roleId;
+            if (role === 'STAFF') finalRoleId = 1;
+            else if (role === 'ADMIN') finalRoleId = 2;
+            else if (role === 'USER') finalRoleId = 0;
+            
+            await user.update({ 
+                name: name || user.name, 
+                email: email || user.email, 
+                roleId: roleId !== undefined ? roleId : user.roleId 
+            });
+            if (specialty !== undefined) {
+                let staffProfile = await Staff.findOne({ where: { userId: id } });
+                
+                if (staffProfile) {
+                    await staffProfile.update({ specialty: specialty });
+                } else {
+                    await Staff.create({ userId: id, specialty: specialty, isActive: true });
+                }
+            }
+            const updatedUser = await User.findByPk(id, {
+                include: [{ model: Staff, as: 'staffProfile', required: false }]
+            });
+
+            res.status(200).json({ success: true, data: updatedUser });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

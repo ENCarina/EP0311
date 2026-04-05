@@ -141,6 +141,11 @@ const BookingController = {
             const lang = req.headers['accept-language'] || 'hu';
             const newBooking = await BookingService.createBooking(bookingData, user, lang);
 
+            await db.Slot.update(
+                { isAvailable: false }, 
+                { where: { id: req.body.slotId } }
+            );
+
             return res.status(201).json({
                 success: true,
                 message: 'BOOKING.SUCCESS_MSG',

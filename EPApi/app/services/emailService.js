@@ -5,13 +5,14 @@ dotenvFlow.config();
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.freemail.hu', 
     port: process.env.EMAIL_PORT || 587,
-    secure: process.env.EMAIL_SECURE === 'false', 
+    secure: process.env.EMAIL_SECURE === 'true', 
     auth: {
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS
     },
     tls: { 
         rejectUnauthorized: false, 
+        minVersion: "TLSv1.2"
     },
 });
 
@@ -32,7 +33,7 @@ export const EmailService = {
 
         try {
             const info = await transporter.sendMail({
-                from: `"Elit Klinika" <${process.env.EMAIL_USER}>`,
+                from: process.env.EMAIL_USER,
                 to: userEmail,
                 subject: subjects[lang] || subjects.hu,
                 html: `
@@ -43,7 +44,7 @@ export const EmailService = {
                         </h1>
                     </div>
                     
-                    <h2 style="color: ${COLORS.darkBlue}; font-size: 18px;">Kedves ${userName}!</h2>
+                    <h2 style="color: ${COLORS.darkBlue}; font-size: 18px;">${lang === 'hu' ? 'Kedves' : 'Dear'} ${userName}!</h2>
                     <p style="font-size: 16px; line-height: 1.5;">
                         ${lang === 'hu'
                         ? 'Köszönjük, hogy regisztráltál az <strong>Elit Klinika</strong> online rendszerébe. Már csak egy lépés választ el a teljes hozzáféréstől.' 
@@ -101,7 +102,7 @@ export const EmailService = {
                             <ul style="list-style: none; padding: 0; margin: 0; font-size: 16px; line-height: 1.8;">
                                 <li><strong style="color: ${COLORS.darkBlue};">${lang === 'hu' ? 'Vizsgálat' : 'Treatment'}:</strong> ${bookingData.name || '-'}</li>
                                 <li><strong style="color: ${COLORS.darkBlue};">${lang === 'hu' ? 'Dátum/Időpont' : 'Date/Time'}:</strong> ${bookingData.appointment_date || '-'}</li>
-                                <li><strong style="color: ${COLORS.darkBlue};">${lang === 'hu' ? 'Ár' : 'Price'}:</strong> ${bookingData.price ? bookingData.price + ' Ft' : '-'}</li>
+                                <li><strong style="color: ${COLORS.darkBlue};">${lang === 'hu' ? 'Ár' : 'Price'}:</strong> ${bookingData.price ? bookingData.price + (lang === 'hu' ? ' Ft' : ' HUF') : '-'}</li>
                                 <li><strong style="color: ${COLORS.darkBlue};">${lang === 'hu' ? 'Megjegyzés' : 'Notes'}:</strong> ${bookingData.notes || '-'}</li>
                             </ul>
                         </div>
@@ -127,7 +128,7 @@ export const EmailService = {
         };
         try {
             const info = await transporter.sendMail({
-                from: `"Elit Klinika" <${process.env.EMAIL_USER}>`,
+                from: process.env.EMAIL_USER,
                 to: userEmail,
                 subject: subjects[lang] || subjects.hu,
                 html: `

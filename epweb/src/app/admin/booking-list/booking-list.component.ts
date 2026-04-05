@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 })
 export class BookingListComponent implements OnInit {
   private adminService = inject(AdminService);
-  private translate = inject(TranslateService);
+  public translate = inject(TranslateService);
 
   bookings = signal<any[]>([]);
   isLoading = signal<boolean>(false);

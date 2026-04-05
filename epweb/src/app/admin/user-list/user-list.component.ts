@@ -16,7 +16,7 @@ export class UserListComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private translate: TranslateService
+    public translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -170,6 +170,9 @@ export class UserListComponent implements OnInit {
   }
 
   onEditUser(user: any) {
+    const currentSpecialty = user.staffProfile ? user.staffProfile.specialty : '';
+    const currentRole = user.role || 'USER';
+
     Swal.fire({
       title: `${user.name} - ${this.translate.instant('USERS.ACTIONS.EDIT')}`,
       html: `
@@ -181,6 +184,18 @@ export class UserListComponent implements OnInit {
           <label class="form-label small fw-bold">${this.translate.instant('USERS.TABLE.EMAIL') || 'Email'}</label>
           <input type="email" id="edit-email" class="swal2-input m-0 w-100" value="${user.email}">
         </div>
+        <div class="mb-3 text-start">
+          <label class="form-label small fw-bold">${this.translate.instant('USERS.TABLE.ROLE') || 'Role'}</label>
+          <select id="edit-role" class="swal2-select m-0 w-100" style="display: flex;">
+            <option value="USER" ${currentRole === 'USER' ? 'selected' : ''}>User</option>
+            <option value="STAFF" ${currentRole === 'STAFF' ? 'selected' : ''}>Staff / Doctor</option>
+            <option value="ADMIN" ${currentRole === 'ADMIN' ? 'selected' : ''}>Admin</option>
+          </select>
+        </div>
+        <div class="mb-3 text-start">
+          <label class="form-label small fw-bold">${this.translate.instant('USERS.TABLE.SPECIALTY') || 'Specialty (e.g. DERMATOLOGY)'}</label>
+          <input type="text" id="edit-specialty" class="swal2-input m-0 w-100" value="${currentSpecialty}" placeholder="DERMATOLOGY">
+        </div>
       `,
       confirmButtonText: this.translate.instant('COMMON.SAVE'),
       confirmButtonColor: this.navyColor,
@@ -189,11 +204,14 @@ export class UserListComponent implements OnInit {
       preConfirm: () => {
         const name = (document.getElementById('edit-name') as HTMLInputElement).value;
         const email = (document.getElementById('edit-email') as HTMLInputElement).value;
+        const role = (document.getElementById('edit-role') as HTMLSelectElement).value;
+        const specialty = (document.getElementById('edit-specialty') as HTMLInputElement).value;
+
         if (!name || !email) {
           Swal.showValidationMessage(this.translate.instant('USERS.MESSAGES.ALL_FIELDS_REQUIRED'));
           return false;
         }
-        return { name, email };
+        return { name, email, role, specialty };
       }
     }).then((result) => {
       if (result.isConfirmed) {
