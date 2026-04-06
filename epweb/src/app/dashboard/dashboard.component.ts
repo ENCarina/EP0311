@@ -7,11 +7,12 @@ import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../shared/auth.service';
 import { BookingService } from '../shared/booking.service';
 import { StaffService } from '../shared/staff.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
@@ -61,6 +62,7 @@ export class DashboardComponent implements OnInit {
     private router: Router,
     private bookingService: BookingService,
     private staffService: StaffService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -101,13 +103,13 @@ export class DashboardComponent implements OnInit {
   protected openProfileQuickView(): void {
     const userName = this.authService.getUserName();
     const roleId = this.authService.getRoleId();
-    const roleLabel = roleId === 2 ? 'Admin' : roleId === 1 ? 'Orvos' : 'Felhasználó';
+    const roleLabel = roleId === 2 ? this.translate.instant('PROFILE.ADMIN') : roleId === 1 ? this.translate.instant('PROFILE.DOCTOR') : this.translate.instant('PROFILE.USER');
 
     Swal.fire({
-      title: 'Profil',
-      html: `<div style="text-align:left"><p><strong>Név:</strong> ${userName}</p><p><strong>Szerepkör:</strong> ${roleLabel}</p></div>`,
+      title: this.translate.instant('PROFILE.TITLE'),
+      html: `<div style="text-align:left"><p><strong>${this.translate.instant('PROFILE.NAME')}:</strong> ${userName}</p><p><strong>${this.translate.instant('PROFILE.ROLE')}:</strong> ${roleLabel}</p></div>`,
       icon: 'info',
-      confirmButtonText: 'Rendben'
+      confirmButtonText: this.translate.instant('PROFILE.OK')
     });
   }
 
@@ -130,8 +132,8 @@ export class DashboardComponent implements OnInit {
 
   protected getCancellationHint(appointment: { appointmentDateTime: Date }): string {
     return this.canCancelBooking(appointment)
-      ? 'Az időpont még online lemondható.'
-      : '24 órán belül csak telefonon mondható le.';
+      ? this.translate.instant('MY_BOOKINGS.STATUS_ACTIVE')
+      : this.translate.instant('MY_BOOKINGS.CANCEL_ONLY_PHONE');
   }
 
   protected cancelUpcomingBooking(appointment: { id: number; appointmentDateTime: Date }): void {
@@ -140,12 +142,12 @@ export class DashboardComponent implements OnInit {
     }
 
     Swal.fire({
-      title: 'Időpont lemondása',
-      text: 'Biztosan lemondja ezt az időpontot?',
+      title: this.translate.instant('MY_BOOKINGS.CANCEL_APPOINTMENT'),
+      text: this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_TEXT'),
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Igen, lemondom',
-      cancelButtonText: 'Mégsem'
+      confirmButtonText: this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_BTN'),
+      cancelButtonText: this.translate.instant('MY_BOOKINGS.CANCEL_CANCEL_BTN')
     }).then((result) => {
       if (!result.isConfirmed) {
         return;
@@ -158,19 +160,19 @@ export class DashboardComponent implements OnInit {
           this.loadDashboardData();
 
           Swal.fire({
-            title: 'Sikeres lemondás',
-            text: 'Az időpont törölve lett.',
+            title: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
+            text: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT'),
             icon: 'success',
-            confirmButtonText: 'Rendben'
+            confirmButtonText: this.translate.instant('PROFILE.OK')
           });
         },
         error: (error) => {
           this.cancellingBookingId = null;
           Swal.fire({
-            title: 'A lemondás sikertelen',
+            title: this.translate.instant('DASHBOARD.CANCEL_FAILED'),
             text: error?.error?.error || error?.error?.message || 'Hiba történt a lemondás során.',
             icon: 'error',
-            confirmButtonText: 'Rendben'
+            confirmButtonText: this.translate.instant('PROFILE.OK')
           });
         }
       });
@@ -184,12 +186,12 @@ export class DashboardComponent implements OnInit {
     }
 
     Swal.fire({
-      title: 'Időpont lemondása',
-      text: 'Biztosan lemondja ezt az időpontot?',
+      title: this.translate.instant('MY_BOOKINGS.CANCEL_APPOINTMENT'),
+      text: this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_TEXT'),
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Igen, lemondom',
-      cancelButtonText: 'Mégsem'
+      confirmButtonText: this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_BTN'),
+      cancelButtonText: this.translate.instant('MY_BOOKINGS.CANCEL_CANCEL_BTN')
     }).then((result) => {
       if (!result.isConfirmed) {
         return;
@@ -204,10 +206,10 @@ export class DashboardComponent implements OnInit {
           this.loadDashboardData();
 
           Swal.fire({
-            title: 'Sikeres lemondás',
-            text: 'Az időpont törölve lett.',
+            title: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
+            text: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT'),
             icon: 'success',
-            confirmButtonText: 'Rendben'
+            confirmButtonText: this.translate.instant('PROFILE.OK')
           });
         },
         error: (error) => {
@@ -215,10 +217,10 @@ export class DashboardComponent implements OnInit {
           this.dashboardError = error?.error?.error || error?.error?.message || 'Hiba történt a lemondás során.';
 
           Swal.fire({
-            title: 'A lemondás sikertelen',
+            title: this.translate.instant('DASHBOARD.CANCEL_FAILED'),
             text: this.dashboardError,
             icon: 'error',
-            confirmButtonText: 'Rendben'
+            confirmButtonText: this.translate.instant('PROFILE.OK')
           });
         }
       });
@@ -249,8 +251,8 @@ export class DashboardComponent implements OnInit {
 
   protected getCancellationHintForBooking(booking: any): string {
     return this.canCancelRawBooking(booking)
-      ? 'Az időpont még online lemondható.'
-      : '24 órán belül csak telefonon mondható le.';
+      ? this.translate.instant('MY_BOOKINGS.STATUS_ACTIVE')
+      : this.translate.instant('MY_BOOKINGS.CANCEL_ONLY_PHONE');
   }
 
   protected getBookingSlot(booking: any): any {
@@ -266,7 +268,18 @@ export class DashboardComponent implements OnInit {
   }
 
   protected getBookingServiceName(booking: any): string {
-    return booking?.treatment?.name || booking?.type?.name || booking?.name || 'Konzultáció';
+    const serviceName = booking?.treatment?.name || booking?.type?.name || booking?.name || this.translate.instant('DOCTOR_CALENDAR.CONSULTATION_FALLBACK');
+    return this.translateServiceName(serviceName);
+  }
+
+  protected translateServiceName(serviceName: string): string {
+    if (!serviceName) {
+      return this.translate.instant('DOCTOR_CALENDAR.CONSULTATION_FALLBACK');
+    }
+
+    const key = this.toServiceTranslationKey(serviceName);
+    const translated = this.translate.instant(`SERVICE_NAMES.${key}`);
+    return translated !== `SERVICE_NAMES.${key}` ? translated : serviceName;
   }
 
   protected getBookingPrice(booking: any): string {
@@ -322,7 +335,7 @@ export class DashboardComponent implements OnInit {
     const serviceMap = new Map<string, number>();
 
     bookingsData.forEach((booking: any) => {
-      const serviceName = booking.treatment?.name || booking.name || 'Ismeretlen szolgáltatás';
+      const serviceName = booking.treatment?.name || booking.name || this.translate.instant('DASHBOARD.UNKNOWN_SERVICE');
       serviceMap.set(serviceName, (serviceMap.get(serviceName) || 0) + 1);
     });
 
@@ -348,9 +361,9 @@ export class DashboardComponent implements OnInit {
           dateTime,
           dateLabel: this.formatDate(date),
           timeLabel: this.formatTime(startTime),
-          doctorName: booking?.doctor?.user?.name || 'Szakember',
-          serviceName: booking?.treatment?.name || booking?.name || 'Konzultáció',
-          patientName: booking?.patient?.name || booking?.patient?.email || 'Páciens'
+          doctorName: booking?.doctor?.user?.name || this.translate.instant('MY_BOOKINGS.DEFAULT_DOCTOR'),
+          serviceName: booking?.treatment?.name || booking?.name || this.translate.instant('DOCTOR_CALENDAR.CONSULTATION_FALLBACK'),
+          patientName: booking?.patient?.name || booking?.patient?.email || this.translate.instant('DOCTOR_CALENDAR.PATIENT_FALLBACK')
         };
       })
       .filter((item) => !!item.id && !isNaN(item.dateTime.getTime()) && item.dateTime >= now)
@@ -365,6 +378,15 @@ export class DashboardComponent implements OnInit {
         serviceName,
         patientName,
       }));
+  }
+
+  private toServiceTranslationKey(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
   }
 
   private computeUniquePatientsCount(bookingsData: any[]): number {

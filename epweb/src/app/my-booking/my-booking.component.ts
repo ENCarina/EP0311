@@ -4,11 +4,12 @@ import { BookingService } from '../shared/booking.service';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../shared/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-my-booking',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './my-booking.component.html',
   styleUrl: './my-booking.component.css',
 })
@@ -19,7 +20,8 @@ export class MyBookingComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    public auth: AuthService
+    public auth: AuthService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +54,7 @@ export class MyBookingComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Hiba a foglalásoknál:', err);
-        this.errorMessage = 'Nem sikerült betölteni a foglalásokat. ' + (err.error?.message || '');
+        this.errorMessage = this.translate.instant('MY_BOOKINGS.ERROR_LOAD') + ' ' + (err.error?.message || '');
       }
     });
 }
@@ -83,8 +85,8 @@ isPast(dateString: string | undefined): boolean {
 
   getCancellationHint(booking: any): string {
     return this.canCancelBooking(booking)
-      ? 'Az időpont még online lemondható.'
-      : '24 órán belül csak telefonon mondható le.';
+      ? this.translate.instant('MY_BOOKINGS.STATUS_ACTIVE')
+      : this.translate.instant('MY_BOOKINGS.CANCEL_ONLY_PHONE');
   }
 
   cancelBooking(booking: any): void {
@@ -92,11 +94,11 @@ isPast(dateString: string | undefined): boolean {
     if (!bookingId) return;
 
     if (!this.canCancelBooking(booking)) {
-      this.errorMessage = 'Az időpontot csak legalább 24 órával korábban lehet lemondani.';
+      this.errorMessage = this.translate.instant('MY_BOOKINGS.CANCEL_TOOLTIP');
       return;
     }
 
-    if (!confirm('Biztosan lemondja ezt az időpontot?')) return;
+    if (!confirm(this.translate.instant('MY_BOOKINGS.CANCEL_CONFIRM_TITLE'))) return;
 
     this.loading = true;
     this.errorMessage = '';
@@ -109,7 +111,7 @@ isPast(dateString: string | undefined): boolean {
         this.loading = false;
       },
       error: (err: any) => {
-        this.errorMessage = err?.error?.error || err?.error?.message || 'Hiba történt a lemondás során.';
+        this.errorMessage = err?.error?.error || err?.error?.message || this.translate.instant('MY_BOOKINGS.ERROR_CANCEL_GENERAL');
         this.loading = false;
       }
     });

@@ -4,11 +4,11 @@
       <div class="card shadow-sm border-0 mb-4 rounded-4">
         <div class="card-body p-4">
           <h5 class="card-title mb-4 fw-bold">
-            <i class="bi bi-filter-left me-2 text-primary"></i>Foglalási adatok
+            <i class="bi bi-filter-left me-2 text-primary"></i>{{ 'BOOKING.SIDEBAR_TITLE' | translate }}
           </h5>
           
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Hét kiinduló napja</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SELECT_DATE' | translate }}</label>
             <input type="date" class="form-control border-light-subtle shadow-sm" 
                    [(ngModel)]="selectedDate" 
                    (change)="onDateChange()"
@@ -16,32 +16,32 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Szakterület</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SPECIALTY' | translate }}</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedSpecialty" 
                     (change)="onSpecialtyChange()"
                     [disabled]="isDoctorBooking">
-              <option value="" disabled selected>-- Válasszon szakterületet --</option>
+              <option value="" disabled selected>{{ 'BOOKING.SPECIALTY_PLACEHOLDER' | translate }}</option>
               @for (spec of specialties; track spec) {
-                <option [value]="spec">{{ spec }}</option>
+                <option [value]="spec">{{ translateSpecialty(spec) }}</option>
               }
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Szakember</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.STAFF' | translate }}</label>
             @if (isDoctorBooking) {
               <input
                 type="text"
                 class="form-control border-light-subtle shadow-sm"
-                [value]="selectedStaffName || 'Saját orvosprofil nem található'"
+                [value]="selectedStaffName || ('BOOKING.OWN_PROFILE_NOT_FOUND' | translate)"
                 disabled>
             } @else {
               <select class="form-select border-light-subtle shadow-sm" 
                       [(ngModel)]="selectedStaffId" 
                       (change)="onStaffChange()"
                       [disabled]="!selectedSpecialty">
-                <option [ngValue]="null" disabled>-- Válasszon orvost --</option>
+                <option [ngValue]="null" disabled>{{ 'BOOKING.STAFF_PLACEHOLDER' | translate }}</option>
                 @for (staff of filteredStaffs; track staff.id) {
                   <option [ngValue]="staff.id">{{ staff.user?.name || staff.name }} </option>
                 }
@@ -51,10 +51,10 @@
 
           @if (isDoctorBooking) {
             <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">Páciens</label>
+              <label class="form-label small fw-bold text-muted">{{ 'BOOKING.PATIENT' | translate }}</label>
               <select class="form-select border-light-subtle shadow-sm"
                       [(ngModel)]="selectedPatientId">
-                <option [ngValue]="null" disabled>-- Válasszon pácienst --</option>
+                <option [ngValue]="null" disabled>{{ 'BOOKING.PATIENT_PLACEHOLDER' | translate }}</option>
                 @for (patient of patients; track patient.id) {
                   <option [ngValue]="patient.id">{{ patient.name }} ({{ patient.email }})</option>
                 }
@@ -63,17 +63,17 @@
           }
 
           <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Vizsgálat típusa</label>
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.TREATMENT' | translate }}</label>
             <select class="form-select border-light-subtle shadow-sm" 
                     [(ngModel)]="selectedConsultationId" 
                     (change)="onConsultationChange()"
                     [disabled]="!selectedStaffId">
 
-            <option [ngValue]="null" disabled>-- Válasszon vizsgálatot --</option>
+            <option [ngValue]="null" disabled>{{ 'BOOKING.TREATMENT_PLACEHOLDER' | translate }}</option>
             
             @for (cons of filteredConsultations; track cons.id) {
               <option [ngValue]="cons.id">
-                {{ cons.name }}
+                {{ translateServiceName(cons.name) }}
               </option>
               }
             </select>
@@ -83,9 +83,9 @@
                   (click)="loadSlots()" 
                   [disabled]="isLoading || !selectedConsultationId || (isDoctorBooking && !selectedPatientId)">
             @if (isLoading) {
-              <span class="spinner-border spinner-border-sm me-2"></span> Frissítés...
+              <span class="spinner-border spinner-border-sm me-2"></span> {{ 'COMMON.REFRESHING' | translate }}
             } @else {
-              <i class="bi bi-search me-2"></i>Időpontok keresése
+              <i class="bi bi-search me-2"></i>{{ 'BOOKING.SEARCH_BTN' | translate }}
             }
           </button>
         </div>
@@ -94,7 +94,7 @@
 
     <div class="col-lg-8">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-bold">Heti naptárnézet</h4>
+        <h4 class="mb-0 fw-bold">{{ 'BOOKING.WEEKLY_VIEW' | translate }}</h4>
         @if (selectedStaffName) {
           <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle">
             {{ selectedStaffName }}
@@ -108,33 +108,33 @@
 
       <div class="scheduler-toolbar mb-3">
         <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="goToPreviousWeek()">
-          <i class="bi bi-chevron-left"></i> Előző hét
+          <i class="bi bi-chevron-left"></i> {{ 'BOOKING.PREV_WEEK' | translate }}
         </button>
         <div class="week-label-box">
           <i class="bi bi-calendar-range me-2 text-primary"></i>{{ getWeekLabel() }}
         </div>
         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" (click)="goToCurrentWeek()">
-          <i class="bi bi-house me-1"></i>Aktuális hét
+          <i class="bi bi-house me-1"></i>{{ 'BOOKING.CURRENT_WEEK' | translate }}
         </button>
         <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="goToNextWeek()">
-          Következő hét <i class="bi bi-chevron-right"></i>
+          {{ 'BOOKING.NEXT_WEEK' | translate }} <i class="bi bi-chevron-right"></i>
         </button>
       </div>
 
       @if (isLoading) {
         <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0">
           <div class="spinner-border text-primary mb-3" role="status"></div>
-          <p class="text-muted mb-0">Időpontok betöltése...</p>
+          <p class="text-muted mb-0">{{ 'BOOKING.LOADING' | translate }}</p>
         </div>
       } @else if (!selectedStaffId || !selectedConsultationId) {
         <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
           <i class="bi bi-calendar-x display-4 text-muted d-block mb-3"></i>
-          <h5 class="text-muted">Szűrők kitöltése szükséges</h5>
+          <h5 class="text-muted">{{ 'BOOKING.FILTERS_REQUIRED' | translate }}</h5>
           <p class="text-muted small">
             @if (isDoctorBooking) {
-              Válassz pácienst és vizsgálatot.
+              {{ 'BOOKING.DOCTOR_FILTER_HINT' | translate }}
             } @else {
-              Válassz szakterületet, orvost és vizsgálatot.
+              {{ 'BOOKING.PATIENT_FILTER_HINT' | translate }}
             }
           </p>
         </div>
@@ -146,14 +146,14 @@
                 <div class="weekday-name">{{ getWeekdayLabel(date) }}</div>
                 <div class="day-date">{{ getDayMonthLabel(date) }}</div>
                 <span class="slot-badge" [class.slot-badge-empty]="getSlotsForDate(date).length === 0">
-                  {{ getSlotsForDate(date).length }} időpont
+                  {{ 'BOOKING.SLOT_COUNT' | translate:{count: getSlotsForDate(date).length} }}
                 </span>
               </div>
 
               <div class="day-column-slots">
                 @if (canScrollDayEarlier(date)) {
                   <button type="button" class="day-scroll-btn" (click)="scrollDayEarlier(date)">
-                    <i class="bi bi-chevron-up"></i> Korábban
+                    <i class="bi bi-chevron-up"></i> {{ 'BOOKING.EARLIER' | translate }}
                   </button>
                 }
 
@@ -170,13 +170,13 @@
                 @if (getSlotsForDate(date).length === 0) {
                   <div class="no-day-slots">
                     <i class="bi bi-calendar-x d-block mb-1"></i>
-                    Nincs rendelés
+                    {{ 'BOOKING.NO_SLOTS_FOR_DAY' | translate }}
                   </div>
                 }
 
                 @if (canScrollDayLater(date)) {
                   <button type="button" class="day-scroll-btn" (click)="scrollDayLater(date)">
-                    <i class="bi bi-chevron-down"></i> Később
+                    <i class="bi bi-chevron-down"></i> {{ 'BOOKING.LATER' | translate }}
                   </button>
                 }
               </div>

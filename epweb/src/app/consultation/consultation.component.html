@@ -3,13 +3,13 @@
   <div class="d-flex justify-content-between align-items-center mb-4 px-2">
     <div>
       <h1 class="h3 mb-0 fw-bold text-dark">
-        <i class="bi bi-Stethoscope me-2 text-primary"></i>Szolgáltatások
+        <i class="bi bi-Stethoscope me-2 text-primary"></i>{{ 'CONSULTATION.TITLE' | translate }}
       </h1>
-      <p class="text-muted small mb-0">Vizsgálatok és szaktanácsadások árlistájának kezelése</p>
+      <p class="text-muted small mb-0">{{ 'CONSULTATION.SUBTITLE' | translate }}</p>
     </div>
     
     <button (click)="startShowModal()" class="btn btn-elit shadow-sm px-4"> 
-      <i class="bi bi-plus-circle me-2"></i>Új szolgáltatás
+      <i class="bi bi-plus-circle me-2"></i>{{ 'CONSULTATION.NEW' | translate }}
     </button>
   </div>
 
@@ -19,12 +19,12 @@
         <thead class="table-light">
           <tr>
             <th style="width: 80px;" class="ps-4">ID</th>
-            <th>Megnevezés</th>
-            <th>Leírás</th>
-            <th>Szakterület</th>
-            <th class="text-center">Időtartam</th>
-            <th>Ár</th>
-            <th class="text-center" style="width: 150px;">Műveletek</th>
+            <th>{{ 'CONSULTATION.NAME' | translate }}</th>
+            <th>{{ 'CONSULTATION.DESCRIPTION' | translate }}</th>
+            <th>{{ 'CONSULTATION.SPECIALTY' | translate }}</th>
+            <th class="text-center">{{ 'CONSULTATION.DURATION' | translate }}</th>
+            <th>{{ 'CONSULTATION.PRICE' | translate }}</th>
+            <th class="text-center" style="width: 150px;">{{ 'CONSULTATION.ACTIONS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -32,19 +32,19 @@
             <tr>
               <td data-column="ID" class="ps-4 text-muted small">#{{con.id}}</td>
               
-              <td data-column="Név">
-                <span class="fw-bold text-dark">{{con.name}}</span>
+              <td [attr.data-column]="'CONSULTATION.NAME' | translate">
+                <span class="fw-bold text-dark">{{ translateServiceName(con.name) }}</span>
               </td>
               
               <td data-column="Leírás">
                 <div class="text-muted small text-truncate" style="max-width: 250px;" [title]="con.description">
-                  {{con.description || '—'}}
+                  {{con.description || ('CONSULTATION.NO_DESCRIPTION' | translate)}}
                 </div>
               </td>
               
-              <td data-column="Szakág">
+              <td [attr.data-column]="'CONSULTATION.SPECIALTY' | translate">
                 <span class="badge bg-light text-secondary border px-3 rounded-pill small">
-                  {{con.specialty || 'Általános'}}
+                  {{ translateSpecialty(con.specialty) }}
                 </span>
               </td>
               
@@ -60,10 +60,10 @@
               
               <td data-column="Műveletek" class="text-center pe-3">
                 <div class="btn-group shadow-sm border rounded-3 overflow-hidden">
-                  <button class="btn btn-light btn-sm text-primary border-end" title="Szerkesztés" (click)="startEdit(con)">
+                  <button class="btn btn-light btn-sm text-primary border-end" [title]="'CONSULTATION.EDIT' | translate" (click)="startEdit(con)">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="btn btn-light btn-sm text-danger" title="Törlés" (click)="deleteConsultation(con.id)">
+                  <button class="btn btn-light btn-sm text-danger" [title]="'CONSULTATION.DELETE' | translate" (click)="deleteConsultation(con.id)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -73,7 +73,7 @@
             <tr>
               <td colspan="7" class="text-center py-5 text-muted">
                 <i class="bi bi-search display-4 d-block mb-3 opacity-25"></i>
-                Nincs rögzített szolgáltatás.
+                {{ 'CONSULTATION.EMPTY' | translate }}
               </td>
             </tr>
           }
@@ -92,7 +92,7 @@
         <div class="modal-header text-white" style="background: linear-gradient(135deg, #001f3f, #003366);">
           <h5 class="modal-title fw-bold">
             <i class="bi me-2" [ngClass]="addMode ? 'bi-plus-circle' : 'bi-pencil-square'"></i>
-            {{ addMode ? "Új szolgáltatás" : "Szolgáltatás módosítása" }}
+            {{ addMode ? ('CONSULTATION.NEW' | translate) : ('CONSULTATION.EDIT_TITLE' | translate) }}
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="cancel()"></button>
         </div>
@@ -103,42 +103,42 @@
               
               @if(!addMode) {
                 <div class="col-12">
-                  <label class="form-label small fw-bold text-muted">Rendszerazonosító (ID)</label>
+                  <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.SYSTEM_ID' | translate }}</label>
                   <input type="text" class="form-control bg-light" formControlName="id" readonly>
                 </div>
               }
 
               <div class="col-12">
-                <label class="form-label small fw-bold text-muted">Szolgáltatás neve *</label>
+                <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.NAME_REQUIRED' | translate }}</label>
                 <input type="text" class="form-control shadow-sm" formControlName="name"
                        [class.is-invalid]="consultationForm.get('name')?.invalid && consultationForm.get('name')?.touched">
               </div>
 
               <div class="col-md-6">
-                <label class="form-label small fw-bold text-muted">Szakterület</label>
-                <input type="text" class="form-control shadow-sm" formControlName="specialty" placeholder="pl. Bőrgyógyászat">
+                <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.SPECIALTY' | translate }}</label>
+                <input type="text" class="form-control shadow-sm" formControlName="specialty" [placeholder]="'CONSULTATION.SPECIALTY_PLACEHOLDER' | translate">
               </div>
 
               <div class="col-md-6">
-                <label class="form-label small fw-bold text-muted">Időtartam (perc) *</label>
+                <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.DURATION_REQUIRED' | translate }}</label>
                 <div class="input-group shadow-sm">
                   <input type="number" class="form-control" formControlName="duration">
-                  <span class="input-group-text small">min</span>
+                  <span class="input-group-text small">{{ 'CONSULTATION.MINUTES_SHORT' | translate }}</span>
                 </div>
               </div>
 
               <div class="col-12">
-                <label class="form-label small fw-bold text-muted">Ár (HUF) *</label>
+                <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.PRICE_REQUIRED' | translate }}</label>
                 <div class="input-group shadow-sm">
                   <input type="number" class="form-control" formControlName="price">
-                  <span class="input-group-text fw-bold">Ft</span>
+                  <span class="input-group-text fw-bold">{{ 'MY_BOOKINGS.CURRENCY' | translate }}</span>
                 </div>
               </div>
 
               <div class="col-12">
-                <label class="form-label small fw-bold text-muted">Leírás</label>
+                <label class="form-label small fw-bold text-muted">{{ 'CONSULTATION.DESCRIPTION' | translate }}</label>
                 <textarea class="form-control shadow-sm" formControlName="description" rows="4" 
-                          placeholder="A szolgáltatás részletes leírása a páciensek számára..."></textarea>
+                          [placeholder]="'CONSULTATION.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
               </div>
 
             </div>
@@ -146,9 +146,9 @@
         </div>
 
         <div class="modal-footer bg-light p-3">
-          <button type="button" class="btn btn-link text-muted text-decoration-none px-4" (click)="cancel()">Mégse</button>
+          <button type="button" class="btn btn-link text-muted text-decoration-none px-4" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
           <button type="submit" class="btn btn-elit px-5 shadow-sm" form="consultationForm" [disabled]="consultationForm.invalid">
-            {{ addMode ? 'Szolgáltatás mentése' : 'Módosítások mentése' }}
+            {{ addMode ? ('CONSULTATION.SAVE' | translate) : ('CONSULTATION.SAVE_CHANGES' | translate) }}
           </button>
         </div>
       </div>

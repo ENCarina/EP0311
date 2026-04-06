@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterModule, RouterLink} from '@angular/router
 import { AuthService } from '../shared/auth.service';
 import Swal from 'sweetalert2'
 import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, RouterLink], 
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, RouterLink, TranslateModule], 
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
@@ -17,6 +18,7 @@ export class LoginComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private translate = inject(TranslateService);
 
   isLoading = false;
   errorMessage = '';
@@ -30,7 +32,7 @@ export class LoginComponent {
   login() {
   if (this.loginForm.invalid) {
     this.loginForm.markAllAsTouched(); 
-    this.errorMessage = 'Kérjük, töltse ki megfelelően a mezőket!';
+    this.errorMessage = this.translate.instant('LOGIN.ERRORS.INVALID_FORM');
     return;
   }
   this.isLoading = true;
@@ -76,13 +78,13 @@ export class LoginComponent {
       this.isLoading = false;
       
       if (err.status === 401 && err.error?.message?.includes('verified')) {
-        this.errorMessage = 'Kérjük, igazolja vissza email címét a belépéshez!';
+        this.errorMessage = this.translate.instant('AUTH.VERIFY_EMAIL');
       } else if (err.status === 401) {
-        this.errorMessage = 'Hibás email vagy jelszó!';
+        this.errorMessage = this.translate.instant('AUTH.INVALID_CREDENTIALS');
       } else {
-        this.errorMessage = err.error?.message || 'Sikertelen bejelentkezés!';
+        this.errorMessage = err.error?.message || this.translate.instant('LOGIN.ERRORS.DEFAULT');
       }
-      Swal.fire('Hiba!', this.errorMessage, 'error');
+      Swal.fire(this.translate.instant('COMMON.ERROR'), this.errorMessage, 'error');
     }
   }); 
 }

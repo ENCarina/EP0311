@@ -8,10 +8,11 @@ import { BookingService } from '../shared/booking.service';
 import { ConsultationService } from '../shared/consultation.service';
 import { Router } from '@angular/router';
 import { AdminService } from '../shared/admin.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-staff',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, TranslateModule],
   templateUrl: './staff.component.html',
   styleUrl: './staff.component.css',
 })
@@ -23,6 +24,7 @@ import { AdminService } from '../shared/admin.service';
     public readonly auth = inject(AuthService);
     private readonly bookingApi = inject(BookingService);
     private readonly adminService = inject(AdminService);
+    private readonly translate = inject(TranslateService);
 
     protected staffs: any[] = [];
     protected eligibleUsers: any[] = [];
@@ -83,7 +85,7 @@ import { AdminService } from '../shared/admin.service';
           });
         },
         error: (err) => {
-          console.error('Nem sikerult a kinevezheto felhasznalok betoltese:', err);
+          console.error(this.translate.instant('ADMIN_STAFF.ELIGIBLE_USERS_LOAD_ERROR_LOG'), err);
           this.eligibleUsers = [];
         }
       });
@@ -104,18 +106,18 @@ import { AdminService } from '../shared/admin.service';
               ...s,
               id: s.id,
               userId: s.userId || profile.id,
-              name: profile.name || s.name || 'Névtelen',
-              email: profile.email || s.email || 'Nincs email',
+              name: profile.name || s.name || this.translate.instant('STAFF.ANONYMOUS'),
+              email: profile.email || s.email || this.translate.instant('ADMIN_STAFF.NO_EMAIL'),
               role: profile.roleId?.toString() || s.roleId?.toString() || s.role?.toString() || '1',
               isActive: s.isActive ?? true,
               isAvailable: s.isAvailable ?? true
             };  
         }),
-        console.log('Leképezett staff lista:', this.staffs);
+        console.log(this.translate.instant('ADMIN_STAFF.STAFF_LIST_LOG'), this.staffs);
       },
         error: (err) => {
-        console.error("HTTP Hiba:", err); 
-        Swal.fire('Hiba', 'Nem sikerült betölteni a listát!', 'error');
+        console.error(this.translate.instant('ADMIN_STAFF.LOAD_ERROR_LOG'), err); 
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.LOAD_ERROR'), 'error');
       }
     });
   }
@@ -145,7 +147,7 @@ import { AdminService } from '../shared/admin.service';
               ? currentTreatments.map((t: any) => t.id) 
               : [];
             },
-          error:(err:any) => console.warn("Kezelések betöltése sikertelen.", err)
+            error:(err:any) => console.warn(this.translate.instant('ADMIN_STAFF.TREATMENTS_LOAD_ERROR_LOG'), err)
           });
         }
 
@@ -154,22 +156,22 @@ import { AdminService } from '../shared/admin.service';
       const specialty = String(this.staffForm.get('specialty')?.value || '').trim();
 
       if (!selectedUserId) {
-        Swal.fire('Hiba', 'Válassz egy regisztrált felhasználót!', 'error');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.SELECT_USER_REQUIRED'), 'error');
         return;
       }
 
       if (!specialty) {
-        Swal.fire('Hiba', 'A szakterület megadása kötelező.', 'error');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.SPECIALTY_REQUIRED'), 'error');
         return;
       }
 
       this.api.promoteUser(selectedUserId, { specialty, treatmentIds: this.selectedTreatments }).subscribe({
         next: () => {
-          this.completeAction('Szakember sikeresen létrehozva!');
+          this.completeAction(this.translate.instant('ADMIN_STAFF.ADD_SUCCESS'));
         },
         error: (err: any) => {
-          console.error('Kinevezési hiba:', err);
-          Swal.fire('Hiba', err.error?.message || 'Sikertelen kinevezés', 'error');
+          console.error(this.translate.instant('ADMIN_STAFF.PROMOTION_ERROR_LOG'), err);
+          Swal.fire(this.translate.instant('COMMON.ERROR'), err.error?.message || this.translate.instant('ADMIN_STAFF.PROMOTION_FAILED'), 'error');
         }
       });
     }
@@ -193,7 +195,7 @@ import { AdminService } from '../shared/admin.service';
 
     save() {
       if (this.staffForm.invalid) {
-        alert('Tölts ki minden kötelező mezőt!');
+        alert(this.translate.instant('ADMIN_STAFF.FILL_REQUIRED_FIELDS'));
         return;
       }
       this.addMode ? this.addStaff() : this.updateStaff();
@@ -202,7 +204,7 @@ import { AdminService } from '../shared/admin.service';
     updateStaff() {
       const staffId = this.selectedStaffId; // Ez a Staff tábla ID-ja (pl. 6)
       if (!staffId) {
-        Swal.fire('Hiba', 'Nem azonosítható a szakember!', 'error');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.MISSING_STAFF_ID'), 'error');
         return;
       }
       // 1. Megkeressük a valódi USER ID-t
@@ -210,7 +212,7 @@ import { AdminService } from '../shared/admin.service';
       const targetUserId = currentStaff?.userId; 
 
       if (!targetUserId) {
-        Swal.fire('Hiba', 'A felhasználói azonosító hiányzik!', 'error');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.MISSING_USER_ID'), 'error');
         return;
       }
 
@@ -235,18 +237,18 @@ import { AdminService } from '../shared/admin.service';
       // 4. Kezelések frissítése 
       this.api.assignTreatments(targetUserId, this.selectedTreatments).subscribe({
         next: () => {
-          this.completeAction('Sikeres mentés: Adatok és kezelések frissítve!');
+          this.completeAction(this.translate.instant('ADMIN_STAFF.UPDATE_SUCCESS'));
           this.getStaffs(); // Lista frissítése
         },
         error: (err) => {
-          console.error("Kezelések hiba:", err);
-          this.completeAction('Adatok frissítve, de a kezelések mentése sikertelen (404).');
+          console.error(this.translate.instant('ADMIN_STAFF.TREATMENTS_SAVE_ERROR_LOG'), err);
+          this.completeAction(this.translate.instant('ADMIN_STAFF.UPDATE_PARTIAL_SUCCESS'));
         }
       });
     },
     error: (err: any) => {
-      console.error("Frissítési hiba:", err);
-      Swal.fire('Hiba', err.error?.message || 'Sikertelen frissítés.', 'error');
+      console.error(this.translate.instant('ADMIN_STAFF.UPDATE_ERROR_LOG'), err);
+      Swal.fire(this.translate.instant('COMMON.ERROR'), err.error?.message || this.translate.instant('ADMIN_STAFF.UPDATE_FAILED'), 'error');
     }
   });
 }
@@ -272,22 +274,22 @@ import { AdminService } from '../shared/admin.service';
       const targetUserId = staff?.userId || id;
 
       Swal.fire({
-        title: 'Biztosan inaktiválod?',
-        text: "Az orvos nem fog megjelenni a pácienseknek, de az adatai megmaradnak az archívumban.",
+        title: this.translate.instant('ADMIN_STAFF.ARCHIVE_CONFIRM_TITLE'),
+        text: this.translate.instant('ADMIN_STAFF.ARCHIVE_CONFIRM_TEXT'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Igen, inaktiváld!',
-        cancelButtonText: 'Mégse'
+        confirmButtonText: this.translate.instant('ADMIN_STAFF.ARCHIVE_CONFIRM_BTN'),
+        cancelButtonText: this.translate.instant('COMMON.CANCEL')
       }).then((result) => {
         if (result.isConfirmed) {
           this.api.archiveUser(targetUserId).subscribe({
             next: () => {
               this.getStaffs();
-              Swal.fire('Inaktiválva!','A szakember eltávolítva.', 'success');
+              Swal.fire(this.translate.instant('ADMIN_STAFF.ARCHIVED_TITLE'), this.translate.instant('ADMIN_STAFF.ARCHIVED_TEXT'), 'success');
             },
-            error: (err) => Swal.fire('Hiba', err.error?.message || 'Sikertelen művelet.', 'error')  
+            error: (err) => Swal.fire(this.translate.instant('COMMON.ERROR'), err.error?.message || this.translate.instant('ADMIN_STAFF.ACTION_FAILED'), 'error')  
           });
         } 
       });
@@ -304,7 +306,7 @@ import { AdminService } from '../shared/admin.service';
 
           Swal.fire({
             icon: 'success',
-            title: 'Sikeres visszaállítás',
+            title: this.translate.instant('ADMIN_STAFF.RESTORE_SUCCESS'),
             toast: true,
             position: 'top-end',
             timer: 2000,
@@ -312,9 +314,50 @@ import { AdminService } from '../shared/admin.service';
           });
         },
         error: (err) => {
-          console.error("Hiba:", err);
-          Swal.fire('Hiba', 'A szerver elutasította a kérést. Ellenőrizd a jogosultságokat!', 'error');
+          console.error(this.translate.instant('ADMIN_STAFF.RESTORE_ERROR_LOG'), err);
+          Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('ADMIN_STAFF.RESTORE_FAILED'), 'error');
         }
       });
+    }
+
+    protected translateSpecialty(specialty: string | null | undefined): string {
+      if (!specialty) {
+        return '—';
+      }
+
+      const key = this.toTranslationKey(specialty);
+      const translated = this.translate.instant(`SPECIALTY_NAMES.${key}`);
+      return translated !== `SPECIALTY_NAMES.${key}` ? translated : specialty;
+    }
+
+    protected translateServiceName(serviceName: string | null | undefined): string {
+      if (!serviceName) {
+        return this.translate.instant('CONSULTATION.GENERAL');
+      }
+
+      const key = this.toTranslationKey(serviceName);
+      const translated = this.translate.instant(`SERVICE_NAMES.${key}`);
+      return translated !== `SERVICE_NAMES.${key}` ? translated : serviceName;
+    }
+
+    protected getRoleLabel(role: string | number | null | undefined): string {
+      switch (Number(role)) {
+        case 2:
+          return this.translate.instant('PROFILE.ADMIN');
+        case 3:
+          return this.translate.instant('ADMIN_STAFF.ASSISTANT');
+        case 1:
+        default:
+          return this.translate.instant('PROFILE.DOCTOR');
+      }
+    }
+
+    private toTranslationKey(value: string): string {
+      return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .toUpperCase();
     }
   }

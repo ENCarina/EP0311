@@ -2,11 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from '../shared/auth.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './verify-email.component.html',
   styleUrl: './verify-email.component.css',
 })

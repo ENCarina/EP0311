@@ -1,9 +1,10 @@
 import { Component, inject, OnInit,  } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-nopage',
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
   templateUrl: './nopage.component.html',
   styleUrl: './nopage.component.css',
 })

@@ -2,7 +2,7 @@
   @if (selectedStaff) {
     <div class="animate-fade-in">
       <button class="btn btn-link text-decoration-none mb-4 p-0 text-elit" (click)="backToList()">
-        <i class="bi bi-arrow-left me-2"></i>Vissza a szakembereinkhez
+        <i class="bi bi-arrow-left me-2"></i>{{ 'STAFF.BACK' | translate }}
       </button>
 
       <div class="row g-5">
@@ -15,35 +15,35 @@
         
         <div class="col-md-8">
           <h2 class="fw-bold mb-1 text-white text-shadow-dark">{{ selectedStaff.name }}</h2>
-          <p class="text-primary fs-5 mb-4">{{ selectedStaff.specialty }}</p>
+          <p class="text-primary fs-5 mb-4">{{ translateSpecialty(selectedStaff.specialty) }}</p>
           
           <div class="bio-section mb-5 p-4 rounded-4 bg-white-10 shadow-sm">
-            <h5 class="fw-bold border-bottom border-white-50 pb-2 text-white">Bemutatkozás</h5>
+            <h5 class="fw-bold border-bottom border-white-50 pb-2 text-white">{{ 'STAFF.INTRODUCTION' | translate }}</h5>
             <p class="lead mt-3 bio-text-full text-medical-blue">
-              {{ selectedStaff.bio || 'Tapasztalt szakemberünk várja jelentkezését az Elit Klinika modern környezetében.' }}
+              {{ translateBio(selectedStaff.bio, 'STAFF.DEFAULT_BIO_LONG') }}
             </p>
           </div>
 
           <div class="services-section p-4 bg-light rounded-4 shadow-sm">
-            <h5 class="fw-bold mb-4">Elérhető szolgáltatások</h5>
+            <h5 class="fw-bold mb-4">{{ 'STAFF.AVAILABLE_SERVICES' | translate }}</h5>
             <div class="list-group list-group-flush bg-transparent"> 
               @for (treatment of selectedStaff.treatments; track treatment.id) {
                 <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom px-0">
                   <div>
-                    <span class="fw-bold d-block text-dark">{{ treatment.name }}</span>
-                    <small class="text-muted">Szakorvosi ellátás</small>
+                    <span class="fw-bold d-block text-dark">{{ translateServiceName(treatment.name) }}</span>
+                    <small class="text-muted">{{ 'STAFF.SPECIALIST_CARE' | translate }}</small>
                   </div>
                   <div class="text-end">
                     <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">
-                        {{ treatment.duration || '30' }} perc
+                        {{ treatment.duration || '30' }} {{ 'CONSULTATION.MINUTES' | translate }}
                     </span>
                     <span class="d-block fw-bold text-elit mb-2">
-                      {{ treatment.price | number:'1.0-0' }} Ft
+                      {{ treatment.price | number:'1.0-0' }} {{ 'MY_BOOKINGS.CURRENCY' | translate }}
                     </span>
                   </div>
                 </div>
               } @empty {
-                <p class="text-muted italic">Nincsenek rögzített szolgáltatások.</p>
+                <p class="text-muted italic">{{ 'STAFF.NO_SERVICES' | translate }}</p>
               }
             </div>
 
@@ -51,7 +51,7 @@
               <button class="btn btn-elit btn-sm rounded-pill px-4" 
                       [routerLink]="auth.isAuthenticated() ? ['/booking'] : ['/login']" 
                       [queryParams]="{ staffId: selectedStaff.id, returnUrl: '/booking' }">
-                {{ auth.isAuthenticated() ? 'Foglalás' : 'Bejelentkezés a foglaláshoz' }}
+                {{ auth.isAuthenticated() ? ('STAFF.BOOK' | translate) : ('STAFF.LOGIN_TO_BOOK' | translate) }}
               </button>
             </div>
           </div>
@@ -60,7 +60,7 @@
     </div>
   
   } @else {
-    <h2 class="text-center mb-5 fw-bold section-title text-white">Szakembereink</h2>
+    <h2 class="text-center mb-5 fw-bold section-title text-white">{{ 'STAFF.TITLE' | translate }}</h2>
     <div class="row row-cols-1 row-cols-md-3 g-4">
       @for (staff of staffs; track staff.id) {
         <div class="col">
@@ -74,19 +74,19 @@
 
             <div class="card-body text-center p-4">
               <h5 class="card-title fw-bold mb-1">{{ staff.name }}</h5>
-              <p class="specialty-text small mb-3 text-primary">{{ staff.specialty }}</p>
+              <p class="specialty-text small mb-3 text-primary">{{ translateSpecialty(staff.specialty) }}</p>
               <p class="card-text text-muted small mb-4 bio-text">
-                {{ staff.bio || 'Tapasztalt szakemberünk várja jelentkezését.' }}
+                {{ translateBio(staff.bio, 'STAFF.DEFAULT_BIO_SHORT') }}
               </p>
 
               <button class="btn btn-outline-elit rounded-pill px-4 w-100 mb-2" (click)="selectStaff(staff)">
-                Profil megtekintése
+                {{ 'STAFF.VIEW_PROFILE' | translate }}
               </button>
               
               <button class="btn btn-elit btn-sm rounded-pill px-4" 
                       [routerLink]="auth.isAuthenticated() ? ['/booking'] : ['/login']" 
                       [queryParams]="{ staffId: staff.id, returnUrl: '/booking' }">
-                {{ auth.isAuthenticated() ? 'Időpontfoglalás' : 'Bejelentkezés a foglaláshoz' }}
+                {{ auth.isAuthenticated() ? ('STAFF.BOOK_APPOINTMENT' | translate) : ('STAFF.LOGIN_TO_BOOK' | translate) }}
               </button>
             </div>
           </div>

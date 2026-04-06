@@ -2,15 +2,15 @@
   <div class="container-fluid calendar-shell">
     <div class="calendar-header-card mb-4">
       <div>
-        <p class="calendar-kicker mb-2">Orvosi rendelési naptár</p>
-        <h1 class="calendar-title mb-1">Naptáram</h1>
-        <p class="calendar-subtitle mb-0">Heti áttekintés arról, hogy melyik idősávban melyik páciens van beírva.</p>
+        <p class="calendar-kicker mb-2">{{ 'DOCTOR_CALENDAR.KICKER' | translate }}</p>
+        <h1 class="calendar-title mb-1">{{ 'DOCTOR_CALENDAR.TITLE' | translate }}</h1>
+        <p class="calendar-subtitle mb-0">{{ 'DOCTOR_CALENDAR.SUBTITLE' | translate }}</p>
       </div>
 
       <div class="calendar-toolbar">
-        <button type="button" class="toolbar-btn" (click)="goToPreviousWeek()">Előző hét</button>
-        <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="goToCurrentWeek()">Aktuális hét</button>
-        <button type="button" class="toolbar-btn" (click)="goToNextWeek()">Következő hét</button>
+        <button type="button" class="toolbar-btn" (click)="goToPreviousWeek()">{{ 'BOOKING.PREV_WEEK' | translate }}</button>
+        <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="goToCurrentWeek()">{{ 'BOOKING.CURRENT_WEEK' | translate }}</button>
+        <button type="button" class="toolbar-btn" (click)="goToNextWeek()">{{ 'BOOKING.NEXT_WEEK' | translate }}</button>
       </div>
     </div>
 
@@ -21,10 +21,10 @@
       </div>
 
       <div class="calendar-legend">
-        <span class="legend-item"><i class="legend-dot legend-booked"></i> Foglalt</span>
-        <span class="legend-item"><i class="legend-dot legend-upcoming"></i> Közelgő</span>
-        <span class="legend-item"><i class="legend-dot legend-past"></i> Múltbeli</span>
-        <button type="button" class="toolbar-btn toolbar-btn-ghost" (click)="refreshCalendar()">Frissítés</button>
+        <span class="legend-item"><i class="legend-dot legend-booked"></i> {{ 'DOCTOR_CALENDAR.BOOKED' | translate }}</span>
+        <span class="legend-item"><i class="legend-dot legend-upcoming"></i> {{ 'DOCTOR_CALENDAR.UPCOMING' | translate }}</span>
+        <span class="legend-item"><i class="legend-dot legend-past"></i> {{ 'DOCTOR_CALENDAR.PAST' | translate }}</span>
+        <button type="button" class="toolbar-btn toolbar-btn-ghost" (click)="refreshCalendar()">{{ 'DASHBOARD.REFRESH' | translate }}</button>
       </div>
     </div>
 
@@ -35,7 +35,7 @@
     @if (loading) {
       <div class="calendar-state-card">
         <span class="spinner-border text-primary" role="status"></span>
-        <p class="mb-0 mt-3">A rendelési naptár betöltése folyamatban van...</p>
+        <p class="mb-0 mt-3">{{ 'DOCTOR_CALENDAR.LOADING' | translate }}</p>
       </div>
     } @else {
       <div class="calendar-board-wrapper">
@@ -85,7 +85,7 @@
       @if (!hasAnyBookingThisWeek) {
         <div class="calendar-state-card mt-3">
           <i class="bi bi-calendar-week display-6 opacity-50"></i>
-          <p class="mb-0 mt-2">Erre a hétre még nincs hozzád rögzített foglalás.</p>
+          <p class="mb-0 mt-2">{{ 'DOCTOR_CALENDAR.EMPTY' | translate }}</p>
         </div>
       }
     }
@@ -96,7 +96,7 @@
       <div class="calendar-modal" (click)="$event.stopPropagation()">
         <div class="calendar-modal-header">
           <div>
-            <p class="calendar-kicker mb-1">Foglalás részletei</p>
+            <p class="calendar-kicker mb-1">{{ 'DOCTOR_CALENDAR.DETAILS' | translate }}</p>
             <h2 class="mb-0">{{ selectedBooking.patientName }}</h2>
           </div>
           <button type="button" class="modal-close-btn" (click)="closeBookingDetails()">x</button>
@@ -104,23 +104,23 @@
 
         <div class="calendar-modal-body">
           <div class="detail-row">
-            <span>Páciens neve</span>
+            <span>{{ 'DOCTOR_CALENDAR.PATIENT_NAME' | translate }}</span>
             <strong>{{ selectedBooking.patientName }}</strong>
           </div>
           <div class="detail-row">
-            <span>Vizsgálat típusa</span>
+            <span>{{ 'DOCTOR_CALENDAR.CONSULTATION_TYPE' | translate }}</span>
             <strong>{{ selectedBooking.consultationName }}</strong>
           </div>
           <div class="detail-row">
-            <span>Dátum és idő</span>
+            <span>{{ 'DOCTOR_CALENDAR.DATE_TIME' | translate }}</span>
             <strong>{{ selectedBooking.date }} - {{ selectedBooking.timeLabel }}</strong>
           </div>
           <div class="detail-row">
-            <span>Orvos neve</span>
+            <span>{{ 'DOCTOR_CALENDAR.DOCTOR_NAME' | translate }}</span>
             <strong>{{ selectedBooking.doctorName }}</strong>
           </div>
           <div class="detail-row">
-            <span>Státusz</span>
+            <span>{{ 'DOCTOR_CALENDAR.STATUS' | translate }}</span>
             <strong>{{ selectedBooking.status }}</strong>
           </div>
         </div>

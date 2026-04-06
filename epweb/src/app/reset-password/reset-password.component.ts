@@ -2,10 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../shared/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslateModule],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.css',
 })
@@ -14,6 +15,7 @@ export class ResetPasswordComponent implements OnInit{
   private router = inject (Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private translate = inject(TranslateService);
 
   token: string = '';
   errorMessage: string = '';
@@ -34,7 +36,7 @@ export class ResetPasswordComponent implements OnInit{
     console.log('Kinyert token:', this.token);
     
     if (!this.token) {
-      this.errorMessage = 'Hiányzó vagy érvénytelen visszaállító kulcs!';
+      this.errorMessage = this.translate.instant('RESET_PASSWORD.ERRORS.INVALID_TOKEN');
       console.error('Hiba: Nem található token az URL-ben.');
     }
   }
@@ -48,13 +50,13 @@ export class ResetPasswordComponent implements OnInit{
       };
       this.authService.resetPassword(this.token, this.resetForm.value).subscribe({
         next: (response) => {
-          alert('Sikeres jelszó módosítás!');
+          alert(this.translate.instant('RESET_PASSWORD.SUCCESS'));
           this.router.navigate(['/login'], { queryParams: { resetSuccess: true } });
         },
         error: (err) => {
           this.isLoading = false;
           console.error('Szerver hiba:', err);
-          this.errorMessage = err.error.message || 'A jelszó visszaállítása sikertelen.';
+          this.errorMessage = err.error.message || this.translate.instant('RESET_PASSWORD.ERRORS.DEFAULT');
         }
       });
     }
