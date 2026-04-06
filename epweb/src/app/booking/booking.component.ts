@@ -9,11 +9,12 @@ import { Consultation } from '../shared/interfaces/consultation.interface';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.css'
 })
@@ -23,6 +24,7 @@ export class BookingComponent implements OnInit {
   private readonly staffApi = inject(StaffService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
   public readonly auth = inject(AuthService);
 
   protected staffs: any[] = [];
@@ -124,7 +126,7 @@ export class BookingComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Hiba az adatok betöltésekor:', err);
+        console.error(this.translate.instant('COMMON.LOAD_ERROR'), err);
         this.isLoading = false;
       }
     });
@@ -144,7 +146,7 @@ export class BookingComponent implements OnInit {
     }
 
     this.selectedStaffId = null;
-    this.errorMessage = 'A saját orvosprofil nem található, ezért itt nem tud páciensnek foglalni.';
+    this.errorMessage = this.translate.instant('BOOKING.OWN_PROFILE_NOT_FOUND');
   }
 
   private syncSelectionFromParams(params: any): void {
@@ -198,7 +200,7 @@ export class BookingComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Hiba a kezelések betöltésekor:', err);
+        console.error(this.translate.instant('BOOKING.TREATMENTS_LOAD_ERROR'), err);
         this.isLoading = false;
       }
     });
@@ -320,11 +322,11 @@ export class BookingComponent implements OnInit {
   }
 
   protected getWeekdayLabel(date: string): string {
-    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { weekday: 'short' });
+    return new Date(`${date}T00:00:00`).toLocaleDateString(this.getCurrentLocale(), { weekday: 'short' });
   }
 
   protected getDayMonthLabel(date: string): string {
-    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+    return new Date(`${date}T00:00:00`).toLocaleDateString(this.getCurrentLocale(), { month: '2-digit', day: '2-digit' });
   }
 
   protected isSlotSelected(slot: Slot): boolean {
@@ -337,6 +339,26 @@ export class BookingComponent implements OnInit {
 
   protected formatTimeOnly(time: string): string {
     return String(time || '').slice(0, 5);
+  }
+
+  protected translateSpecialty(specialty: string | null | undefined): string {
+    if (!specialty) {
+      return '';
+    }
+
+    const key = this.toTranslationKey(specialty);
+    const translated = this.translate.instant(`SPECIALTY_NAMES.${key}`);
+    return translated !== `SPECIALTY_NAMES.${key}` ? translated : specialty;
+  }
+
+  protected translateServiceName(serviceName: string | null | undefined): string {
+    if (!serviceName) {
+      return this.translate.instant('DOCTOR_CALENDAR.CONSULTATION_FALLBACK');
+    }
+
+    const key = this.toTranslationKey(serviceName);
+    const translated = this.translate.instant(`SERVICE_NAMES.${key}`);
+    return translated !== `SERVICE_NAMES.${key}` ? translated : serviceName;
   }
 
   loadSlots(): void {
@@ -353,8 +375,9 @@ export class BookingComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         const allData = res.data || res;
+        const now = new Date();
         this.availableSlots = allData
-          .filter((slot: Slot) => this.isSelectableDate(slot.date))
+          .filter((slot: Slot) => this.isSelectableSlot(slot, now))
           .sort((left: Slot, right: Slot) => {
             const dateCompare = (left.date || '').localeCompare(right.date || '');
             if (dateCompare !== 0) return dateCompare;
@@ -376,14 +399,14 @@ export class BookingComponent implements OnInit {
         this.isLoading = false;
         this.availableSlots = [];
         this.selectedSlot = null;
-        this.errorMessage = 'Hiba az időpontok lekérésekor.';
+        this.errorMessage = this.translate.instant('BOOKING.SLOTS_LOAD_ERROR');
       }
     });
   }
 
   protected onReserve(slot: Slot): void {
     if (this.isDoctorBooking && !this.selectedPatientId) {
-      Swal.fire('Hiányzó páciens', 'Előbb válasszon ki egy regisztrált pácienst.', 'warning');
+      Swal.fire(this.translate.instant('BOOKING.MISSING_PATIENT_TITLE'), this.translate.instant('BOOKING.MISSING_PATIENT_TEXT'), 'warning');
       return;
     }
 
@@ -391,13 +414,13 @@ export class BookingComponent implements OnInit {
     this.ensureSlotVisibleInDayPage(slot);
 
     Swal.fire({
-      title: 'Foglalás megerősítése',
-      text: `Időpont: ${slot.date} ${this.formatTimeOnly(slot.startTime)}`,
+      title: this.translate.instant('BOOKING.CONFIRM_TITLE'),
+      text: this.translate.instant('BOOKING.CONFIRM_TEXT', { date: slot.date, time: this.formatTimeOnly(slot.startTime) }),
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#003366',
-      confirmButtonText: 'Igen, lefoglalom',
-      cancelButtonText: 'Mégse'
+      confirmButtonText: this.translate.instant('BOOKING.CONFIRM_OK'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL')
     }).then((result) => {
       if (result.isConfirmed) {
         this.executeBooking(slot);
@@ -405,9 +428,18 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  private isSelectableDate(date: string): boolean {
-    const parsedDate = new Date(`${date}T00:00:00`);
-    return !isNaN(parsedDate.getTime());
+  private isSelectableSlot(slot: Slot, reference: Date): boolean {
+    const slotDateTime = new Date(`${slot.date}T${slot.startTime}`);
+    return !isNaN(slotDateTime.getTime()) && slotDateTime > reference;
+  }
+
+  private toTranslationKey(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
   }
 
   private getWeekStart(dateValue: Date | string): Date {
@@ -426,7 +458,11 @@ export class BookingComponent implements OnInit {
   }
 
   private formatDateLabelShort(date: string): string {
-    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' });
+    return new Date(`${date}T00:00:00`).toLocaleDateString(this.getCurrentLocale(), { month: '2-digit', day: '2-digit' });
+  }
+
+  private getCurrentLocale(): string {
+    return this.translate.currentLang === 'en' ? 'en-US' : 'hu-HU';
   }
 
   private ensureSelectedSlotVisible(): void {
@@ -452,7 +488,7 @@ export class BookingComponent implements OnInit {
     const userId = this.auth.getUserId();
 
     if (!userId) {
-      Swal.fire('Hiba', 'A foglaláshoz be kell jelentkezned!', 'warning');
+      Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('BOOKING.LOGIN_REQUIRED'), 'warning');
       this.router.navigate(['/login']);
       return;
     }
@@ -460,7 +496,7 @@ export class BookingComponent implements OnInit {
     const selectedTreatment = this.filteredConsultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
 
     if (!selectedTreatment) {
-      Swal.fire('Hiba', 'A kiválasztott vizsgálat nem érhető el!', 'error');
+      Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('BOOKING.TREATMENT_NOT_AVAILABLE'), 'error');
       return;
     }
 
@@ -478,24 +514,24 @@ export class BookingComponent implements OnInit {
     };
 
     if (this.isDoctorBooking && !bookingData.patientId) {
-      Swal.fire('Hiányzó páciens', 'Foglalás előtt válasszon ki egy pácienst.', 'warning');
+      Swal.fire(this.translate.instant('BOOKING.MISSING_PATIENT_TITLE'), this.translate.instant('BOOKING.SELECT_PATIENT_BEFORE_BOOKING'), 'warning');
       return;
     }
 
     this.bookingApi.createBooking(bookingData as any).subscribe({
       next: () => {
         Swal.fire(
-          'Sikeres foglalás!',
+          this.translate.instant('BOOKING.SUCCESS_TITLE'),
           this.isDoctorBooking
-            ? 'Az időpontot a kiválasztott pácienshez rögzítettük.'
-            : 'Az időpontot rögzítettük.',
+            ? this.translate.instant('BOOKING.SUCCESS_DOCTOR')
+            : this.translate.instant('BOOKING.SUCCESS_PATIENT'),
           'success'
         )
           .then(() => this.loadSlots());
       },
       error: (err) => {
-        const msg = err.error?.message || 'A foglalás nem sikerült.';
-        Swal.fire('Hiba', msg, 'error');
+        const msg = err.error?.message || this.translate.instant('BOOKING.ERROR_MSG');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), msg, 'error');
       }
     });
   }

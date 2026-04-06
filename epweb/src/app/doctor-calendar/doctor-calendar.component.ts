@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../shared/auth.service';
 import { BookingService } from '../shared/booking.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 type CalendarVariant = 'booked' | 'upcoming' | 'past';
 
@@ -32,7 +33,7 @@ interface CalendarDay {
 @Component({
   selector: 'app-doctor-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './doctor-calendar.component.html',
   styleUrl: './doctor-calendar.component.css'
 })
@@ -40,6 +41,7 @@ export class DoctorCalendarComponent implements OnInit {
   private readonly bookingApi = inject(BookingService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   private readonly startHour = 8;
   private readonly endHour = 18;
@@ -132,9 +134,9 @@ export class DoctorCalendarComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Az orvosi naptár betöltése sikertelen:', error);
+        console.error(this.translate.instant('DOCTOR_CALENDAR.LOAD_ERROR_LOG'), error);
         this.loading = false;
-        this.errorMessage = 'A naptár adatai jelenleg nem tölthetők be.';
+        this.errorMessage = this.translate.instant('DOCTOR_CALENDAR.LOAD_ERROR');
       }
     });
   }
@@ -163,8 +165,8 @@ export class DoctorCalendarComponent implements OnInit {
 
       return {
         key: dateKey,
-        weekdayLabel: date.toLocaleDateString('hu-HU', { weekday: 'long' }),
-        dateLabel: date.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }),
+        weekdayLabel: date.toLocaleDateString(this.translate.currentLang === 'en' ? 'en-US' : 'hu-HU', { weekday: 'long' }),
+        dateLabel: date.toLocaleDateString(this.translate.currentLang === 'en' ? 'en-US' : 'hu-HU', { month: '2-digit', day: '2-digit' }),
         isToday: dateKey === this.toDateKey(new Date())
       };
     });
@@ -203,8 +205,8 @@ export class DoctorCalendarComponent implements OnInit {
 
     return {
       id: Number(booking?.id || 0),
-      patientName: booking?.patient?.name || booking?.patient?.email || 'Páciens',
-      consultationName: booking?.treatment?.name || booking?.type?.name || booking?.name || 'Konzultáció',
+      patientName: booking?.patient?.name || booking?.patient?.email || this.translate.instant('DOCTOR_CALENDAR.PATIENT_FALLBACK'),
+      consultationName: booking?.treatment?.name || booking?.type?.name || booking?.name || this.translate.instant('DOCTOR_CALENDAR.CONSULTATION_FALLBACK'),
       doctorName: booking?.doctor?.user?.name || booking?.doctor?.name || booking?.staff?.name || this.authService.getUserName(),
       status: booking?.status || 'Confirmed',
       date,
@@ -268,7 +270,7 @@ export class DoctorCalendarComponent implements OnInit {
   }
 
   private formatShortDate(date: string): string {
-    return new Date(`${date}T00:00:00`).toLocaleDateString('hu-HU', {
+    return new Date(`${date}T00:00:00`).toLocaleDateString(this.translate.currentLang === 'en' ? 'en-US' : 'hu-HU', {
       month: '2-digit',
       day: '2-digit'
     });

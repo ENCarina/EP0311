@@ -7,8 +7,8 @@
           @if(loading) {
             <div class="py-4">
               <div class="spinner-elite mb-4"></div>
-              <h2 class="fw-light letter-spacing-1">Fiók aktiválása</h2>
-              <p class="text-muted">Kérjük, várjon, amíg hitelesítjük adatait...</p>
+              <h2 class="fw-light letter-spacing-1">{{ 'VERIFY_EMAIL.LOADING_TITLE' | translate }}</h2>
+              <p class="text-muted">{{ 'VERIFY_EMAIL.LOADING_TEXT' | translate }}</p>
             </div>
           }
 
@@ -17,10 +17,10 @@
               <div class="icon-box success-icon-box mb-4">
                 <i class="bi bi-check2-circle"></i>
               </div>
-              <h2 class="fw-bold mb-3 text-dark">Sikeres visszaigazolás!</h2>
-              <p class="text-muted mb-4 px-md-4">Köszönjük bizalmát! Fiókja mostantól aktív, és minden szolgáltatásunk elérhető az Ön számára.</p>
+              <h2 class="fw-bold mb-3 text-dark">{{ 'VERIFY_EMAIL.SUCCESS_TITLE' | translate }}</h2>
+              <p class="text-muted mb-4 px-md-4">{{ 'VERIFY_EMAIL.SUCCESS_TEXT' | translate }}</p>
               <button class="btn btn-primary-elite w-100 py-3 rounded-pill shadow-sm" routerLink="/login">
-                TOVÁBB A BELÉPÉSHEZ
+                {{ 'VERIFY_EMAIL.GO_LOGIN' | translate }}
               </button>
             </div>
           }
@@ -30,12 +30,12 @@
               <div class="icon-box error-icon-box mb-4">
                 <i class="bi bi-exclamation-triangle"></i>
               </div>
-              <h2 class="fw-bold mb-3 text-dark">Sikertelen aktiválás</h2>
-              <p class="text-muted mb-4 px-md-4">A megerősítő link sajnos érvénytelen vagy már lejárt. Kérjük, próbálja meg újra a regisztrációt.</p>
+              <h2 class="fw-bold mb-3 text-dark">{{ 'VERIFY_EMAIL.ERROR_TITLE' | translate }}</h2>
+              <p class="text-muted mb-4 px-md-4">{{ 'VERIFY_EMAIL.ERROR_TEXT' | translate }}</p>
               <button class="btn btn-outline-secondary-elite w-100 py-3 rounded-pill mb-2" routerLink="/register">
-                ÚJ REGISZTRÁCIÓ INDÍTÁSA
+                {{ 'VERIFY_EMAIL.RETRY_REGISTER' | translate }}
               </button>
-              <a routerLink="/login" class="btn btn-link text-decoration-none mt-2 small">Vissza a főoldalra</a>
+              <a routerLink="/login" class="btn btn-link text-decoration-none mt-2 small">{{ 'VERIFY_EMAIL.BACK_HOME' | translate }}</a>
             </div>
           }
 

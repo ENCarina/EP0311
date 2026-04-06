@@ -7,8 +7,8 @@
           <div class="icon-circle mb-3">
             <i class="bi bi-person-plus text-primary display-5"></i>
           </div>
-          <h2 class="fw-bold h3">Fiók létrehozása</h2>
-          <p class="text-muted small">Csatlakozzon az Elit Medical Centre közösségéhez.</p>
+          <h2 class="fw-bold h3">{{ 'REGISTER.TITLE' | translate }}</h2>
+          <p class="text-muted small">{{ 'REGISTER.SUBTITLE' | translate }}</p>
         </div>
 
         @if (errorMessage) {
@@ -19,54 +19,54 @@
 
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
           <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary">Teljes név</label>
+                 <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.NAME' | translate }}</label>
             <input type="text" formControlName="name" class="form-control elite-input" 
-                   placeholder="Minta Ádám/Éva"
+                   [placeholder]="'REGISTER.FIELDS.NAME_PLACEHOLDER' | translate"
                    [class.is-invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
-            <div class="invalid-feedback">Név megadása kötelező!</div>
+                 <div class="invalid-feedback">{{ 'REGISTER.ERRORS.REQUIRED' | translate }}</div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary">Email cím</label>
+                 <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.EMAIL' | translate }}</label>
             <input type="email" formControlName="email" class="form-control elite-input"
-                   placeholder="pelda@email.hu"
+                   [placeholder]="'REGISTER.FIELDS.EMAIL_PLACEHOLDER' | translate"
                    [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-            <div class="invalid-feedback">Érvényes email cím szükséges!</div>
+                 <div class="invalid-feedback">{{ 'REGISTER.ERRORS.EMAIL_INVALID' | translate }}</div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary">Jelszó</label>
+                 <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.PASSWORD' | translate }}</label>
             <input type="password" formControlName="password" class="form-control elite-input"
-                   placeholder="••••••••"
+                   [placeholder]="'REGISTER.FIELDS.PASS_PLACEHOLDER' | translate"
                    [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-            <div class="invalid-feedback">Legalább 6 karakter hosszú jelszó kell!</div>
+                 <div class="invalid-feedback">{{ 'REGISTER.ERRORS.MIN_LENGTH' | translate:{length: 6} }}</div>
           </div>
 
           <div class="mb-4">
-            <label class="form-label small fw-semibold text-secondary">Jelszó megerősítése</label>
+            <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.CONFIRM_PASSWORD' | translate }}</label>
             <input type="password" formControlName="confirmPassword" class="form-control elite-input"
-                   placeholder="••••••••"
+                   [placeholder]="'REGISTER.FIELDS.PASS_PLACEHOLDER' | translate"
                    [class.is-invalid]="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched">
             <div class="invalid-feedback">
-              <span *ngIf="registerForm.get('confirmPassword')?.hasError('required')">A megerősítés kötelező!</span>
-              <span *ngIf="registerForm.hasError('mismatch') && !registerForm.get('confirmPassword')?.hasError('required')">A jelszavak nem egyeznek!</span>
+              <span *ngIf="registerForm.get('confirmPassword')?.hasError('required')">{{ 'REGISTER.ERRORS.REQUIRED' | translate }}</span>
+              <span *ngIf="registerForm.hasError('mismatch') && !registerForm.get('confirmPassword')?.hasError('required')">{{ 'REGISTER.ERRORS.MISMATCH' | translate }}</span>
             </div>
           </div>
 
           <button type="submit" [disabled]="!registerForm.valid || isLoading" class="btn btn-elite-submit w-100 py-3 shadow-sm">
             @if (isLoading) {
               <span class="spinner-border spinner-border-sm me-2"></span>
-              Feldolgozás...
+              {{ 'REGISTER.BUTTON.LOADING' | translate }}
             } @else {
-              <span class="fw-bold letter-spacing-1">REGISZTRÁLOK</span>
+              <span class="fw-bold letter-spacing-1">{{ 'REGISTER.BUTTON.SUBMIT' | translate }}</span>
             }
           </button>
         </form>
 
         <div class="text-center mt-5">
-          <p class="mb-0 small text-secondary">Már van fiókja?</p>
+          <p class="mb-0 small text-secondary">{{ 'REGISTER.ALREADY_HAVE_ACCOUNT' | translate }}</p>
           <a routerLink="/login" class="login-link fw-bold text-decoration-none">
-            Bejelentkezés <i class="bi bi-arrow-right ms-1"></i>
+            {{ 'REGISTER.LOGIN_LINK' | translate }} <i class="bi bi-arrow-right ms-1"></i>
           </a>
         </div>
         

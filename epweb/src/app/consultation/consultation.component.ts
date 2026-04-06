@@ -3,12 +3,13 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ConsultationService } from '../shared/consultation.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import Swal from 'sweetalert2'; 
 
 @Component({
   selector: 'app-consultation',
   standalone: true, 
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, TranslateModule],
   templateUrl: './consultation.component.html',
   styleUrl: './consultation.component.css',
 })
@@ -16,6 +17,7 @@ export class ConsultationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private consultationService = inject(ConsultationService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   allConsultations: any[] = [];     
   filteredConsultations: any[] = [];
@@ -45,7 +47,7 @@ export class ConsultationComponent implements OnInit {
         this.allConsultations = data;
         this.applyFilter();
       },
-      error: (err: any) => console.error('Hiba a betöltéskor:', err)
+      error: (err: any) => console.error(this.translate.instant('CONSULTATION.LOAD_ERROR'), err)
     });
   }
 
@@ -98,7 +100,7 @@ export class ConsultationComponent implements OnInit {
       // --- ÚJ FELVÉTEL ---
       const { id, ...payload } = data; // Újnál nem küldünk ID-t (vagy null-t)
       this.consultationService.createConsultation(payload as any).subscribe({
-        next: () => this.handleSuccess('Szolgáltatás sikeresen hozzáadva!'),
+        next: () => this.handleSuccess(this.translate.instant('CONSULTATION.ADD_SUCCESS')),
         error: (err: any) => this.handleError(err)
       });
     } else {
@@ -106,31 +108,31 @@ export class ConsultationComponent implements OnInit {
       if (data.id) {
         const { id, ...payload } = data;
         this.consultationService.updateConsultation(id, payload as any).subscribe({
-          next: () => this.handleSuccess('Sikeres módosítás!'),
+          next: () => this.handleSuccess(this.translate.instant('CONSULTATION.UPDATE_SUCCESS')),
           error: (err: any) => this.handleError(err)
         });
       } else {
-        Swal.fire('Hiba!', 'Hiányzó azonosító a módosításhoz.', 'error');
+        Swal.fire(this.translate.instant('COMMON.ERROR'), this.translate.instant('CONSULTATION.MISSING_ID'), 'error');
       }
     }
   }
 
   deleteConsultation(id: number) {
     Swal.fire({
-      title: 'Biztos törölni szeretnéd?',
-      text: "Ez a folyamat nem vonható vissza!",
+      title: this.translate.instant('CONSULTATION.DELETE_CONFIRM_TITLE'),
+      text: this.translate.instant('CONSULTATION.DELETE_CONFIRM_TEXT'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#003366',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Igen, töröld!',
-      cancelButtonText: 'Mégse'
+      confirmButtonText: this.translate.instant('CONSULTATION.DELETE_CONFIRM_BTN'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL')
     }).then((result) => {
       if (result.isConfirmed) {
         this.consultationService.deleteConsultation(id).subscribe({
           next: () => {
             this.getConsultations();
-            Swal.fire('Törölve!', 'A szolgáltatás eltávolítva.', 'success');
+            Swal.fire(this.translate.instant('CONSULTATION.DELETED_TITLE'), this.translate.instant('CONSULTATION.DELETED_TEXT'), 'success');
           },
           error: (err: any) => this.handleError(err)
         });
@@ -143,12 +145,41 @@ export class ConsultationComponent implements OnInit {
     this.getConsultations();
     this.consultationForm.reset();
     this.addMode = true;
-    Swal.fire({ title: 'Siker!', text: message, icon: 'success', timer: 2000, showConfirmButton: false });
+    Swal.fire({ title: this.translate.instant('CONSULTATION.SUCCESS_TITLE'), text: message, icon: 'success', timer: 2000, showConfirmButton: false });
   }
 
   private handleError(err: any) {
-    console.error('API hiba:', err);
-    Swal.fire('Hiba!', err.error?.message || 'A művelet nem sikerült.', 'error');
+    console.error(this.translate.instant('CONSULTATION.API_ERROR'), err);
+    Swal.fire(this.translate.instant('COMMON.ERROR'), err.error?.message || this.translate.instant('CONSULTATION.ACTION_FAILED'), 'error');
+  }
+
+  protected translateSpecialty(specialty: string | null | undefined): string {
+    if (!specialty) {
+      return this.translate.instant('CONSULTATION.GENERAL');
+    }
+
+    const key = this.toTranslationKey(specialty);
+    const translated = this.translate.instant(`SPECIALTY_NAMES.${key}`);
+    return translated !== `SPECIALTY_NAMES.${key}` ? translated : specialty;
+  }
+
+  protected translateServiceName(serviceName: string | null | undefined): string {
+    if (!serviceName) {
+      return this.translate.instant('CONSULTATION.GENERAL');
+    }
+
+    const key = this.toTranslationKey(serviceName);
+    const translated = this.translate.instant(`SERVICE_NAMES.${key}`);
+    return translated !== `SERVICE_NAMES.${key}` ? translated : serviceName;
+  }
+
+  private toTranslationKey(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
   }
 
   cancel() {
