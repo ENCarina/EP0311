@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import Swal from 'sweetalert2';
 import { AuthService } from '../shared/auth.service';
 import { BookingService } from '../shared/booking.service';
@@ -12,7 +13,7 @@ type StatusFilter = 'all' | Booking['status'];
 @Component({
   selector: 'app-booking-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './booking-management.component.html',
   styleUrl: './booking-management.component.css'
 })
@@ -20,6 +21,7 @@ export class BookingManagementComponent implements OnInit {
   private readonly bookingService = inject(BookingService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   protected loading = false;
   protected errorMessage = '';
@@ -42,13 +44,13 @@ export class BookingManagementComponent implements OnInit {
   }
 
   protected get pageTitle(): string {
-    return 'Időpontkezelő';
+    return this.translate.instant('BOOKING_MANAGEMENT.TITLE');
   }
 
   protected get pageSubtitle(): string {
     return this.isAdminView
-      ? 'Foglalások áttekintése, telefonos lemondások rögzítése és végleges törlése admin jogosultsággal.'
-      : 'Páciensek időpontjainak kezelése, telefonos lemondások rögzítése és státuszváltás a saját rendelésedhez.';
+      ? this.translate.instant('BOOKING_MANAGEMENT.SUBTITLE_ADMIN')
+      : this.translate.instant('BOOKING_MANAGEMENT.SUBTITLE_DOCTOR');
   }
 
   protected get filteredBookings(): any[] {
@@ -95,7 +97,7 @@ export class BookingManagementComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = error?.error?.error || error?.error?.message || 'A foglalások nem tölthetők be.';
+        this.errorMessage = error?.error?.error || error?.error?.message || this.translate.instant('BOOKING_MANAGEMENT.LOAD_ERROR');
       }
     });
   }
@@ -104,8 +106,8 @@ export class BookingManagementComponent implements OnInit {
     this.confirmAndUpdateStatus(
       booking,
       'Cancelled',
-      'Telefonos lemondás rögzítése',
-      'A foglalás lemondott státuszt kap, és az időpont újra foglalható lesz.'
+      'BOOKING_MANAGEMENT.SWAL.CANCEL_TITLE',
+      'BOOKING_MANAGEMENT.SWAL.CANCEL_TEXT'
     );
   }
 
@@ -113,8 +115,8 @@ export class BookingManagementComponent implements OnInit {
     this.confirmAndUpdateStatus(
       booking,
       'Completed',
-      'Foglalás lezárása',
-      'A foglalás teljesített státuszt kap.'
+      'BOOKING_MANAGEMENT.SWAL.COMPLETE_TITLE',
+      'BOOKING_MANAGEMENT.SWAL.COMPLETE_TEXT'
     );
   }
 
@@ -122,8 +124,8 @@ export class BookingManagementComponent implements OnInit {
     this.confirmAndUpdateStatus(
       booking,
       'Confirmed',
-      'Foglalás megerősítése',
-      'A foglalás újra aktív megerősített státuszt kap.'
+      'BOOKING_MANAGEMENT.SWAL.CONFIRM_TITLE',
+      'BOOKING_MANAGEMENT.SWAL.CONFIRM_TEXT'
     );
   }
 
@@ -134,12 +136,12 @@ export class BookingManagementComponent implements OnInit {
     }
 
     Swal.fire({
-      title: 'Foglalás végleges törlése',
-      text: 'Ez a művelet véglegesen eltávolítja a foglalást a rendszerből. Folytatod?',
+      title: this.translate.instant('BOOKING_MANAGEMENT.SWAL.DELETE_TITLE'),
+      text: this.translate.instant('BOOKING_MANAGEMENT.SWAL.DELETE_TEXT'),
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Igen, törlöm',
-      cancelButtonText: 'Mégsem'
+      confirmButtonText: this.translate.instant('BOOKING_MANAGEMENT.SWAL.DELETE_CONFIRM'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL')
     }).then((result) => {
       if (!result.isConfirmed) {
         return;
@@ -150,11 +152,19 @@ export class BookingManagementComponent implements OnInit {
         next: () => {
           this.actionBookingId = null;
           this.bookings = this.bookings.filter((item) => Number(item?.id) !== bookingId);
-          Swal.fire('Törölve', 'A foglalás véglegesen törölve lett.', 'success');
+          Swal.fire(
+            this.translate.instant('BOOKING_MANAGEMENT.SWAL.DELETE_SUCCESS_TITLE'),
+            this.translate.instant('BOOKING_MANAGEMENT.SWAL.DELETE_SUCCESS_TEXT'),
+            'success'
+          );
         },
         error: (error) => {
           this.actionBookingId = null;
-          Swal.fire('Hiba', error?.error?.error || error?.error?.message || 'A törlés nem sikerült.', 'error');
+          Swal.fire(
+            this.translate.instant('COMMON.ERROR'),
+            error?.error?.error || error?.error?.message || this.translate.instant('BOOKING_MANAGEMENT.DELETE_ERROR'),
+            'error'
+          );
         }
       });
     });
@@ -179,13 +189,13 @@ export class BookingManagementComponent implements OnInit {
   protected getStatusLabel(status: string): string {
     switch (status) {
       case 'Confirmed':
-        return 'Megerősített';
+        return this.translate.instant('BOOKING_MANAGEMENT.STATUS_CONFIRMED');
       case 'Cancelled':
-        return 'Lemondott';
+        return this.translate.instant('BOOKING_MANAGEMENT.STATUS_CANCELLED');
       case 'Completed':
-        return 'Teljesített';
+        return this.translate.instant('BOOKING_MANAGEMENT.STATUS_COMPLETED');
       default:
-        return status || 'Ismeretlen';
+        return status || this.translate.instant('BOOKING_MANAGEMENT.STATUS_UNKNOWN');
     }
   }
 
@@ -207,20 +217,27 @@ export class BookingManagementComponent implements OnInit {
   }
 
   protected getPatientName(booking: any): string {
-    return booking?.patient?.name || booking?.patient?.email || 'Páciens';
+    return booking?.patient?.name || booking?.patient?.email || this.translate.instant('BOOKING_MANAGEMENT.PATIENT_FALLBACK');
   }
 
   protected getDoctorName(booking: any): string {
-    return booking?.doctor?.user?.name || booking?.doctor?.name || 'Szakember';
+    return booking?.doctor?.user?.name || booking?.doctor?.name || this.translate.instant('BOOKING_MANAGEMENT.STAFF_FALLBACK');
   }
 
   protected getServiceName(booking: any): string {
-    return booking?.treatment?.name || booking?.name || 'Konzultáció';
+    const serviceName = booking?.treatment?.name || booking?.name;
+    if (!serviceName) {
+      return this.translate.instant('BOOKING_MANAGEMENT.SERVICE_FALLBACK');
+    }
+
+    const key = this.toTranslationKey(serviceName);
+    const translated = this.translate.instant(`SERVICE_NAMES.${key}`);
+    return translated !== `SERVICE_NAMES.${key}` ? translated : serviceName;
   }
 
   protected formatDate(dateValue?: string): string {
     if (!dateValue) {
-      return 'Nincs dátum';
+      return this.translate.instant('BOOKING_MANAGEMENT.NO_DATE');
     }
 
     const date = new Date(dateValue);
@@ -228,7 +245,7 @@ export class BookingManagementComponent implements OnInit {
       return dateValue;
     }
 
-    return date.toLocaleDateString('hu-HU', {
+    return date.toLocaleDateString(this.getCurrentLocale(), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
@@ -246,8 +263,8 @@ export class BookingManagementComponent implements OnInit {
   private confirmAndUpdateStatus(
     booking: any,
     status: Booking['status'],
-    title: string,
-    text: string
+    titleKey: string,
+    textKey: string
   ): void {
     const bookingId = Number(booking?.id);
     if (!bookingId || this.actionBookingId !== null) {
@@ -255,12 +272,12 @@ export class BookingManagementComponent implements OnInit {
     }
 
     Swal.fire({
-      title,
-      text,
+      title: this.translate.instant(titleKey),
+      text: this.translate.instant(textKey),
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Igen',
-      cancelButtonText: 'Mégsem'
+      confirmButtonText: this.translate.instant('BOOKING_MANAGEMENT.SWAL.CONFIRM_BUTTON'),
+      cancelButtonText: this.translate.instant('COMMON.CANCEL')
     }).then((result) => {
       if (!result.isConfirmed) {
         return;
@@ -271,14 +288,35 @@ export class BookingManagementComponent implements OnInit {
         next: (updatedBooking) => {
           this.actionBookingId = null;
           this.bookings = this.bookings.map((item) => Number(item?.id) === bookingId ? { ...item, ...updatedBooking } : item);
-          Swal.fire('Sikeres mentés', 'A foglalás állapota frissítve lett.', 'success');
+          Swal.fire(
+            this.translate.instant('BOOKING_MANAGEMENT.SWAL.UPDATE_SUCCESS_TITLE'),
+            this.translate.instant('BOOKING_MANAGEMENT.SWAL.UPDATE_SUCCESS_TEXT'),
+            'success'
+          );
         },
         error: (error) => {
           this.actionBookingId = null;
-          Swal.fire('Hiba', error?.error?.error || error?.error?.message || 'A foglalás állapota nem módosítható.', 'error');
+          Swal.fire(
+            this.translate.instant('COMMON.ERROR'),
+            error?.error?.error || error?.error?.message || this.translate.instant('BOOKING_MANAGEMENT.UPDATE_ERROR'),
+            'error'
+          );
         }
       });
     });
+  }
+
+  private getCurrentLocale(): string {
+    return this.translate.currentLang === 'en' ? 'en-US' : 'hu-HU';
+  }
+
+  private toTranslationKey(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
   }
 
   private getBookingDateValue(booking: any): number {

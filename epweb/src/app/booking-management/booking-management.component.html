@@ -2,13 +2,13 @@
   <div class="container-fluid management-shell">
     <div class="hero-card mb-4">
       <div>
-        <p class="eyebrow mb-2">Admin és orvosi funkció</p>
+        <p class="eyebrow mb-2">{{ 'BOOKING_MANAGEMENT.EYEBROW' | translate }}</p>
         <h1 class="mb-2">{{ pageTitle }}</h1>
         <p class="mb-0 text-muted">{{ pageSubtitle }}</p>
       </div>
       <div class="hero-actions">
         <button type="button" class="btn btn-outline-primary rounded-pill px-4" (click)="loadBookings()">
-          <i class="bi bi-arrow-clockwise me-2"></i>Frissítés
+          <i class="bi bi-arrow-clockwise me-2"></i>{{ 'BOOKING_MANAGEMENT.REFRESH' | translate }}
         </button>
       </div>
     </div>
@@ -16,19 +16,19 @@
     <div class="row g-3 mb-4">
       <div class="col-md-4">
         <div class="metric-card">
-          <span class="metric-label">Összes foglalás</span>
+          <span class="metric-label">{{ 'BOOKING_MANAGEMENT.TOTAL' | translate }}</span>
           <strong class="metric-value">{{ totalBookings }}</strong>
         </div>
       </div>
       <div class="col-md-4">
         <div class="metric-card">
-          <span class="metric-label">Közelgő foglalás</span>
+          <span class="metric-label">{{ 'BOOKING_MANAGEMENT.UPCOMING' | translate }}</span>
           <strong class="metric-value">{{ upcomingBookings }}</strong>
         </div>
       </div>
       <div class="col-md-4">
         <div class="metric-card">
-          <span class="metric-label">Lemondott foglalás</span>
+          <span class="metric-label">{{ 'BOOKING_MANAGEMENT.CANCELLED' | translate }}</span>
           <strong class="metric-value">{{ cancelledBookings }}</strong>
         </div>
       </div>
@@ -37,24 +37,24 @@
     <div class="panel-card mb-4">
       <div class="row g-3 align-items-end">
         <div class="col-lg-7">
-          <label class="form-label">Keresés</label>
+          <label class="form-label">{{ 'BOOKING_MANAGEMENT.SEARCH_LABEL' | translate }}</label>
           <input
             type="text"
             class="form-control"
             [(ngModel)]="searchTerm"
-            placeholder="Páciens, szakember, szolgáltatás vagy dátum szerint">
+            [placeholder]="'BOOKING_MANAGEMENT.SEARCH_PLACEHOLDER' | translate">
         </div>
         <div class="col-lg-3">
-          <label class="form-label">Státusz</label>
+          <label class="form-label">{{ 'BOOKING_MANAGEMENT.STATUS_LABEL' | translate }}</label>
           <select class="form-select" [(ngModel)]="statusFilter">
-            <option value="all">Minden státusz</option>
-            <option value="Confirmed">Megerősített</option>
-            <option value="Cancelled">Lemondott</option>
-            <option value="Completed">Teljesített</option>
+            <option value="all">{{ 'BOOKING_MANAGEMENT.STATUS_ALL' | translate }}</option>
+            <option value="Confirmed">{{ 'BOOKING_MANAGEMENT.STATUS_CONFIRMED' | translate }}</option>
+            <option value="Cancelled">{{ 'BOOKING_MANAGEMENT.STATUS_CANCELLED' | translate }}</option>
+            <option value="Completed">{{ 'BOOKING_MANAGEMENT.STATUS_COMPLETED' | translate }}</option>
           </select>
         </div>
         <div class="col-lg-2">
-          <div class="info-chip">Telefonos lemondás: állítsd „Lemondott” státuszra.</div>
+          <div class="info-chip">{{ 'BOOKING_MANAGEMENT.PHONE_HINT' | translate }}</div>
         </div>
       </div>
     </div>
@@ -66,12 +66,12 @@
     @if (loading) {
       <div class="panel-card text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status"></div>
-        <p class="mb-0 text-muted">A foglalások betöltése folyamatban...</p>
+        <p class="mb-0 text-muted">{{ 'BOOKING_MANAGEMENT.LOADING' | translate }}</p>
       </div>
     } @else {
       <div class="panel-card">
         <div class="panel-header mb-3">
-          <h5 class="mb-0">Kezelhető foglalások</h5>
+          <h5 class="mb-0">{{ 'BOOKING_MANAGEMENT.LIST_TITLE' | translate }}</h5>
           <span class="badge rounded-pill text-bg-light">{{ filteredBookings.length }}</span>
         </div>
 
@@ -82,16 +82,16 @@
                 <div class="booking-head">
                   <div>
                     <h6 class="mb-1">{{ getServiceName(booking) }}</h6>
-                    <p class="small text-muted mb-0">Foglalás #{{ booking.id }}</p>
+                    <p class="small text-muted mb-0">{{ 'BOOKING_MANAGEMENT.BOOKING_ID' | translate:{id: booking.id} }}</p>
                   </div>
                   <span [class]="getStatusClass(booking.status)">{{ getStatusLabel(booking.status) }}</span>
                 </div>
 
                 <div class="booking-meta-list">
-                  <div><span>Páciens</span><strong>{{ getPatientName(booking) }}</strong></div>
-                  <div><span>Szakember</span><strong>{{ getDoctorName(booking) }}</strong></div>
-                  <div><span>Dátum</span><strong>{{ formatDate(getSlot(booking)?.date || booking.date) }}</strong></div>
-                  <div><span>Idő</span><strong>{{ formatTime(getSlot(booking)?.startTime || booking.startTime) }}</strong></div>
+                  <div><span>{{ 'BOOKING_MANAGEMENT.PATIENT' | translate }}</span><strong>{{ getPatientName(booking) }}</strong></div>
+                  <div><span>{{ 'BOOKING_MANAGEMENT.STAFF' | translate }}</span><strong>{{ getDoctorName(booking) }}</strong></div>
+                  <div><span>{{ 'BOOKING_MANAGEMENT.DATE' | translate }}</span><strong>{{ formatDate(getSlot(booking)?.date || booking.date) }}</strong></div>
+                  <div><span>{{ 'BOOKING_MANAGEMENT.TIME' | translate }}</span><strong>{{ formatTime(getSlot(booking)?.startTime || booking.startTime) }}</strong></div>
                 </div>
 
                 <div class="action-row">
@@ -100,7 +100,7 @@
                     class="btn btn-sm btn-outline-danger rounded-pill"
                     [disabled]="!canMarkCancelled(booking) || actionBookingId === booking.id"
                     (click)="markCancelled(booking)">
-                    Lemondott
+                    {{ 'BOOKING_MANAGEMENT.STATUS_CANCELLED' | translate }}
                   </button>
 
                   <button
@@ -108,7 +108,7 @@
                     class="btn btn-sm btn-outline-success rounded-pill"
                     [disabled]="!canMarkCompleted(booking) || actionBookingId === booking.id"
                     (click)="markCompleted(booking)">
-                    Teljesített
+                    {{ 'BOOKING_MANAGEMENT.STATUS_COMPLETED' | translate }}
                   </button>
 
                   <button
@@ -116,7 +116,7 @@
                     class="btn btn-sm btn-outline-primary rounded-pill"
                     [disabled]="!canMarkConfirmed(booking) || actionBookingId === booking.id"
                     (click)="markConfirmed(booking)">
-                    Megerősített
+                    {{ 'BOOKING_MANAGEMENT.STATUS_CONFIRMED' | translate }}
                   </button>
 
                   @if (canDelete(booking)) {
@@ -125,7 +125,7 @@
                       class="btn btn-sm btn-dark rounded-pill"
                       [disabled]="actionBookingId === booking.id"
                       (click)="deleteBooking(booking)">
-                      Végleges törlés
+                      {{ 'BOOKING_MANAGEMENT.DELETE' | translate }}
                     </button>
                   }
                 </div>
@@ -133,7 +133,7 @@
             }
           </div>
         } @else {
-          <p class="text-muted mb-0">Nincs a feltételeknek megfelelő foglalás.</p>
+          <p class="text-muted mb-0">{{ 'BOOKING_MANAGEMENT.EMPTY' | translate }}</p>
         }
       </div>
     }

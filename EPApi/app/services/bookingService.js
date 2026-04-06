@@ -1,6 +1,12 @@
 import db from '../models/modrels.js';
 import { EmailService } from './emailService.js';
 
+function bookingError(message, code) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+}
+
 export const BookingService = {
 
     async createBooking(bookingData, user) {
@@ -22,11 +28,11 @@ export const BookingService = {
                 });
 
                 if (!ownStaffProfile) {
-                    throw new Error('Az orvos profil nem található!');
+                    throw bookingError('Az orvos profil nem található!', 'DOCTOR_PROFILE_NOT_FOUND');
                 }
 
                 if (!patientId) {
-                    throw new Error('Páciens kiválasztása kötelező!');
+                    throw bookingError('Páciens kiválasztása kötelező!', 'PATIENT_REQUIRED');
                 }
 
                 bookingStaffId = Number(ownStaffProfile.id);
@@ -37,20 +43,24 @@ export const BookingService = {
                 : null;
 
             if (!patient || patient.roleId !== 0) {
-                throw new Error('A kiválasztott páciens nem foglalható!');
+                throw bookingError('A kiválasztott páciens nem foglalható!', 'PATIENT_NOT_BOOKABLE');
             }
 
             const slot = await db.Slot.findByPk(bookingData.slotId, { transaction: t });
 
             if (!slot) {
-                throw new Error('A választott időpont nem található!');
+                throw bookingError('A választott időpont nem található!', 'SLOT_NOT_FOUND');
             }
             if (!slot.isAvailable) {
-                throw new Error('Ez az időpont már foglalt!');
+                throw bookingError('Ez az időpont már foglalt!', 'SLOT_UNAVAILABLE');
             }
 
             if (bookingStaffId && Number(slot.staffId) !== Number(bookingStaffId)) {
-                throw new Error('A kiválasztott időpont nem ehhez a szakemberhez tartozik!');
+                if (user?.roleId === 1) {
+                    throw bookingError('Orvosként nincs jogosultságod más szakemberhez időpontot foglalni páciensnek. Erre csak az admin jogosult.', 'DOCTOR_CANNOT_BOOK_OTHER_STAFF');
+                }
+
+                throw bookingError('A kiválasztott időpont nem ehhez a szakemberhez tartozik!', 'SLOT_STAFF_MISMATCH');
             }
 
             const newBooking = await db.Booking.create({

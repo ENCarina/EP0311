@@ -49,7 +49,7 @@
             }
           </div>
 
-          @if (isDoctorBooking) {
+          @if (isStaffAssistedBooking) {
             <div class="mb-3">
               <label class="form-label small fw-bold text-muted">{{ 'BOOKING.PATIENT' | translate }}</label>
               <select class="form-select border-light-subtle shadow-sm"
@@ -81,7 +81,7 @@
 
           <button class="btn btn-elit w-100 mt-3 rounded-pill py-2 shadow-sm" 
                   (click)="loadSlots()" 
-                  [disabled]="isLoading || !selectedConsultationId || (isDoctorBooking && !selectedPatientId)">
+                  [disabled]="isLoading || !selectedConsultationId || (isStaffAssistedBooking && !selectedPatientId)">
             @if (isLoading) {
               <span class="spinner-border spinner-border-sm me-2"></span> {{ 'COMMON.REFRESHING' | translate }}
             } @else {
@@ -133,6 +133,8 @@
           <p class="text-muted small">
             @if (isDoctorBooking) {
               {{ 'BOOKING.DOCTOR_FILTER_HINT' | translate }}
+            } @else if (isStaffAssistedBooking) {
+              {{ 'BOOKING.ADMIN_FILTER_HINT' | translate }}
             } @else {
               {{ 'BOOKING.PATIENT_FILTER_HINT' | translate }}
             }

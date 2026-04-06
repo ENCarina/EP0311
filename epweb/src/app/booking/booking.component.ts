@@ -63,6 +63,10 @@ export class BookingComponent implements OnInit {
     return this.auth.getRoleId() === 1;
   }
 
+  protected get isStaffAssistedBooking(): boolean {
+    return this.auth.getRoleId() >= 1;
+  }
+
   protected get selectedStaffName(): string {
     const staff = this.selectedStaff;
     return staff?.user?.name || staff?.name || '';
@@ -86,7 +90,7 @@ export class BookingComponent implements OnInit {
       consultations: this.staffApi.getConsultations()
     };
 
-    if (this.isDoctorBooking) {
+    if (this.isStaffAssistedBooking) {
       requests['patients'] = this.staffApi.getPatients();
     }
 
@@ -105,13 +109,16 @@ export class BookingComponent implements OnInit {
           id: Number(c.id)
         }));
 
-        if (this.isDoctorBooking) {
+        if (this.isStaffAssistedBooking) {
           this.patients = (res.patients?.data || res.patients || []).map((patient: any) => ({
             id: Number(patient.id),
             name: patient.name,
             email: patient.email
           }));
-          this.selectedPatientId = this.patients.length ? Number(this.patients[0].id) : null;
+          this.selectedPatientId = null;
+        }
+
+        if (this.isDoctorBooking) {
           this.lockDoctorToOwnProfile();
         }
 
@@ -405,7 +412,7 @@ export class BookingComponent implements OnInit {
   }
 
   protected onReserve(slot: Slot): void {
-    if (this.isDoctorBooking && !this.selectedPatientId) {
+    if (this.isStaffAssistedBooking && !this.selectedPatientId) {
       Swal.fire(this.translate.instant('BOOKING.MISSING_PATIENT_TITLE'), this.translate.instant('BOOKING.MISSING_PATIENT_TEXT'), 'warning');
       return;
     }
@@ -484,6 +491,18 @@ export class BookingComponent implements OnInit {
     this.daySlotStartIndexMap[slot.date] = Math.floor(slotIndex / this.daySlotsPageSize) * this.daySlotsPageSize;
   }
 
+  private resolveBookingErrorMessage(err: any): string {
+    const errorCode = err?.error?.errorCode;
+    if (errorCode) {
+      const translated = this.translate.instant(`BOOKING.ERRORS.${errorCode}`);
+      if (translated !== `BOOKING.ERRORS.${errorCode}`) {
+        return translated;
+      }
+    }
+
+    return err?.error?.message || err?.error?.error || this.translate.instant('BOOKING.ERROR_MSG');
+  }
+
   private executeBooking(slot: Slot): void {
     const userId = this.auth.getUserId();
 
@@ -502,7 +521,7 @@ export class BookingComponent implements OnInit {
 
     const bookingData = {
       slotId: Number(slot.id),
-      patientId: this.isDoctorBooking ? Number(this.selectedPatientId) : Number(userId),
+      patientId: this.isStaffAssistedBooking ? Number(this.selectedPatientId) : Number(userId),
       staffId: Number(slot.staffId || this.selectedStaffId), 
       consultationId: Number(this.selectedConsultationId),
       duration: Number(selectedTreatment?.duration || 30),
@@ -513,7 +532,7 @@ export class BookingComponent implements OnInit {
       isPublic: true
     };
 
-    if (this.isDoctorBooking && !bookingData.patientId) {
+    if (this.isStaffAssistedBooking && !bookingData.patientId) {
       Swal.fire(this.translate.instant('BOOKING.MISSING_PATIENT_TITLE'), this.translate.instant('BOOKING.SELECT_PATIENT_BEFORE_BOOKING'), 'warning');
       return;
     }
@@ -522,7 +541,7 @@ export class BookingComponent implements OnInit {
       next: () => {
         Swal.fire(
           this.translate.instant('BOOKING.SUCCESS_TITLE'),
-          this.isDoctorBooking
+          this.isStaffAssistedBooking
             ? this.translate.instant('BOOKING.SUCCESS_DOCTOR')
             : this.translate.instant('BOOKING.SUCCESS_PATIENT'),
           'success'
@@ -530,7 +549,7 @@ export class BookingComponent implements OnInit {
           .then(() => this.loadSlots());
       },
       error: (err) => {
-        const msg = err.error?.message || this.translate.instant('BOOKING.ERROR_MSG');
+        const msg = this.resolveBookingErrorMessage(err);
         Swal.fire(this.translate.instant('COMMON.ERROR'), msg, 'error');
       }
     });

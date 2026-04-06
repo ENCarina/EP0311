@@ -102,9 +102,14 @@ const BookingController = {
             
             if (!selectedSlot) throw new Error("A választott időpont nem létezik!");
 
-            const targetPatientId = req.user.roleId === 1
+            const isStaffAssistedBooking = req.user.roleId >= 1;
+            const targetPatientId = isStaffAssistedBooking
                 ? Number(req.body.patientId)
                 : currentUserId;
+
+            if (isStaffAssistedBooking && !targetPatientId) {
+                throw new Error('Páciens kiválasztása kötelező!');
+            }
 
             const existingConflict = await db.Booking.findOne({
                 include: [{
@@ -143,7 +148,8 @@ const BookingController = {
         } catch (error) {
             return res.status(400).json({
                 success: false,
-                error: error.message || 'Sajnáljuk, a foglalás nem sikerült.'
+                error: error.message || 'Sajnáljuk, a foglalás nem sikerült.',
+                errorCode: error.code || null
             });
         }
     },
