@@ -68,7 +68,6 @@ export class BookingListComponent implements OnInit {
         this.adminService.deleteBooking(bookingId).subscribe({
           next: () => {
             // FRONTEND TÖRLÉS: Azonnal kivesszük a listából, hogy ne zavarja az admint
-            // Megjegyzés: A backendben ettől még 'cancelled' státuszra váltott!
             this.bookings.update(current => current.filter(b => b.id !== bookingId));
 
             const Toast = Swal.mixin({
@@ -94,6 +93,13 @@ export class BookingListComponent implements OnInit {
         });
       }
     });
+  }
+
+  isPast(date: string | undefined, time: string | undefined): boolean {
+    if (!date || !time) return false;
+    const now = new Date();
+    const bookingDate = new Date(`${date}T${time}`);
+    return bookingDate < now;
   }
    
   formatDate(date: string, time: string): string {

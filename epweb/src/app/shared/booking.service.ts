@@ -27,18 +27,18 @@ export class BookingService {
       staffId: staffId.toString(),
       startDate: startDate,
       endDate: endDate,
-      //consultationId: consultationId.toString()
+      consultationId: consultationId.toString()
     }
   });
 }
   generateStaffSlots(payload: any): Observable<any> {
-    return this.http.post<{ success: boolean; message: string }>(
+    return this.http.post<any>(
       `${this.API_URL}/slots/generate`, 
       payload, 
       { headers: this.getHeaders() }
     );
   }
-
+ 
   getUserBookings(): Observable<any[]> {
     console.log('Service: HTTP GET indítása a /bookings-ra');
     return this.http.get<{ success: boolean; data: any[] }>(`${this.API_URL}/bookings`, {
@@ -67,5 +67,4 @@ export class BookingService {
       })
     );
   }
-
 }

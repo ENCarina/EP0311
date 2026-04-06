@@ -36,17 +36,17 @@
 
     td {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
         border: none !important;
         padding: 0.75rem 0.5rem !important;
-        text-align: right;
-        min-height: 3rem; /* Megakadályozza az üres cellák összecsúszását */
+        text-align: left;
+        min-height: 3rem; 
     }
 
     td::before {
         content: attr(data-column);
-        flex: 1;
+        flex: 0 0 120px;
         text-align: left;
         font-weight: 700;
         text-transform: uppercase;
@@ -166,4 +166,27 @@
     color: white ;
     border-color: #0056b3 !important;
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+@media screen and (max-width: 768px) {
+    /* A korábbi td:last-child felülírása a Te kérésed szerint (balra rendezés + gombok) */
+    td:last-child {
+        justify-content: flex-start !important;
+        flex-direction: row !important; /* Ne legyen oszlop! */
+        align-items: center !important;
+        flex-wrap: nowrap !important; /* Kényszerítjük egy sorba */
+        overflow-x: auto; /* Ha nagyon sok gomb lenne, görgethető legyen oldalra */
+    }
+
+    /* A gomb konténer ne legyen 100% széles, hogy elférjen mellette a "Műveletek" felirat */
+    .staff-action-container {
+        display: flex !important;
+        width: auto !important;
+        flex-shrink: 0;
+    }
+
+    /* A gombok fix szélessége mobilon, hogy ne nyomódjanak össze */
+    .staff-action-container .btn {
+        padding: 8px 12px !important;
+        flex: 0 0 auto;
+    }
 }

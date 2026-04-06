@@ -25,12 +25,11 @@ export class ConsultationComponent implements OnInit {
  
   addMode = true;
   showModal = false;
-
-  // Form 
+ 
   consultationForm = this.fb.nonNullable.group({
     id: [null as number | null],
     name: ['', [Validators.required]],
-    description: ['', [Validators.required, Validators.minLength(3)]], 
+    description: [''], 
     specialty: ['GENERAL', [Validators.required]],
     duration: [60, [Validators.required, Validators.min(5)]],
     price: [0, [Validators.required, Validators.min(0)]]

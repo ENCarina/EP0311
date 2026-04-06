@@ -85,7 +85,7 @@ export class MyBookingComponent implements OnInit {
     const appointmentDate = new Date(`${slot.date}T${time}:00`);
 
     if (isNaN(appointmentDate.getTime())) {
-      console.error('Hibás dátum formátum:', slot.date, slot.startTime);
+      console.error('Invalid date format:', slot.date, slot.startTime);
       return false;
     }
     const now = new Date();
@@ -94,7 +94,7 @@ export class MyBookingComponent implements OnInit {
 
     return diffInMs >= twentyFourHoursInMs;
   } catch (e) {
-    console.error('Hiba a számítás közben:', e);
+    console.error('Error during calculation:', e);
     return false;
   }
 }
@@ -125,21 +125,26 @@ export class MyBookingComponent implements OnInit {
           if (res.success) {
             this.bookings = this.bookings.filter(b => b.id !== id);
             
-            Swal.fire(
-              this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
-              res.message || this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT'),
-              'success'
-            );
+            Swal.fire({
+              icon: 'success',
+              title: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
+              text: res.message || this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT')
+            });
           }
           this.loading = false;
         },
         error: (err) => {
           this.loading = false; 
           const backendCode = err.error?.message;
+          
           const translatedMessage = this.translate.instant(`MESSAGES.${backendCode}`) || 
                             this.translate.instant('MY_BOOKINGS.ERROR_CANCEL_GENERAL');
           
-          Swal.fire(this.translate.instant('MY_BOOKINGS.ERROR_TITLE'), translatedMessage, 'error');
+          Swal.fire(
+            this.translate.instant('MY_BOOKINGS.ERROR_TITLE'), 
+            translatedMessage, 
+            'error'
+          );
         }
       });
     }

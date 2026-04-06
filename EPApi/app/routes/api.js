@@ -53,7 +53,7 @@ router.delete('/consultations/:id', [verifyToken, checkRole(2)], ConsultationCon
 router.get('/slots', SlotController.index);
 router.get('/slots/:id', [verifyToken], SlotController.show);
 router.post('/slots', [verifyToken, checkRole(1)], SlotController.store);
-router.post('/slots/generate', [verifyToken, checkRole([1, 2])], SlotController.bulkGenerate);
+router.post('/slots/generate', [verifyToken], SlotController.bulkGenerate);
 router.put('/slots/:id', [verifyToken], SlotController.update);
 router.delete('/slots/:id', [verifyToken], SlotController.destroy);
 

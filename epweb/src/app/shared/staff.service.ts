@@ -1,5 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { BulkSlotConfig } from './interfaces/slot.interface';
+import { Observable } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +25,11 @@ export class StaffService {
         if (!staffId) throw new Error("Staff ID is required");
         return this.http.post<any>(`${this.baseUrl}/staff/${staffId}/treatments`, { treatmentIds});
     }
+
+    bulkGenerateSlots(config: BulkSlotConfig): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/slots/bulk-generate`, config);
+    }
+
     addStaff(staff: any) {
         return this.http.post(`${this.baseUrl}/staff`, staff);
     }
@@ -38,6 +46,5 @@ export class StaffService {
     }
     promoteUser(userId: number, details: any) {
         return this.http.post(`${this.baseUrl}/staff/promote`, { userId, ...details });
-}
-
+    }
 }

@@ -92,6 +92,7 @@ const BookingController = {
 
     // 3. Új foglalás létrehozása (Conflict check-el)
     async store(req, res) {
+        const t = await db.sequelize.transaction();
         try {
             const currentUserId = req.user?.id || req.userId;
             if (!currentUserId) {
@@ -139,12 +140,13 @@ const BookingController = {
 
             // Itt hívjuk meg a Service-t a tényleges mentéshez
             const lang = req.headers['accept-language'] || 'hu';
-            const newBooking = await BookingService.createBooking(bookingData, user, lang);
+            const newBooking = await BookingService.createBooking(bookingData, user, lang, { transaction: t });
 
             await db.Slot.update(
                 { isAvailable: false }, 
-                { where: { id: req.body.slotId } }
+                { where: { id: req.body.slotId }, transaction: t}
             );
+            await t.commit();
 
             return res.status(201).json({
                 success: true,
@@ -152,6 +154,7 @@ const BookingController = {
                 data: newBooking
             });
         } catch (error) {
+            if (t) await t.rollback();
             return res.status(400).json({
                 success: false,
                 message: 'BOOKING.ERROR_MSG',

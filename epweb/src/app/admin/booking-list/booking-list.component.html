@@ -1,6 +1,5 @@
 <div class="container-fluid py-4">
-  <!-- Fejléc szekció -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
     <div>
       <h2 class="fw-bold text-navy mb-0">
         <i class="bi bi-calendar-check me-2"></i>{{ 'MENU.ADMIN.BOOKINGS' | translate }}
@@ -9,13 +8,14 @@
         {{ ('BOOKINGS.SUBTITLE' | translate) }}
       </p>
     </div>
-    <button class="btn btn-outline-primary rounded-pill px-4" (click)="loadBookings()" [disabled]="isLoading()">
+    <button class="btn btn-outline-primary rounded-pill px-4 shadow-sm transition-all" 
+            (click)="loadBookings()" 
+            [disabled]="isLoading()">
       <i class="bi bi-arrow-clockwise me-1" [class.spin]="isLoading()"></i>
-      {{ ('COMMON.REFRESH' | translate) }}
+      <span>{{ ('COMMON.REFRESH' | translate) }}</span>
     </button>
   </div>
 
-  <!-- Betöltés jelző -->
   @if (isLoading()) {
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
@@ -26,50 +26,56 @@
   } @else {
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 custom-responsive-table">
           <thead class="bg-light">
             <tr>
               <th class="ps-4 py-3 text-uppercase small fw-bold text-secondary">{{ 'BOOKINGS.TABLE.PATIENT' | translate }}</th>
               <th class="py-3 text-uppercase small fw-bold text-secondary">{{ 'BOOKINGS.TABLE.DATE' | translate }}</th>
-              <th class="py-3 text-uppercase small fw-bold text-secondary">{{ 'BOOKINGS.TABLE.STATUS' | translate }}</th>
-              <th class="py-3 text-uppercase small fw-bold text-secondary">{{ 'BOOKINGS.TABLE.CREATED' | translate }}</th>
+              <th class="py-3 text-uppercase small fw-bold text-secondary text-center">{{ 'BOOKINGS.TABLE.STATUS' | translate }}</th>
+              <th class="py-3 text-uppercase small fw-bold text-secondary d-none d-lg-table-cell">{{ 'BOOKINGS.TABLE.CREATED' | translate }}</th>
               <th class="pe-4 py-3 text-end text-uppercase small fw-bold text-secondary">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
+
           <tbody>
             @for (booking of bookings(); track booking.id) {
-              <!-- Lemondott sorok vizuális elhalványítása -->
-              <tr [class.opacity-50]="booking.status === 'cancelled'" [class.bg-light]="booking.status === 'cancelled'">
-                <!-- Páciens adatok -->
-                <td class="ps-4">
+              <tr [class.opacity-50]="booking.status === 'cancelled'"
+                  [class.expired-row]="isPast(booking.timeSlot?.date, booking.timeSlot?.startTime)">
+                
+                <td class="ps-md-4">
                   <div class="d-flex align-items-center">
-                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center">
+                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center flex-shrink-0">
                       <i class="bi bi-person"></i>
                     </div>
                     <div>
-                      <div class="fw-bold">{{ booking.patient?.name || ('COMMON.UNKNOWN' | translate) }}</div>
+                      <div class="fw-bold text-dark text-nowrap">{{ booking.patient?.name || ('COMMON.UNKNOWN' | translate) }}</div>
                       <div class="small text-muted">ID: #{{ booking.id }}</div>
                     </div>
                   </div>
                 </td>
 
-                <!-- Időpont (Dátum és óra egyben a kompaktságért) -->
                 <td>
+                  <div class="mobile-label d-md-none text-muted small fw-bold text-uppercase">{{ 'BOOKINGS.TABLE.DATE' | translate }}</div>
                   <div class="fw-bold text-navy">
-                    <i class="bi bi-calendar3 me-1 text-primary"></i>
+                    <i class="bi bi-calendar3 me-1 text-primary d-none d-md-inline"></i>
                     {{ booking.timeSlot?.date }}
                   </div>
                   <div class="small text-muted">
-                    <i class="bi bi-clock me-1"></i>
+                    <i class="bi bi-clock me-1 d-none d-md-inline"></i>
                     {{ booking.timeSlot?.startTime }}
                   </div>
                 </td>
 
-                <!-- Állapot (Badge) -->
-                <td>
+                <td class="text-md-center">
+                  <div class="mobile-label d-md-none text-muted small fw-bold text-uppercase">{{ 'BOOKINGS.TABLE.STATUS' | translate }}</div>
+                  
                   @if (booking.status === 'cancelled') {
                     <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-3">
                       {{ 'BOOKINGS.STATUS.CANCELLED' | translate }}
+                    </span>
+                  } @else if (isPast(booking.timeSlot?.date, booking.timeSlot?.startTime)) {
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary rounded-pill px-3">
+                      {{ 'BOOKINGS.STATUS.EXPIRED' | translate }}
                     </span>
                   } @else {
                     <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3">
@@ -78,25 +84,43 @@
                   }
                 </td>
 
-                <!-- Létrehozás ideje -->
-                <td class="text-muted small">
+                <td class="text-muted small d-none d-lg-table-cell">
                   {{ booking.createdAt | date:'yyyy.MM.dd HH:mm' }}
                 </td>
 
-                <!-- Műveletek -->
-                <td class="pe-4 text-end">
-                  @if (booking.status !== 'cancelled') {
-                    <button 
-                      class="btn btn-outline-danger btn-sm rounded-pill px-3 transition-all" 
-                      (click)="onCancelBooking(booking.id)">
-                      <i class="bi bi-x-circle me-1"></i>
-                      {{ 'BOOKINGS.ACTIONS.CANCEL' | translate }}
-                    </button>
-                  } @else {
-                    <span class="text-muted small fst-italic">
-                      {{ 'BOOKINGS.MESSAGES.ARCHIVED' | translate }}
-                    </span>
-                  }
+               <td class="pe-md-4 text-end">
+                  <div class="d-flex align-items-center justify-content-end gap-2">
+                    
+                    @if (booking.status !== 'cancelled' && !isPast(booking.timeSlot?.date, booking.timeSlot?.startTime)) {
+                      <button 
+                        class="btn btn-outline-danger btn-sm rounded-pill px-3 transition-all cancel-btn shadow-sm" 
+                        (click)="onCancelBooking(booking.id)"
+                        [title]="'BOOKINGS.ACTIONS.CANCEL' | translate">
+                        <i class="bi bi-x-circle me-1"></i>
+                        <span>{{ 'BOOKINGS.ACTIONS.CANCEL' | translate }}</span>
+                      </button>
+                    } 
+
+                    @else if (!booking.status || booking.status !== 'cancelled') {
+                      <span class="text-success small me-2 d-none d-md-inline">
+                        <i class="bi bi-check2-all"></i> Completed
+                      </span>
+                      <button 
+                        class="btn btn-link text-danger p-0 border-0" 
+                        (click)="onCancelBooking(booking.id)"
+                        [title]="'BOOKINGS.ACTIONS.CANCEL' | translate">
+                        <i class="bi bi-trash3 fs-5"></i>
+                      </button>
+                    }
+
+                    @else {
+                      <span class="text-muted small fst-italic">
+                        <i class="bi bi-archive me-1"></i>
+                        {{ 'BOOKINGS.MESSAGES.ARCHIVED' | translate }}
+                      </span>
+                    }
+
+                  </div>
                 </td>
               </tr>
             } @empty {

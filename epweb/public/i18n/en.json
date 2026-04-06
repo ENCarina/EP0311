@@ -58,7 +58,8 @@
     "STATUS": {
       "CONFIRMED": "Active",
       "CANCELLED": "Cancelled",
-      "COMPLETED": "Completed"
+      "COMPLETED": "Completed",
+      "EXPIRED": "Expired"
     },
     "ACTIONS": {
       "CANCEL": "Cancel Appointment",
@@ -86,6 +87,7 @@
     "OPHTHALMOLOGY_EXAM": "Ophthalmology Examination",
     "UROLOGY_SCREENING": "Urology Screening",
     "GYNECOLOGY_SCREENING": "Gynecology Screening",
+    "GYNECOLOGY_EXAM_LONG": "Comprehensive Gynecological Examination",
     "DENTAL_SCALING": "Dental Scaling (Tartar Removal)",
     "DENTAL_FILLING": "Dental Filling",
     "VISION_TEST": "Vision Test",
@@ -99,6 +101,24 @@
     "SAVE_SERVICE": "Save Service",
     "SAVE_CHANGES": "Save Changes",
     "EMPTY": "No services recorded.",
+    "DESCRIPTION":{
+        "CARDIOLOGY_EXAM": "Comprehensive cardiac examination including ECG, blood pressure measurement, and risk assessment.",
+        "DENTAL_CHECKUP": "Thorough dental checkup with oral health evaluation and personalized care recommendations.",
+        "PSYCHIATRY_CONSULT": "In-depth psychiatric consultation to assess mental health and provide tailored treatment plans.",
+        "DERMATOLOGY_SCREENING": "Full-body skin examination for early detection of skin conditions and cancers.",
+        "ORTHOPEDICS_EXAM": "Detailed orthopedic examination to evaluate musculoskeletal health and mobility.",
+        "OPHTHALMOLOGY_EXAM": "Comprehensive eye examination including vision testing and ocular health assessment.",
+        "UROLOGY_SCREENING": "Complete urological screening for early detection of urinary tract issues and prostate health.",
+        "GYNECOLOGY_SCREENING": "Thorough gynecological screening including Pap smear, HPV testing, and breast examination.",
+        "GYNECOLOGY_EXAM_LONG": "Comprehensive gynecological examination including pelvic ultrasound, hormonal assessment, and fertility counseling.",
+        "DENTAL_SCALING": "Professional dental scaling to remove plaque and tartar buildup for improved oral health.",
+        "DENTAL_FILLING": "High-quality dental filling service to restore tooth function and aesthetics.",
+        "VISION_TEST": "Accurate vision testing to determine prescription needs and detect eye conditions.",
+        "JOINT_INJECTION": "Therapeutic joint injection for pain relief and improved mobility in arthritic conditions.",
+        "POSTOP_CONTROL": "Post-operative control examination to monitor healing progress and address any complications.",
+        "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Advanced digital dermoscopy and mole mapping for early detection of skin abnormalities and personalized monitoring."
+      },
+
     "MESSAGES": {
       "ADD_SUCCESS": "Service added successfully!",
       "UPDATE_SUCCESS": "Update successful!",
@@ -245,6 +265,7 @@
     "TITLE": "Staff Management",
     "SUBTITLE": "Manage doctors and assistants in the system",
     "NEW_BUTTON": "New Specialist",
+    "GENERATE_SLOTS_TITLE": "Generate Weekly Slots",
     "TABLE": {
       "ID": "ID",
       "NAME_EMAIL": "Name & Email",

@@ -58,7 +58,8 @@
     "STATUS": {
       "CONFIRMED": "Aktív",
       "CANCELLED": "Lemondva",
-      "COMPLETED": "Befejezett"
+      "COMPLETED": "Befejezett",
+      "EXPIRED": "Lejárt"
     },
     "ACTIONS": {
       "CANCEL": "Időpont lemondása",
@@ -86,6 +87,7 @@
     "OPHTHALMOLOGY_EXAM": "Szemészeti alapvizsgálat",
     "UROLOGY_SCREENING": "Urológiai szűrővizsgálat",
     "GYNECOLOGY_SCREENING": "Nőgyógyászati rákszűrés",
+    "GYNECOLOGY_EXAM_LONG": "Nőgyógyászati szakvizsgálat",
     "DENTAL_SCALING": "Fogkő-eltávolítás",
     "DENTAL_FILLING": "Fogtömés",
     "VISION_TEST": "Látásvizsgálat",
@@ -99,6 +101,23 @@
     "SAVE_SERVICE": "Szolgáltatás mentése",
     "SAVE_CHANGES": "Változtatások mentése",
     "EMPTY": "Nincsenek rögzített szolgáltatások.",
+    "DESCRIPTION":{
+      "CARDIOLOGY_EXAM": "Átfogó kardiológiai vizsgálat, amely magában foglalja a szív és érrendszer állapotának értékelését.",
+      "DENTAL_CHECKUP": "Rendszeres fogászati ellenőrzés a szájhigiénia és a fogak egészségének megőrzése érdekében.",
+      "PSYCHIATRY_CONSULT": "Személyre szabott pszichiátriai konzultáció mentális egészségének támogatására.",
+      "DERMATOLOGY_SCREENING": "Bőrgyógyászati szűrés a bőrproblémák korai felismerése és kezelése érdekében.",
+      "ORTHOPEDICS_EXAM": "Ortopédiai szakvizsgálat mozgásszervi problémák diagnosztizálására és kezelésére.",
+      "OPHTHALMOLOGY_EXAM": "Átfogó szemészeti vizsgálat látásproblémák és szemészeti betegségek felismerésére.",
+      "UROLOGY_SCREENING": "Urológiai szűrővizsgálat a húgyúti rendszer egészségének megőrzése érdekében.",
+      "GYNECOLOGY_SCREENING": "Nőgyógyászati rákszűrés a méhnyakrák korai felismerésére és megelőzésére.",
+      "GYNECOLOGY_EXAM_LONG": "Átfogó nőgyógyászati szakvizsgálat a női reproduktív egészség támogatására.",
+      "DENTAL_SCALING": "Professzionális fogkő-eltávolítás a fogak tisztaságának és egészségének megőrzése érdekében.",
+      "DENTAL_FILLING": "Minőségi fogtömés szuvasodás vagy sérülés esetén a fog szerkezetének helyreállítására.",
+      "VISION_TEST": "Részletes látásvizsgálat a látásproblémák korai felismerése és kezelése érdekében.",
+      "JOINT_INJECTION": "Gyulladáscsökkentő és fájdalomcsillapító ízületi injekciók mozgásszervi problémák kezelésére.",
+      "POSTOP_CONTROL": "Műtét utáni kontrollvizsgálat a gyógyulás nyomon követésére és a komplikációk megelőzésére.",
+      "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digitális dermatoszkópia és anyajegyszűrés a bőrrák korai felismerése érdekében."
+    },
     "MESSAGES": {
       "ADD_SUCCESS": "Szolgáltatás sikeresen hozzáadva!",
       "UPDATE_SUCCESS": "Sikeres frissítés!",
@@ -245,6 +264,7 @@
     "TITLE": "Szakemberek Kezelése",
     "SUBTITLE": "Orvosok és asszisztensek kezelése a rendszerben",
     "NEW_BUTTON": "Új szakember",
+    "GENERATE_SLOTS_TITLE": "Idősávok generálása",
     "TABLE": {
       "ID": "ID",
       "NAME_EMAIL": "Név és Email",

@@ -28,25 +28,29 @@
         <tbody>
           @for (staff of staffs; track staff.id) {
             <tr [class.opacity-50]="!staff.isActive" [class.bg-light]="!staff.isActive">
-              <td class="ps-4 text-muted small">#{{staff.id}}</td>
-              <td>
+              <td class="ps-4 text-muted small" [attr.data-column]="'STAFF.TABLE.ID' | translate">#{{staff.id}}</td>
+              
+              <td [attr.data-column]="'STAFF.TABLE.NAME_EMAIL' | translate">
                 <div class="d-flex flex-column">
                   <span class="fw-bold text-dark">{{staff.name}}</span>
                   <small class="text-muted">{{staff.email}}</small>
                 </div>
               </td>
-              <td>
+              
+              <td [attr.data-column]="'STAFF.TABLE.ROLE' | translate">
                 <span class="badge rounded-pill px-3"
                       [ngClass]="staff.role == 1 ? 'bg-info-subtle text-info border border-info-subtle' : 'bg-primary-subtle text-primary border border-primary-subtle'">
                   {{ staff.role == 1 ? ('STAFF.ROLES.DOCTOR' | translate) : (staff.role == 2 ? ('STAFF.ROLES.ADMIN' | translate) : ('STAFF.ROLES.ASSISTANT' | translate)) }}
                 </span>
               </td>
-              <td>
+              
+              <td [attr.data-column]="'STAFF.TABLE.SPECIALTY' | translate">
                 <span class="text-secondary small">
                   {{ 'SPECIALTIES.' + ((staff.specialty || 'GENERAL') | uppercase) + '.DOCTOR' | translate }}
                 </span>
               </td>
-              <td> 
+              
+              <td [attr.data-column]="'STAFF.TABLE.STATUS' | translate"> 
                 @if (staff.isAvailable && staff.isActive) {
                   <span class="badge bg-success-subtle text-success border border-success-subtle small">
                     <i class="bi bi-check-circle me-1"></i> {{ 'STAFF.TABLE.AVAILABLE' | translate }}
@@ -57,12 +61,13 @@
                   </span>
                 }
               </td>
+
               <td class="text-center pe-3">
-                <div class="btn-group shadow-sm border rounded-3 overflow-hidden">
+                <div class="staff-action-container d-inline-flex gap-1 shadow-sm border rounded-3 overflow-hidden bg-white">
                   <button class="btn btn-light btn-sm text-primary border-end" (click)="viewBookings(staff.id)" [title]="'STAFF.TOOLTIPS.APPOINTMENTS' | translate">
                     <i class="bi bi-calendar-event"></i>
                   </button>
-                  <button class="btn btn-light btn-sm text-warning border-end" (click)="generateAutoSlots(staff)"[title]="'STAFF.TOOLTIPS.GENERATE_SLOTS' | translate">
+                  <button class="btn btn-light btn-sm text-warning border-end" (click)="generateAutoSlots(staff)" [title]="'STAFF.TOOLTIPS.GENERATE_SLOTS' | translate">
                     <i class="bi bi-calendar-plus-fill"></i>
                   </button>
                   <button class="btn btn-light btn-sm text-secondary border-end" (click)="startEdit(staff)" [title]="'STAFF.TOOLTIPS.EDIT' | translate">
@@ -90,104 +95,104 @@
 </div>
 
 @if (showModal) {
-<div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1060;">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-      
-      <div class="modal-header border-0 pb-0 px-4 pt-4">
-        <h5 class="fw-bold text-dark">
-          <i class="bi" [ngClass]="addMode ? 'bi-person-plus text-primary' : 'bi-pencil-square text-secondary'"></i>
-          {{ addMode ? ('STAFF.MODAL.ADD_TITLE' | translate) : ('STAFF.MODAL.EDIT_TITLE' | translate) }}
-        </h5>
-        <button type="button" class="btn-close" (click)="closeModal()"></button>
-      </div>
+  <div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+        
+        <div class="modal-header border-0 pb-0 px-4 pt-4">
+          <h5 class="fw-bold text-dark">
+            <i class="bi" [ngClass]="addMode ? 'bi-person-plus text-primary' : 'bi-pencil-square text-secondary'"></i>
+            {{ addMode ? ('STAFF.MODAL.ADD_TITLE' | translate) : ('STAFF.MODAL.EDIT_TITLE' | translate) }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
 
-      <div class="modal-body p-4">
-        <form [formGroup]="staffForm">
-          <div class="row g-3">
-            
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-muted">{{ 'STAFF.MODAL.FULL_NAME' | translate }}</label>
-              <input type="text" class="form-control bg-light border-0 py-2" formControlName="name">
-            </div>
+        <div class="modal-body p-4">
+          <form [formGroup]="staffForm">
+            <div class="row g-3">
+              
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'STAFF.MODAL.FULL_NAME' | translate }}</label>
+                <input type="text" class="form-control bg-light border-0 py-2" formControlName="name">
+              </div>
 
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-muted">{{ 'STAFF.MODAL.EMAIL' | translate }}</label>
-              <input type="email" class="form-control bg-light border-0 py-2" formControlName="email" [readonly]="!addMode">
-            </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'STAFF.MODAL.EMAIL' | translate }}</label>
+                <input type="email" class="form-control bg-light border-0 py-2" formControlName="email" [readonly]="!addMode">
+              </div>
 
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-muted">{{ 'STAFF.TABLE.ROLE' | translate }}</label>
-              <select class="form-select bg-light border-0 py-2" formControlName="role">
-                <option value="1">{{ 'STAFF.ROLES.DOCTOR' | translate }}</option>
-                <option value="3">{{ 'STAFF.ROLES.ASSISTANT' | translate }}</option>
-                <option value="2">{{ 'STAFF.ROLES.ADMIN' | translate }}</option>
-              </select>
-            </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'STAFF.TABLE.ROLE' | translate }}</label>
+                <select class="form-select bg-light border-0 py-2" formControlName="role">
+                  <option value="1">{{ 'STAFF.ROLES.DOCTOR' | translate }}</option>
+                  <option value="3">{{ 'STAFF.ROLES.ASSISTANT' | translate }}</option>
+                  <option value="2">{{ 'STAFF.ROLES.ADMIN' | translate }}</option>
+                </select>
+              </div>
 
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-muted">{{ 'STAFF.TABLE.SPECIALTY' | translate }}</label>
-              <select class="form-select bg-light border-0 py-2" formControlName="specialty">
-                <option value="GENERAL">{{ 'SPECIALTIES.GENERAL.NAME' | translate }}</option>
-                <option value="CARDIOLOGY">{{ 'SPECIALTIES.CARDIOLOGY.NAME' | translate }}</option>
-                <option value="DENTISTRY">{{ 'SPECIALTIES.DENTISTRY.NAME' | translate }}</option>
-                <option value="PSYCHIATRY">{{ 'SPECIALTIES.PSYCHIATRY.NAME' | translate }}</option>
-                <option value="DERMATOLOGY">{{ 'SPECIALTIES.DERMATOLOGY.NAME' | translate }}</option>
-                <option value="ORTHOPEDICS">{{ 'SPECIALTIES.ORTHOPEDICS.NAME' | translate }}</option>
-                <option value="OPHTHALMOLOGY">{{ 'SPECIALTIES.OPHTHALMOLOGY.NAME' | translate }}</option>
-                <option value="GYNECOLOGY">{{ 'SPECIALTIES.GYNECOLOGY.NAME' | translate }}</option>
-                <option value="UROLOGY">{{ 'SPECIALTIES.UROLOGY.NAME' | translate }}</option>
-              </select>
-            </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'STAFF.TABLE.SPECIALTY' | translate }}</label>
+                <select class="form-select bg-light border-0 py-2" formControlName="specialty">
+                  <option value="GENERAL">{{ 'SPECIALTIES.GENERAL.NAME' | translate }}</option>
+                  <option value="CARDIOLOGY">{{ 'SPECIALTIES.CARDIOLOGY.NAME' | translate }}</option>
+                  <option value="DENTISTRY">{{ 'SPECIALTIES.DENTISTRY.NAME' | translate }}</option>
+                  <option value="PSYCHIATRY">{{ 'SPECIALTIES.PSYCHIATRY.NAME' | translate }}</option>
+                  <option value="DERMATOLOGY">{{ 'SPECIALTIES.DERMATOLOGY.NAME' | translate }}</option>
+                  <option value="ORTHOPEDICS">{{ 'SPECIALTIES.ORTHOPEDICS.NAME' | translate }}</option>
+                  <option value="OPHTHALMOLOGY">{{ 'SPECIALTIES.OPHTHALMOLOGY.NAME' | translate }}</option>
+                  <option value="GYNECOLOGY">{{ 'SPECIALTIES.GYNECOLOGY.NAME' | translate }}</option>
+                  <option value="UROLOGY">{{ 'SPECIALTIES.UROLOGY.NAME' | translate }}</option>
+                </select>
+              </div>
 
-            <div class="col-12">
-              <label class="form-label small fw-bold text-muted">
-                {{ 'STAFF.MODAL.PASSWORD' | translate }} 
-                @if (!addMode) { <span class="fw-normal fst-italic ms-1">({{ 'STAFF.MODAL.PASSWORD_HINT' | translate }})</span> }
-              </label>
-              <input type="password" class="form-control bg-light border-0 py-2" formControlName="password">
-            </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted">
+                  {{ 'STAFF.MODAL.PASSWORD' | translate }} 
+                  @if (!addMode) { <span class="fw-normal fst-italic ms-1">({{ 'STAFF.MODAL.PASSWORD_HINT' | translate }})</span> }
+                </label>
+                <input type="password" class="form-control bg-light border-0 py-2" formControlName="password">
+              </div>
 
-            <div class="col-12 mt-3">
-              <label class="form-label small fw-bold text-muted d-block mb-2">
-                <i class="bi bi-stethoscope me-1"></i> {{ 'STAFF.MODAL.ASSIGNED_TREATMENTS' | translate }}
-              </label>
-              <div class="d-flex flex-wrap gap-2 p-3 border rounded-3 bg-white shadow-sm" style="max-height: 200px; overflow-y: auto;">
-                @for (t of allConsultations; track t.id) {
-                  <div (click)="toggleTreatment(t.id)" class="treatment-badge" [class.active]="selectedTreatments.includes(t.id)" style="cursor: pointer;">
-                    <i class="bi" [ngClass]="selectedTreatments.includes(t.id) ? 'bi-check-lg' : 'bi-plus'"></i> 
-                    {{ (t.name.includes('_') ? ('SERVICES.' + t.name | translate) : t.name) }}
+              <div class="col-12 mt-3">
+                <label class="form-label small fw-bold text-muted d-block mb-2">
+                  <i class="bi bi-stethoscope me-1"></i> {{ 'STAFF.MODAL.ASSIGNED_TREATMENTS' | translate }}
+                </label>
+                <div class="d-flex flex-wrap gap-2 p-3 border rounded-3 bg-white shadow-sm" style="max-height: 200px; overflow-y: auto;">
+                  @for (con of allConsultations; track con.id) {
+                    <div (click)="toggleTreatment(con.id)" class="treatment-badge" [class.active]="selectedTreatments.includes(con.id)" style="cursor: pointer;">
+                      <i class="bi" [ngClass]="selectedTreatments.includes(con.id) ? 'bi-check-lg' : 'bi-plus'"></i> 
+                      {{ (con.name.includes('_') ? ('SERVICES.' + con.name | translate) : con.name) }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="col-12 mt-4">
+                <div class="d-flex gap-4 p-3 bg-light rounded-3 border">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="availCheck" formControlName="isAvailable">
+                    <label class="form-check-label small fw-bold text-dark" for="availCheck">{{ 'STAFF.MODAL.IS_AVAILABLE' | translate }}</label>
                   </div>
-                }
-              </div>
-            </div>
-
-            <div class="col-12 mt-4">
-              <div class="d-flex gap-4 p-3 bg-light rounded-3 border">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="availCheck" formControlName="isAvailable">
-                  <label class="form-check-label small fw-bold text-dark" for="availCheck">{{ 'STAFF.MODAL.IS_AVAILABLE' | translate }}</label>
-                </div>
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="activeCheck" formControlName="isActive">
-                  <label class="form-check-label small fw-bold text-dark" for="activeCheck">{{ 'STAFF.MODAL.ACTIVE_STATUS' | translate }}</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="activeCheck" formControlName="isActive">
+                    <label class="form-check-label small fw-bold text-dark" for="activeCheck">{{ 'STAFF.MODAL.ACTIVE_STATUS' | translate }}</label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
 
-      <div class="modal-footer border-0 p-4 pt-0">
-        <button type="button" class="btn btn-link text-muted text-decoration-none me-auto" (click)="closeModal()">
-          {{ 'COMMON.CANCEL' | translate }}
-        </button>
-        <button type="button" class="btn btn-elit px-5 shadow-sm" [disabled]="staffForm.invalid" (click)="save()">
-          <i class="bi bi-check2-circle me-2"></i> 
-          {{ addMode ? ('COMMON.SAVE' | translate) : ('STAFF.MODAL.UPDATE' | translate) }}
-        </button>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <button type="button" class="btn btn-link text-muted text-decoration-none me-auto" (click)="closeModal()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button type="button" class="btn btn-elit px-5 shadow-sm" [disabled]="staffForm.invalid" (click)="save()">
+            <i class="bi bi-check2-circle me-2"></i> 
+            {{ addMode ? ('COMMON.SAVE' | translate) : ('STAFF.MODAL.UPDATE' | translate) }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 }
