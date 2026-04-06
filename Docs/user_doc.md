@@ -155,18 +155,9 @@ Fontos:
 - lejárt vagy múltbeli időpont esetén a lemondás már nem elérhető,
 - a rendszer egyes esetekben tájékoztató üzenetet is megjelenít arról, miért nem lehetséges a lemondás.
 
-## 10. Áttekintő oldal
 
-Bejelentkezés után a rendszer áttekintő oldalt is megjeleníthet, ahol a felhasználó egy helyen láthatja:
 
-- az összes foglalását,
-- a közelgő időpontokat,
-- a leggyakrabban igénybe vett szolgáltatásokat,
-- gyorsindítási lehetőséget új foglaláshoz.
-
-Ez az oldal arra szolgál, hogy a legfontosabb információk külön keresés nélkül elérhetők legyenek.
-
-## 11. Orvosi felület
+## 10. Orvosi felület
 
 Az orvosi vagy szakember jogosultságú felhasználók további lehetőségeket is láthatnak, például:
 
@@ -177,22 +168,24 @@ Az orvosi vagy szakember jogosultságú felhasználók további lehetőségeket 
 
 Ez a nézet eltérhet a páciens felülettől, mert elsősorban a napi munkát támogatja.
 
-## 12. Adminisztrációs felület
+## 11. Adminisztrációs felület
 
 Az adminisztrátori jogosultságú felhasználók kezelhetik többek között:
 
 - a felhasználókat,
 - a szakembereket,
 - a szolgáltatásokat vagy konzultációkat,
-- az egyes felhasználók aktív vagy inaktív állapotát.
+- az egyes szakemberek aktív vagy inaktív állapotát.
+
+Az admin felületen jelenleg nincs külön időpontkezelő nézet; az időpontok a rendszerben automatikusan jönnek létre, illetve a szakemberek saját naptárnézetükben dolgoznak velük.
 
 Ez a felület kizárólag megfelelő jogosultsággal érhető el.
 
-## 13. Kijelentkezés
+## 12. Kijelentkezés
 
 Ha befejezte a használatot, javasolt kijelentkezni, különösen közös vagy nyilvános eszközön. Kijelentkezés után a védett oldalak újra csak bejelentkezés után érhetők el.
 
-## 14. Gyakori problémák és megoldások
+## 13. Gyakori problémák és megoldások
 
 ### Nem érkezik meg a megerősítő vagy jelszó-visszaállító e-mail
 
@@ -220,7 +213,7 @@ Ha befejezte a használatot, javasolt kijelentkezni, különösen közös vagy n
 - múltbeli foglalás nem mondható le,
 - a rendszer a lemondási feltételekről külön üzenetet is adhat.
 
-## 15. Rövid összefoglaló
+## 14. Rövid összefoglaló
 
 Az ElitPort használatának tipikus menete:
 

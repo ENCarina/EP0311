@@ -3,6 +3,30 @@ import db from '../models/modrels.js';
 import {Op} from 'sequelize';
 import { EmailService } from '../services/emailService.js';
 
+const MANAGEABLE_STATUSES = new Set(['Confirmed', 'Cancelled', 'Completed']);
+
+async function getDoctorStaffIdForUser(userId, transaction) {
+    const staff = await db.Staff.findOne({ where: { userId }, transaction });
+    return staff ? Number(staff.id) : null;
+}
+
+async function canManageBooking(user, booking, transaction) {
+    if (!user || !booking) {
+        return false;
+    }
+
+    if (user.roleId === 2) {
+        return true;
+    }
+
+    if (user.roleId === 1) {
+        const staffId = await getDoctorStaffIdForUser(user.id, transaction);
+        return staffId !== null && Number(booking.staffId) === staffId;
+    }
+
+    return false;
+}
+
 const BookingController = {
     async index(req, res) {
         try {
@@ -127,16 +151,63 @@ const BookingController = {
     // 4. Foglalás frissítése
     async update(req, res) {
         try {
-            const [recordNumber] = await db.Booking.update(req.body, {
-                where: { id: req.params.id }
-            });
-            
-            if (recordNumber === 0) {
-                return res.status(404).json({ success: false, message: 'Foglalás nem található!' });
+            const currentUserId = req.user?.id || req.userId;
+
+            if (!currentUserId) {
+                return res.status(401).json({ success: false, message: 'User not authenticated' });
             }
-            
-            const booking = await db.Booking.findByPk(req.params.id);
-            return res.status(200).json({ success: true, data: booking });
+
+            const currentUser = await db.User.findByPk(currentUserId);
+            if (!currentUser || currentUser.roleId < 1) {
+                return res.status(403).json({ success: false, message: 'Nincs jogosultságod a foglalás kezeléséhez!' });
+            }
+
+            const nextStatus = req.body?.status;
+            if (!nextStatus || !MANAGEABLE_STATUSES.has(nextStatus)) {
+                return res.status(400).json({ success: false, message: 'Érvénytelen vagy hiányzó státusz!' });
+            }
+
+            const transaction = await db.sequelize.transaction();
+
+            try {
+                const booking = await db.Booking.findByPk(req.params.id, { transaction });
+
+                if (!booking) {
+                    await transaction.rollback();
+                    return res.status(404).json({ success: false, message: 'Foglalás nem található!' });
+                }
+
+                const authorized = await canManageBooking(currentUser, booking, transaction);
+                if (!authorized) {
+                    await transaction.rollback();
+                    return res.status(403).json({ success: false, message: 'Nincs jogosultságod ehhez a foglaláshoz!' });
+                }
+
+                const slot = await db.Slot.findByPk(booking.slotId, { transaction });
+                const previousStatus = booking.status;
+
+                if (slot) {
+                    if (previousStatus !== 'Cancelled' && nextStatus === 'Cancelled') {
+                        await slot.update({ isAvailable: true }, { transaction });
+                    }
+
+                    if (previousStatus === 'Cancelled' && nextStatus !== 'Cancelled') {
+                        if (!slot.isAvailable) {
+                            throw new Error('A foglalás nem állítható vissza, mert az időpont már foglalt.');
+                        }
+
+                        await slot.update({ isAvailable: false }, { transaction });
+                    }
+                }
+
+                await booking.update({ status: nextStatus }, { transaction });
+                await transaction.commit();
+
+                return res.status(200).json({ success: true, data: booking });
+            } catch (error) {
+                await transaction.rollback();
+                throw error;
+            }
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -180,6 +251,13 @@ const BookingController = {
                     await transaction.rollback();
                     throw error;
                 }
+            }
+
+            if (currentUserRole === 1) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Az orvosi felületen a foglalást státuszváltással kezeld, végleges törléshez admin jogosultság kell.'
+                });
             }
 
             const result = await BookingService.cancelBooking(req.params.id, currentUserId);

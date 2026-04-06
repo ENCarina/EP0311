@@ -10,7 +10,7 @@ export interface Booking {
 
     startTime: string;
     endTime?: string;
-    status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    status: 'Confirmed' | 'Cancelled' | 'Completed';
     
     isPublic: boolean;
     notes?: string;

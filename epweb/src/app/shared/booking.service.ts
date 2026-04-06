@@ -76,7 +76,20 @@ export class BookingService {
       { headers: this.getHeaders() } 
     ).pipe(map(res => res.data));
   }
-  // deleteBooking(id: number): Observable<any> {
-  //   return this.http.delete(`${this.API_URL}/bookings/${id}`);
-  // }
+
+  updateBookingStatus(bookingId: number, status: Booking['status']): Observable<Booking> {
+    return this.http.put<{ success: boolean; data: Booking }>(
+      `${this.API_URL}/bookings/${bookingId}`,
+      { status },
+      { headers: this.getHeaders() }
+    ).pipe(map(res => res.data));
+  }
+
+  deleteBooking(bookingId: number): Observable<any> {
+    return this.http.delete(`${this.API_URL}/bookings/${bookingId}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(err => throwError(() => err))
+    );
+  }
 }

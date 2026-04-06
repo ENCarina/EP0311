@@ -23,22 +23,31 @@ const SPECIALTY_MAP = {
     'Diabetológus': 'Diabetológia'
 };
 
+function normalizeSpecialtyKey(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
 const SLOT_START_HOUR = 8;
 const SLOT_END_HOUR = 21;
 const SLOT_DURATION_MINUTES = 30;
 
 async function resolveTreatmentIdsForSpecialty(specialty) {
-    const specialtyName = SPECIALTY_MAP[specialty] || specialty;
+    const specialtyKey = normalizeSpecialtyKey(specialty);
+    const specialtyName = Object.entries(SPECIALTY_MAP).find(([key]) => normalizeSpecialtyKey(key) === specialtyKey)?.[1] || String(specialty || '').trim();
     const consultations = await Consultation.findAll({
         attributes: ['id', 'specialty']
     });
 
     const specialtyIds = consultations
-        .filter((consultation) => consultation.specialty === specialtyName)
+        .filter((consultation) => normalizeSpecialtyKey(consultation.specialty) === normalizeSpecialtyKey(specialtyName))
         .map((consultation) => Number(consultation.id));
 
     const generalIds = consultations
-        .filter((consultation) => consultation.specialty === 'Általános')
+        .filter((consultation) => normalizeSpecialtyKey(consultation.specialty) === normalizeSpecialtyKey('Általános'))
         .map((consultation) => Number(consultation.id));
 
     return [...new Set([...specialtyIds, ...generalIds])];

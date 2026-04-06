@@ -13,6 +13,23 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 export class UserListComponent implements OnInit {
   users: any[] = [];
   private readonly navyColor = '#001f3f';
+  private readonly specialtyOptions: Record<string, string> = {
+    'Kardiológus': 'Kardiológus',
+    'Fogorvos': 'Fogorvos',
+    'Pszichiáter': 'Pszichiáter',
+    'Bőrgyógyász': 'Bőrgyógyász',
+    'Ortopéd szakorvos': 'Ortopéd szakorvos',
+    'Szemész': 'Szemész',
+    'Urológus': 'Urológus',
+    'Nőgyógyász': 'Nőgyógyász',
+    'Neurológus': 'Neurológus',
+    'Endokrinológus': 'Endokrinológus',
+    'Pulmonológus': 'Pulmonológus',
+    'Fül-orr-gégész': 'Fül-orr-gégész',
+    'Gasztroenterológus': 'Gasztroenterológus',
+    'Reumatológus': 'Reumatológus',
+    'Diabetológus': 'Diabetológus'
+  };
 
   constructor(private adminService: AdminService, private translate: TranslateService) {}
 
@@ -125,9 +142,9 @@ onPromoteToStaff(user: any) {
   Swal.fire({
     title: this.translate.instant('ADMIN_USERS.PROMOTE_TITLE'),
     text: `${this.translate.instant('ADMIN_USERS.PROMOTE_TEXT')} ${user.name}`,
-    input: 'text',
-    inputLabel: this.translate.instant('ADMIN_USERS.SPECIALTY_LABEL'),
-    inputPlaceholder: this.translate.instant('ADMIN_USERS.SPECIALTY_PLACEHOLDER'),
+    input: 'select',
+    inputOptions: this.specialtyOptions,
+  inputLabel: this.translate.instant('ADMIN_USERS.SPECIALTY_LABEL'),
     showCancelButton: true,
     confirmButtonText: this.translate.instant('ADMIN_USERS.PROMOTE_CONFIRM'),
     cancelButtonText: this.translate.instant('COMMON.CANCEL'),

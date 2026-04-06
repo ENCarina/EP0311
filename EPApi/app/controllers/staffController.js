@@ -25,6 +25,14 @@ const SPECIALTY_MAP = {
     'Diabetológus': 'Diabetológia'
 };
 
+function normalizeSpecialtyKey(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
 const SLOT_START_HOUR = 8;
 const SLOT_END_HOUR = 21;
 const SLOT_DURATION_MINUTES = 30;
@@ -42,18 +50,19 @@ function normalizeTreatmentIds(treatmentIds) {
 }
 
 async function resolveTreatmentIdsForSpecialty(specialty, transaction) {
-    const specialtyName = SPECIALTY_MAP[specialty] || specialty;
+    const specialtyKey = normalizeSpecialtyKey(specialty);
+    const specialtyName = Object.entries(SPECIALTY_MAP).find(([key]) => normalizeSpecialtyKey(key) === specialtyKey)?.[1] || String(specialty || '').trim();
     const consultations = await Consultation.findAll({
         attributes: ['id', 'specialty'],
         transaction
     });
 
     const specialtyIds = consultations
-        .filter((consultation) => consultation.specialty === specialtyName)
+        .filter((consultation) => normalizeSpecialtyKey(consultation.specialty) === normalizeSpecialtyKey(specialtyName))
         .map((consultation) => Number(consultation.id));
 
     const generalIds = consultations
-        .filter((consultation) => consultation.specialty === 'Általános')
+        .filter((consultation) => normalizeSpecialtyKey(consultation.specialty) === normalizeSpecialtyKey('Általános'))
         .map((consultation) => Number(consultation.id));
 
     return [...new Set([...specialtyIds, ...generalIds])];
@@ -241,7 +250,9 @@ const StaffController = {
             const staff = await Staff.findOne({ where: { userId: id } });
             if (!staff) return res.status(404).json({ success: false, message: 'Szakember nem található' });
             // Hozzárendelt vizsgálat
-            await staff.setTreatments(treatmentIds);
+            const normalizedTreatmentIds = normalizeTreatmentIds(treatmentIds);
+            await staff.setTreatments(normalizedTreatmentIds);
+            await ensureFutureSlotsForStaff(Number(staff.id), normalizedTreatmentIds);
             
             res.json({ success: true, message: 'Kezelések frissítve' });
         } catch (error) {
@@ -308,6 +319,14 @@ const StaffController = {
             const treatmentIds = requestedTreatmentIds.length > 0
                 ? requestedTreatmentIds
                 : await resolveTreatmentIdsForSpecialty(specialty, transaction);
+
+            if (!treatmentIds.length) {
+                await transaction.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ehhez a szakterülethez nem található hozzárendelhető szolgáltatás. Válasszon listából meglévő szakterületet.'
+                });
+            }
 
             await staffProfile.setTreatments(treatmentIds, { transaction });
 

@@ -13,6 +13,11 @@
       <button class="btn btn-light rounded-pill px-4 border" (click)="openBookingsPage()">
         <i class="bi bi-list-ul me-2"></i>{{ isDoctorView ? ('DASHBOARD.ALL_APPOINTMENTS' | translate) : ('DASHBOARD.ALL_BOOKINGS' | translate) }}
       </button>
+      @if (isDoctorView) {
+        <button class="btn btn-light rounded-pill px-4 border" (click)="openBookingManagement()">
+          <i class="bi bi-kanban me-2"></i>Időpontkezelő
+        </button>
+      }
       <button class="btn btn-outline-primary rounded-pill px-4" (click)="refreshDashboard()">
         <i class="bi bi-arrow-clockwise me-2"></i>{{ 'DASHBOARD.REFRESH' | translate }}
       </button>

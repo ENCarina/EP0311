@@ -81,6 +81,10 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/my-bookings']);
   }
 
+  protected openBookingManagement(): void {
+    this.router.navigate(['/booking-management']);
+  }
+
   protected refreshDashboard(): void {
     this.loadDashboardData();
   }

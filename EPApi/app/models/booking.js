@@ -19,9 +19,9 @@ const Booking = sequelize.define('bookings', {
     duration: { type: DataTypes.INTEGER, allowNull: false },
     startTime: { type: DataTypes.DATE, allowNull: false }, 
     endTime: { type: DataTypes.DATE, allowNull: true }, 
-    status: { type: DataTypes.ENUM ('Pending', 'Confirmed', 'Cancelled', 'Completed'), 
+    status: { type: DataTypes.ENUM ('Confirmed', 'Cancelled', 'Completed'), 
               allowNull: false, 
-              defaultValue: 'Pending'
+          defaultValue: 'Confirmed'
     },
     price: {type: DataTypes.DECIMAL(10,2), allowNull: false, defaultValue:0.00},
     isPublic: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },

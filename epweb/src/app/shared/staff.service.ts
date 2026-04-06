@@ -27,7 +27,7 @@ export class StaffService {
     }
 
     updateStaff(id: number, data: any) {
-        return this.http.put(`${this.baseUrl}/users/${id}`, data);
+        return this.http.put(`${this.baseUrl}/staff/${id}`, data);
     }
 
     updateStaffStatus(id: number, isActive: boolean) {
