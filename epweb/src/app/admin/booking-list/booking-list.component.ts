@@ -39,13 +39,18 @@ export class BookingListComponent implements OnInit {
           return dateA - dateB;
         });
 
-        this.bookings.set(sortedData);
+        const processedData = sortedData.map(booking => ({
+          ...booking,
+          isDelegated: booking.patientId !== booking.createdBy?.id && !!booking.createdBy
+        }));
+
+        this.bookings.set(processedData);
         this.isLoading.set(false);
       },
       error: (err:any) => {
         this.isLoading.set(false);
         Swal.fire(
-          this.translate.instant('COMMON.ERROR'),
+          this.translate.instant('COMMON.ERROR.TITLE'),
           this.translate.instant('COMMON.LOADING_ERROR'),
           'error'
         );
@@ -67,7 +72,6 @@ export class BookingListComponent implements OnInit {
       if (result.isConfirmed) {
         this.adminService.deleteBooking(bookingId).subscribe({
           next: () => {
-            // FRONTEND TÖRLÉS: Azonnal kivesszük a listából, hogy ne zavarja az admint
             this.bookings.update(current => current.filter(b => b.id !== bookingId));
 
             const Toast = Swal.mixin({
@@ -85,7 +89,7 @@ export class BookingListComponent implements OnInit {
           },
           error: (err) => {
             Swal.fire(
-              this.translate.instant('COMMON.ERROR'),
+              this.translate.instant('COMMON.ERROR.TITLE'),
               this.translate.instant(err.error?.message || 'COMMON.GENERIC_ERROR'),
               'error'
             );

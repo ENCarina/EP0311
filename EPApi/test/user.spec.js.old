@@ -1,0 +1,95 @@
+// import supertest from 'supertest';
+// import app from '../app/app.js';
+// import { expect } from 'chai';
+
+// describe('/api/register and /api/login', () => {
+//   const restype= 'application/json; charset=utf-8';
+//   let token;
+
+//   it('post /register ', async () => {
+//     const res = await supertest(app)
+//       .post('/api/register')
+//       .set('Accept', 'application/json')
+//       .send({
+//         name: 'Mary Test',
+//         email: 'mary@zold.lan',
+//         password: 'secret',
+//         password_confirmation: 'secret'
+//       })
+
+//       .expect('Content-Type', restype)
+//       .expect(201);
+    
+//       expect(res.body).to.have.property('id');
+//       expect(res.body.verified).to.equal(false);
+//   });
+
+//   it('post /login ', async () => {
+//     const res = await supertest(app)
+//       .post('/api/login')
+//       .set('Accept', 'application/json')
+//       .send({
+//         email: 'mary@zold.lan',
+//         password: 'secret'
+//       })
+//       .expect('Content-Type', restype)
+//       .expect(201);
+
+//     expect(res.body).to.have.property('id');
+//     expect(res.body.verified).to.equal(false);
+
+//     token = res.body.token || res.body.accessToken;
+//     expect(token).to.not.be.undefined;
+
+//     // if(!token) {
+//     //   throw new Error('No token');
+//     // }        
+//   });
+//   it('get /users ', async () => {
+//     await supertest(app)
+//       .get('/api/users')
+//       .set('Accept', 'application/json')
+//       .set('Authorization', 'Bearer ' + token)
+//       .expect(200);
+//   });
+// });
+
+import supertest from 'supertest';
+import app from '../app/app.js';
+import { expect } from 'chai';
+
+describe('Auth Folyamat', () => {
+    let token;
+
+    it('Sikeres Regisztráció és Login', async () => {
+        // 1. Regisztráció
+        const reg = await supertest(app)
+            .post('/api/register')
+            .send({
+                name: 'Mary Test',
+                email: 'mary@zold.lan',
+                password: 'secret',
+                password_confirmation: 'secret'
+            });
+        expect(reg.status).to.equal(201);
+
+        // 2. Login
+        const login = await supertest(app)
+            .post('/api/login')
+            .send({
+                email: 'mary@zold.lan',
+                password: 'secret'
+            });
+        
+        expect(login.status).to.equal(200);
+        token = login.body.token || login.body.accessToken || login.body.data?.token;
+        expect(token).to.not.be.undefined;
+    });
+
+    it('Védett útvonal elérése', async () => {
+        const res = await supertest(app)
+            .get('/api/users')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res.status).to.equal(200);
+    });
+});

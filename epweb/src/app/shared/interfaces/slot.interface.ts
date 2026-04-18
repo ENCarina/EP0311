@@ -16,10 +16,9 @@ export interface Slot {
     updatedAt?: Date;
 }
 
-// A generáláshoz használt konfigurációs interfész
 export interface BulkSlotConfig {
     staffId: number;
-    consultationId?: number | null; // Null, ha nem dedikált a szolgáltatás
+    consultationId?: number | null; 
     startDate: string;              // YYYY-MM-DD
     endDate: string;                // YYYY-MM-DD
     startTime: string;              // HH:mm

@@ -2,52 +2,94 @@
   "TITLE": "ElitPort",
   "WELCOME": "Welcome to ElitPort Private Clinic!",
   "COMMON": {
-    "SUCCESS": "Success!",
-    "ERROR": "Error",
+    "ERROR": {
+      "TITLE": "Error",
+      "SERVER_ERROR": "Internal server error. Please try again later or contact support.",
+      "ONLY_IMAGES": "Only image files are allowed!"
+    },
+    "SUCCESS": "Success",
     "CANCEL": "Cancel",
+    "UNKNOWN": "Unknown",
     "SAVE": "Save",
     "LOADING": "Loading...",
     "LOADING_HIDDEN": "Loading...",
-    "LOADING_ERROR": "Failed to load the list",
+    "LOADING_DATA": "Loading data",
+    "LOADING_ERROR": "Error occurred while loading data.",
     "GENERIC_ERROR": "Operation failed",
     "ERROR_GENERAL": "An error occurred during the operation.",
     "ATTENTION": "Attention",
     "UNKNOWN_ERROR": "An unexpected error occurred.",
-    "UNKNOWN_NAME": "Unnamed",
+    "UNKNOWN_NAME": "Anonymous",
     "NO_EMAIL": "No email provided",
-    "NOT_FOUND": "Resource not found",
-    "YES_DELETE": "Yes, delete it",
+    "NOT_FOUND": "Not found",
+    "YES_DELETE": "Yes, delete",
     "ACTIONS": "Actions",
     "REFRESH": "Refresh",
-    "DELETE": "Delete", 
+    "DELETE": "Delete",
     "GENERATE": "Generate",
     "WARNING": "Warning",
-    "OK": "OK"
+    "OK": "OK",
+    "OCCASION": "occasion",
+    "CURRENCY": "HUF",
+    "ACTIVE": "Active"
+  },
+  "DAYS": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
   },
   "MENU": {
     "HOME": "Home",
     "STAFF": "Our Specialists",
     "ABOUT": "About Us",
     "MY_BOOKINGS": "My Bookings",
-    "BOOKING": "Booking",
+    "BOOKING": "Book Appointment",
     "LOGIN": "Login",
     "LOGOUT": "Logout",
     "GREETING": "Hi",
     "ADMIN": {
-      "STAFF": "Staff Management",
+      "STAFF": "Staff",
       "SERVICES": "Services",
-      "DASHBOARD": "Dashboard",
-      "BOOKINGS": "Manage Bookings"
-    },
-    "FOOTER": {
-      "ADDRESS": "7 Szinapszis St, Budapest 1125",
-      "HOURS": "M-F: 08:00-19:00",
-      "RIGHTS": "All rights reserved"
+      "DASHBOARD": "Dashboard/Stats",
+      "BOOKINGS": "Manage Bookings",
+      "TITLE": "Administration",
+      "USERS": "User Management"
     }
   },
+  "DASHBOARD": {
+    "TITLE": "Admin Dashboard & Analytics",
+    "SUBTITLE": "Overview of system statistics and processes",
+    "REVENUE": "Total Revenue",
+    "BOOKINGS": "Total Bookings",
+    "CANCEL_RATE": "Cancellation Rate",
+    "WEEKLY_ROAM": "Weekly Traffic (Heatmap)",
+    "STAFF_EFFICIENCY": "Staff Efficiency",
+    "TOP_SERVICES": "Top Services",
+    "BOOKING_COUNT": "Bookings",
+    "TIMES_LABEL": "times",
+    "LAST_30_DAYS": "Last 30 days",
+    "HEATMAP_LEGEND": "Booking density",
+    "HEATMAP_TITLE": "Popular Time Slots",
+    "TOTAL_REVENUE": "Gross Revenue",
+    "ACTIVE_STAFF": "Active Specialists",
+    "THIS_WEEK": "This week",
+    "EXPORT": "Export Report",
+    "PDF_TITLE": "ElitPort - Clinical Performance Report",
+    "PDF_GENERATED": "Generated on",
+    "PDF_FILENAME": "dashboard_report"
+  },
+  "FOOTER": {
+    "ADDRESS": "1125 Budapest, Szinapszis u. 7.",
+    "HOURS": "M-F: 08:00-19:00",
+    "RIGHTS": "All rights reserved"
+  },
   "BOOKINGS": {
-    "SUBTITLE": "Manage all bookings in the system",
-    "NO_DATA": "No active bookings found.",
+    "SUBTITLE": "Manage all system bookings",
+    "NO_DATA": "No active bookings in the system.",
     "TABLE": {
       "PATIENT": "Patient Name",
       "DATE": "Date",
@@ -62,8 +104,9 @@
       "EXPIRED": "Expired"
     },
     "ACTIONS": {
-      "CANCEL": "Cancel Appointment",
-      "CONFIRM_CANCEL": "Yes, cancel it"
+      "CANCEL": "Cancel appointment",
+      "CONFIRM_CANCEL": "Yes, cancel it",
+      "CONFIRM_BOOKING": "Yes, book it"
     },
     "MESSAGES": {
       "CANCEL_CONFIRM_TITLE": "Are you sure?",
@@ -73,62 +116,66 @@
       "NOT_FOUND": "Booking not found.",
       "UNAUTHORIZED": "Unauthorized action.",
       "ALREADY_CANCELLED": "This booking has already been cancelled.",
-      "CANNOT_CANCEL_WITHIN_24H": "Appointments cannot be cancelled within 24 hours.",
-      "ADMIN_CANCEL_SUCCESS": "Administrator cancellation successful.",
+      "CANNOT_CANCEL_WITHIN_24H": "Appointments cannot be cancelled online within 24 hours.",
+      "ADMIN_CANCEL_SUCCESS": "Admin cancellation successful.",
       "HARD_DELETE_SUCCESS": "Test data permanently deleted from database."
     }
   },
   "SERVICES": {
+    "NAME": "Service Name",
     "CARDIOLOGY_EXAM": "Cardiology Examination",
     "DENTAL_CHECKUP": "Dental Checkup",
     "PSYCHIATRY_CONSULT": "Psychiatric Consultation",
     "DERMATOLOGY_SCREENING": "Dermatology Screening",
     "ORTHOPEDICS_EXAM": "Orthopedic Examination",
-    "OPHTHALMOLOGY_EXAM": "Ophthalmology Examination",
-    "UROLOGY_SCREENING": "Urology Screening",
-    "GYNECOLOGY_SCREENING": "Gynecology Screening",
-    "GYNECOLOGY_EXAM_LONG": "Comprehensive Gynecological Examination",
-    "DENTAL_SCALING": "Dental Scaling (Tartar Removal)",
+    "OPHTHALMOLOGY_EXAM": "Ophthalmology Basic Exam",
+    "UROLOGY_SCREENING": "Urological Screening",
+    "GYNECOLOGY_SCREENING": "Gynecological Cancer Screening",
+    "GYNECOLOGY_EXAM_LONG": "Gynecological Examination",
+    "DENTAL_SCALING": "Dental Scaling",
     "DENTAL_FILLING": "Dental Filling",
     "VISION_TEST": "Vision Test",
     "JOINT_INJECTION": "Joint Injection",
-    "POSTOP_CONTROL": "Post-operative Control",
+    "POSTOP_CONTROL": "Post-op Control",
     "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digital Dermoscopy & Mole Mapping",
     "TITLE": "Services",
-    "SUBTITLE": "Manage price list for examinations and consultations",
+    "SUBTITLE": "Manage price list for exams and consultations",
     "ADD_NEW": "New Service",
     "EDIT_TITLE": "Edit Service",
     "SAVE_SERVICE": "Save Service",
     "SAVE_CHANGES": "Save Changes",
     "EMPTY": "No services recorded.",
-    "DESCRIPTION":{
-        "CARDIOLOGY_EXAM": "Comprehensive cardiac examination including ECG, blood pressure measurement, and risk assessment.",
-        "DENTAL_CHECKUP": "Thorough dental checkup with oral health evaluation and personalized care recommendations.",
-        "PSYCHIATRY_CONSULT": "In-depth psychiatric consultation to assess mental health and provide tailored treatment plans.",
-        "DERMATOLOGY_SCREENING": "Full-body skin examination for early detection of skin conditions and cancers.",
-        "ORTHOPEDICS_EXAM": "Detailed orthopedic examination to evaluate musculoskeletal health and mobility.",
-        "OPHTHALMOLOGY_EXAM": "Comprehensive eye examination including vision testing and ocular health assessment.",
-        "UROLOGY_SCREENING": "Complete urological screening for early detection of urinary tract issues and prostate health.",
-        "GYNECOLOGY_SCREENING": "Thorough gynecological screening including Pap smear, HPV testing, and breast examination.",
-        "GYNECOLOGY_EXAM_LONG": "Comprehensive gynecological examination including pelvic ultrasound, hormonal assessment, and fertility counseling.",
-        "DENTAL_SCALING": "Professional dental scaling to remove plaque and tartar buildup for improved oral health.",
-        "DENTAL_FILLING": "High-quality dental filling service to restore tooth function and aesthetics.",
-        "VISION_TEST": "Accurate vision testing to determine prescription needs and detect eye conditions.",
-        "JOINT_INJECTION": "Therapeutic joint injection for pain relief and improved mobility in arthritic conditions.",
-        "POSTOP_CONTROL": "Post-operative control examination to monitor healing progress and address any complications.",
-        "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Advanced digital dermoscopy and mole mapping for early detection of skin abnormalities and personalized monitoring."
-      },
-
+    "Consultation": "Consultation",
+    "General Checkup": "General Checkup",
+    "Follow-up": "Follow-up visit",
+    "DESCRIPTION": {
+      "CARDIOLOGY_EXAM": "Comprehensive cardiology exam including assessment of the cardiovascular system.",
+      "DENTAL_CHECKUP": "Regular dental checkup to maintain oral hygiene and tooth health.",
+      "PSYCHIATRY_CONSULT": "Personalized psychiatric consultation to support your mental health.",
+      "DERMATOLOGY_SCREENING": "Dermatological screening for early detection and treatment of skin issues.",
+      "ORTHOPEDICS_EXAM": "Orthopedic exam to diagnose and treat musculoskeletal problems.",
+      "OPHTHALMOLOGY_EXAM": "Comprehensive eye exam for detecting vision problems and eye diseases.",
+      "UROLOGY_SCREENING": "Urological screening to maintain urinary system health.",
+      "GYNECOLOGY_SCREENING": "Gynecological cancer screening for early detection and prevention.",
+      "GYNECOLOGY_EXAM_LONG": "Comprehensive gynecological exam for female reproductive health.",
+      "DENTAL_SCALING": "Professional dental scaling to keep teeth clean and healthy.",
+      "DENTAL_FILLING": "Quality dental filling to restore tooth structure in case of decay or damage.",
+      "VISION_TEST": "Detailed vision test for early detection of vision-related issues.",
+      "JOINT_INJECTION": "Anti-inflammatory and pain-relieving joint injections for musculoskeletal issues.",
+      "POSTOP_CONTROL": "Post-operative control to monitor healing and prevent complications.",
+      "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digital dermoscopy and mole mapping for early skin cancer detection."
+    },
     "MESSAGES": {
-      "ADD_SUCCESS": "Service added successfully!",
-      "UPDATE_SUCCESS": "Update successful!",
+      "ADD_SUCCESS": "Service successfully added!",
+      "UPDATE_SUCCESS": "Service updated successfully!",
       "DELETE_SUCCESS": "Service removed.",
       "DELETE_CONFIRM_TITLE": "Are you sure you want to delete?",
       "DELETE_CONFIRM_TEXT": "This process cannot be undone!",
       "CONFIRM_DELETE": "Yes, delete it!",
-      "MISSING_ID": "Missing ID for modification.",
+      "MISSING_ID": "The requested service was not found!",
+      "DUPLICATE_NAME": "This service name already exists!",
       "TREATMENTS_LOAD_ERROR": "Failed to load treatments.",
-      "CANNOT_CANCEL_WITHIN_24H": "Appointments cannot be cancelled online within 24 hours. Please call us!",
+      "CANNOT_CANCEL_WITHIN_24H": "Online cancellation is not possible within 24 hours. Please call us!",
       "BOOKING_NOT_FOUND": "Booking not found!"
     },
     "TABLE": {
@@ -138,7 +185,7 @@
       "DURATION": "Duration",
       "PRICE": "Price",
       "MESSAGES": {
-        "ADD_SUCCESS": "Staff member added successfully!",
+        "ADD_SUCCESS": "Specialist successfully added!",
         "CONFIRM_DELETE": "Yes, archive it"
       }
     },
@@ -156,34 +203,40 @@
   },
   "USERS": {
     "TITLE": "User Management",
+    "SUBTITLE": "Maintain registered patient data",
+    "SEARCH_PLACEHOLDER": "Search by name or email...",
     "REGISTERED_COUNT": "{{count}} registered members",
     "MESSAGES": {
-      "ARCHIVE_SUCCESS": "User archived successfully.",
-      "UPDATE_SUCCESS": "Data updated successfully.",
-      "PWD_SUCCESS": "Password changed successfully.",
+      "ARCHIVE_SUCCESS": "User successfully archived.",
+      "UPDATE_SUCCESS": "Data successfully updated.",
+      "PWD_SUCCESS": "Password successfully changed.",
       "ARCHIVE_CONFIRM_TITLE": "Are you sure you want to archive?",
       "ARCHIVE_CONFIRM_TEXT": "The user will no longer be able to log in!",
       "PWD_INPUT_LABEL": "Enter new password",
       "PWD_PLACEHOLDER": "At least 6 characters...",
       "PWD_VALIDATION": "Must be at least 6 characters!",
-      "PROMOTE_TEXT": "Enter job title",
+      "PROMOTE_TEXT": "Define Job Title",
       "ROLE_PLACEHOLDER": "Job title name...",
       "ROLE_REQUIRED": "Job title is required!",
       "ALL_FIELDS_REQUIRED": "Please fill in all fields!",
       "PROFILE_NOT_FOUND": "Professional profile not found.",
-      "LOAD_ERROR": "Error occurred while loading users.",
-      "DELETE_SUCCESS": "User deleted successfully.",
-      "RESTORE_SUCCESS": "User profile reactivated successfully.",
-      "PASSWORD_UPDATE_SUCCESS": "Password changed successfully!",
-      "FETCH_ERROR": "Error retrieving user data.",
-      "UNAUTHORIZED": "You are not authorized to modify this profile."
+      "LOAD_ERROR": "Error loading users.",
+      "DELETE_SUCCESS": "User successfully deleted.",
+      "RESTORE_SUCCESS": "User profile successfully reactivated.",
+      "PASSWORD_UPDATE_SUCCESS": "Password successfully changed!",
+      "FETCH_ERROR": "Error fetching user data.",
+      "UNAUTHORIZED": "Unauthorized to modify profile.",
+      "STATUS_ACTIVATED": "User activated successfully!",
+      "STATUS_DEACTIVATED": "User deactivated successfully!",
+      "STATUS_UPDATED_SUCCESS":"Status updated successfully!",
+      "UPDATE_ERROR":"An error occurred while updating the status."
     },
     "TABLE": {
       "ID": "#ID",
       "USER": "Name",
       "EMAIL": "Email Address",
       "ROLE": "Role",
-      "SPECIALTY": "Specialty key (e.g. DERMATOLOGY)",
+      "SPECIALTY": "Specialty Key (e.g. DERMATOLOGY)",
       "STATUS": "Status",
       "ACTIONS": "Actions",
       "EMPTY": "No users to display."
@@ -207,7 +260,7 @@
   "LOGIN": {
     "TITLE": "Login",
     "SUBTITLE": "Welcome back!",
-    "EMAIL_LABEL": "Email address",
+    "EMAIL_LABEL": "Email Address",
     "EMAIL_PLACEHOLDER": "example@email.com",
     "PASSWORD_LABEL": "Password",
     "FORGOT_PASSWORD": "Forgot your password?",
@@ -222,8 +275,8 @@
     "LOGIN_LINK": "Login",
     "FIELDS": {
       "NAME": "Name",
-      "NAME_PLACEHOLDER": "John/Jane Doe",
-      "EMAIL": "Email address",
+      "NAME_PLACEHOLDER": "John Doe",
+      "EMAIL": "Email Address",
       "EMAIL_PLACEHOLDER": "example@email.com",
       "PASSWORD": "Password",
       "CONFIRM_PASSWORD": "Confirm Password",
@@ -231,53 +284,56 @@
     },
     "ERRORS": {
       "REQUIRED": "This field is required.",
-      "MIN_LENGTH": "At least {{length}} characters are required.",
+      "MIN_LENGTH": "At least {{length}} characters required.",
       "EMAIL_INVALID": "Invalid email address.",
-      "MISMATCH": "The two passwords do not match."
+      "MISMATCH": "Passwords do not match."
     },
     "BUTTON": {
       "SUBMIT": "Register",
       "LOADING": "Processing..."
     },
     "SWAL": {
-      "SUCCESS_TITLE": "Registration Successful!",
+      "SUCCESS_TITLE": "Registration successful!",
       "SUCCESS_TEXT": "Welcome!",
       "ERROR_TITLE": "Error!",
       "ERROR_DEFAULT": "Registration failed!"
     }
   },
   "AUTH": {
+    "VALIDATION_ERROR": "Kérjük, töltse ki megfelelően az összes mezőt!",
     "VERIFY_EMAIL": "Please verify your email address to log in!",
+    "ERROR_GENERAL": "Invalid email or password. Please try again.",
     "INVALID_CREDENTIALS": "Invalid email or password!",
-    "LOGIN_SUCCESS": "Login successful!"
+    "ERROR_401": "Unauthorized: Incorrect credentials.",
+    "LOGIN_SUCCESS": "Login successful!",
+    "LOGIN_FAILED": "Sikertelen bejelentkezés"
   },
   "STAFF": {
     "BIOS": {
-      "DR_KOVACS": "20 years of experience in cardiac rehabilitation.",
+      "DR_KOVACS": "20 years experience in cardiology rehabilitation.",
       "DR_TOTH": "Specialist in aesthetic dentistry and oral surgery.",
-      "DR_HOUSE": "Everybody lies. Diagnostic medicine specialist.",
-      "DR_SZABO": "Dermatologist specialist, oncodermatologist.",
+      "DR_HOUSE": "Everybody lies. Diagnostics specialist.",
+      "DR_SZABO": "Dermatologist specialist, onkodermatologist.",
       "DR_KISS": "Specialist in joint diseases and sports surgery.",
       "DR_MOLNAR": "Ophthalmologist specialist, laser eye surgeon.",
       "DR_BARNA": "Expert in urological tumors and pelvic screenings.",
-      "DR_VARGA": "Gynecological endocrinology and infertility counseling."
+      "DR_VARGA": "Gynecological endocrinology and fertility counseling."
     },
-    "TITLE": "Staff Management",
+    "TITLE": "Specialist Management",
     "SUBTITLE": "Manage doctors and assistants in the system",
     "NEW_BUTTON": "New Specialist",
-    "GENERATE_SLOTS_TITLE": "Generate Weekly Slots",
+    "GENERATE_SLOTS_TITLE": "Generate Time Slots",
     "TABLE": {
       "ID": "ID",
       "NAME_EMAIL": "Name & Email",
       "ROLE": "Role",
-      "EMAIL": "Email",
       "SPECIALTY": "Specialty",
       "STATUS": "Status",
       "ACTIONS": "Actions",
       "EMPTY": "No specialists to display.",
       "AVAILABLE": "Available",
-      "NOT_AVAILABLE": "Not available",
-      "BIO": "Biography"
+      "NOT_AVAILABLE": "Not Available",
+      "BIO": "Bio"
     },
     "ROLES": {
       "DOCTOR": "Doctor",
@@ -288,41 +344,44 @@
       "ADD_TITLE": "Register New Specialist",
       "EDIT_TITLE": "Edit Specialist Data",
       "FULL_NAME": "Full Name",
-      "EMAIL": "Email address",
+      "EMAIL": "Email Address",
       "PASSWORD": "Password",
-      "BIO": "Biography",
+      "BIO": "Bio",
       "SPECIALTY": "Specialty",
-      "PASSWORD_HINT": "(Leave empty if unchanged)",
+      "PASSWORD_HINT": "Leave empty if unchanged",
       "ASSIGNED_TREATMENTS": "Assigned Examinations",
-      "IS_AVAILABLE": "Currently available",
-      "ACTIVE_STATUS": "Active status",
+      "IS_AVAILABLE": "Currently Available",
+      "ACTIVE_STATUS": "Active Status",
       "CANCEL": "Cancel",
       "SAVE": "Save",
       "UPDATE": "Update"
     },
     "MESSAGES": {
-      "ADD_SUCCESS": "Staff member added successfully!",
-      "UPDATE_SUCCESS": "Staff data and treatments updated successfully!",
-      "ASSIGN_SUCCESS": "Treatments assigned successfully!",
-      "ASSIGN_ERROR": "Staff saved, but treatment assignment failed!",
-      "INVALID_ID": "Staff member cannot be identified.",
-      "RESTORE_ERROR": "Server rejected the request. Check permissions.",
-      "RESTORE_SUCCESS": "Staff member access restored successfully.",
+      "ADD_SUCCESS": "Specialist successfully added!",
+      "UPDATE_SUCCESS": "Data and treatments successfully updated!",
+      "DELETE_SUCCESS": "Staff member removed!",
+      "ASSIGN_SUCCESS": "Treatments successfully assigned!",
+      "ASSIGN_ERROR": "Specialist saved, but treatment assignment failed!",
+      "INVALID_ID": "Specialist cannot be identified.",
+      "RESTORE_ERROR": "Server denied the request. Check permissions.",
+      "RESTORE_SUCCESS": "Specialist access successfully restored.",
       "PROFILE_NOT_FOUND": "No editable professional profile found for this user.",
-      "PROMOTE_SUCCESS": "User successfully promoted to staff member!",
-      "TREATMENTS_NOT_FOUND": "No treatments found for this staff member.",
-      "STATUS_ACTIVE": "Staff profile is now active.",
-      "STATUS_ARCHIVED": "Staff profile archived (inactive).",
+      "PROMOTE_SUCCESS": "User successfully promoted to specialist!",
+      "TREATMENTS_NOT_FOUND": "No treatments found for this specialist.",
+      "STATUS_ACTIVE": "Professional profile is now active.",
+      "STATUS_ARCHIVED": "Professional profile archived (inactive).",
       "GENERATE_TITLE": "Generate Weekly Slots",
       "GENERATE_SUCCESS": "Slots successfully created for 30 days!",
-      "GENERATE_ERROR": "Error occurred while generating slots.",
-      "NO_SLOTS_GENERATED": "No slots could be generated with the given parameters."
+      "GENERATE_ERROR": "Error generating slots.",
+      "SLOTS_GENERATED": "Time slots generated successfully!",
+      "SLOTS_ERROR": "Error during slot generation!",
+      "NO_SLOTS_GENERATED": "No slots can be generated with given criteria."
     },
     "TOOLTIPS": {
       "APPOINTMENTS": "Appointments",
       "EDIT": "Edit",
       "DEACTIVATE": "Deactivate",
-      "RESTORE": "Restore", 
+      "RESTORE": "Restore",
       "GENERATE_SLOTS": "Auto-generate slots"
     }
   },
@@ -343,47 +402,47 @@
     "NEW_BOOKING": "New Booking",
     "LOADING": "Fetching bookings...",
     "ERROR_TITLE": "An error occurred",
-    "DEFAULT_TREATMENT": "General Examination",
+    "DEFAULT_TREATMENT": "General Exam",
     "DEFAULT_DOCTOR": "Specialist",
-    "DEFAULT_SPECIALTY": "Specialist Doctor",
+    "DEFAULT_SPECIALTY": "Specialist",
     "CURRENCY": "HUF",
-    "PAST_VISIT": "Past visit",
-    "CANCEL_APPOINTMENT": "Cancel appointment",
+    "PAST_VISIT": "Past Visit",
+    "CANCEL_APPOINTMENT": "Cancel Appointment",
     "CANCEL_ONLY_PHONE": "Can only be cancelled by phone",
-    "CANCEL_TOOLTIP": "Cannot be cancelled online within 24 hours",
+    "CANCEL_TOOLTIP": "Cannot be cancelled online within 24h",
     "STATUS_PAST": "PAST / CLOSED",
-    "STATUS_FINALIZED": "FINALIZED (CANNOT BE CANCELLED)",
+    "STATUS_FINALIZED": "FINALIZED (NON-CANCELLABLE)",
     "STATUS_ACTIVE": "ACTIVE / Cancellable",
     "EMPTY_TITLE": "No bookings yet",
-    "EMPTY_SUBTITLE": "It seems you currently have no recorded appointments.",
+    "EMPTY_SUBTITLE": "It seems you have no recorded appointments at the moment.",
     "BOOK_NOW": "Book an appointment now",
     "CANCEL_CONFIRM_TITLE": "Are you sure you want to cancel?",
     "CANCEL_CONFIRM_TEXT": "This action cannot be undone!",
     "CANCEL_CONFIRM_BTN": "Yes, cancel it!",
     "CANCEL_CANCEL_BTN": "Cancel",
-    "CANCEL_SUCCESS_TITLE": "Cancellation successful!",
-    "CANCEL_SUCCESS_TEXT": "Your appointment time has been freed up.",
+    "CANCEL_SUCCESS_TITLE": "Success!",
+    "CANCEL_SUCCESS_TEXT": "Your appointment has been released.",
     "ERROR_LOAD": "Failed to load bookings.",
-    "ERROR_CANCEL_GENERAL": "A server-side error occurred during cancellation. Please try again later!"
+    "ERROR_CANCEL_GENERAL": "Server error during cancellation. Try again later!"
   },
   "HOME": {
     "TITLE": {
       "PREFIX": "ELIT",
       "SUFFIX": "MedicalCentre"
     },
-    "SUBTITLE": "Digital patient management for your convenience.",
+    "SUBTITLE": "Digital patient management for your comfort.",
     "CARDS": {
       "ENVIRONMENT": {
         "TITLE": "Modern Environment",
-        "TEXT": "Our high-tech equipment and friendly offices guarantee excellent care."
+        "TEXT": "High-tech tools and friendly clinics guarantee excellent care."
       },
       "EXPERTISE": {
         "TITLE": "Expert Hands",
-        "TEXT": "Our highly trained specialists take care of you at the highest professional level."
+        "TEXT": "Our highly qualified specialists take care of you at the highest professional level."
       }
     },
     "BUTTON": {
-      "BOOKING": "START APPOINTMENT BOOKING",
+      "BOOKING": "START BOOKING APPOINTMENT",
       "LOGIN": "LOG IN TO BOOK"
     },
     "SWAL": {
@@ -395,14 +454,16 @@
   "FORGOT_PASSWORD": {
     "TITLE": "Forgot Password",
     "SUBTITLE": "Enter your email address for recovery.",
-    "EMAIL_LABEL": "Email address",
+    "EMAIL_LABEL": "Email Address",
     "EMAIL_PLACEHOLDER": "example@email.com",
-    "SEND_BTN": "Send link",
+    "SEND_BTN": "Send Link",
     "SENDING": "Sending...",
     "BACK_TO_LOGIN": "Back to Login",
     "MESSAGES": {
       "SUCCESS": "The recovery link has been sent to your email!",
-      "ERROR": "An error occurred. Please check the email address!"
+      "ERROR": "An error occurred. Please check the email address!",
+      "PASSWORD_MISMATCH": "Passwords do not match!",
+      "ERROR_GENERAL": "An error occurred during the operation."
     }
   },
   "RESET_PASSWORD": {
@@ -413,7 +474,7 @@
     "SUBMIT_BTN": "Save Password",
     "BACK_TO_LOGIN": "Back to Login",
     "ERRORS": {
-      "LENGTH": "Password must be at least 6 characters!",
+      "LENGTH": "Password must be at least 6 characters long!",
       "MISMATCH": "Passwords do not match!"
     }
   },
@@ -421,23 +482,24 @@
     "NOT_FOUND": {
       "TITLE": "404",
       "SUBTITLE": "OOPS! PAGE NOT FOUND",
-      "MESSAGE": "Sorry, the content you are looking for is not available.<br>You will be redirected to the home page shortly.",
+      "MESSAGE": "Sorry, the content you are looking for is not available.<br>Redirecting you to home soon.",
       "BACK_BUTTON": "Back to Home"
-    }
+      }
   },
   "ERRORS": {
     "REQUIRED": "This field is required!",
     "EMAIL_FORMAT": "Please enter a valid email address!",
-    "MIN_LENGTH": "At least {{length}} characters are required."
+    "MIN_LENGTH": "At least {{length}} characters required."
   },
   "ABOUT": {
-    "TAGLINE": "Intelligent Booking System",
+    "TAGLINE": "Modern Medical Management Solutions",
+    "PROJECT_TITLE": "Exam Project 2026",
     "VERSION": "Version",
     "DEVELOPERS": "Developers",
     "STATUS": "Status",
-    "SYSTEM_ACTIVE": "System active",
-    "PROJECT_TITLE": "About the Project",
-    "PROJECT_DESC": "<strong>ElitPort</strong> is a modern, scalable solution for managing appointment booking processes. The development focuses on <strong>data security</strong> and premium <strong>user experience</strong>.",
+    "PROJECT_DESC": "<strong>ElitPort</strong> is a future-proof clinical solution that leverages the power of technical innovations to provide a fully reactive and secure system, designed to streamline patient scheduling and administrative workflows for emerging private clinics.",
+    "TECHNOLOGIES": "Core Technologies",
+    "SYSTEM_ACTIVE": "System Operational",
     "DOCS": "Documentation",
     "SUPPORT": "Support",
     "ALL_RIGHTS": "All rights reserved."
@@ -446,107 +508,119 @@
     "BACK_TO_LIST": "Back to our specialists",
     "BIO_TITLE": "Introduction",
     "SERVICES_TITLE": "Available Services",
-    "TREATMENT_TYPE": "Specialist care",
+    "TREATMENT_TYPE": "Specialist Care",
     "MINUTES": "min",
     "CURRENCY": "HUF",
-    "NO_SERVICES": "No services recorded.",
-    "BOOKING": "Book Now",
+    "NO_SERVICES": "No recorded services.",
+    "BOOKING": "Booking",
     "BOOKING_LONG": "Book Appointment",
-    "LOGIN_TO_BOOK": "Login to book",
+    "LOGIN_TO_BOOK": "Log in to book",
     "PAGE_TITLE": "Our Specialists",
     "VIEW_PROFILE": "View Profile",
-    "DEFAULT_BIO": "Our experienced specialist is looking forward to your visit.",
+    "DEFAULT_BIO": "Our experienced specialist awaits your registration.",
     "BOOK_APPOINTMENT": "Book Appointment",
-    "LOGIN_REQUIRED": "Login required for booking"
+    "LOGIN_REQUIRED": "Login required to book"
   },
   "BOOKING": {
-    "TODAY": "Current week",
-    "SIDEBAR_TITLE": "Booking Details",
-    "SELECT_DATE": "Period",
+    "TODAY": "Current Week",
+    "SIDEBAR_TITLE": "Filters",
+    "SELECT_DATE": "Select Period",
     "SPECIALTY": "Specialty",
-    "SPECIALTY_PLACEHOLDER": "-- Select specialty --",
+    "SPECIALTY_PLACEHOLDER": "-- Select Specialty --",
     "STAFF": "Specialist",
-    "STAFF_PLACEHOLDER": "-- Select doctor --",
-    "TREATMENT": "Treatment",
-    "TREATMENT_PLACEHOLDER": "-- Select treatment --",
+    "STAFF_PLACEHOLDER": "-- Select Doctor --",
+    "TREATMENT": "Examination Type",
+    "TREATMENT_PLACEHOLDER": "-- Select Examination --",
     "SEARCH_BTN": "Search",
     "UPDATING": "Updating...",
     "AVAILABLE_SLOTS": "Available Slots",
     "TIME": "Time",
-    "FREE_PLACES": "{{count}} slots available",
+    "FREE_PLACES": "{{count}} free slots",
     "BOOK_NOW": "Book Appointment",
-    "ALREADY_BOOKED": "Booked",
-    "NO_SLOTS_TITLE": "No available slots",
-    "NO_SLOTS_SUBTITLE": "Please select specialty, doctor, and examination.",
-    "CONFIRM_PROMPT": "Booking Appointment",
-    "CONFIRM_TITLE": "Confirm Your Booking",
-    "CONFIRM_QUESTION": "Are you sure you want to book the following appointment: {{date}} at {{time}}?",
-    "SUCCESS_MSG": "Booking successful!We look forward to seeing you.",
+    "ALREADY_BOOKED": "Already booked",
+    "NO_SLOTS_TITLE": "No Available Slots found for the selected period.",
+    "NO_SLOTS_SUBTITLE": "Select specialty, doctor, and examination.",
+    "CONFIRM_PROMPT": "Book Appointment",
+    "CONFIRM_TITLE": "Confirm Booking",
+    "CONFIRM_QUESTION": "Are you sure you want to book for: {{date}} {{time}}?",
+    "SUCCESS_MSG": "Booking successful!",
     "ERROR_MSG": "An error occurred during booking.",
     "NOT_FOUND": "Booking not found!",
-    "UNAUTHORIZED": "You don't have permission to manage this booking!",
-    "CONFLICT": "This slot has been taken in the meantime!",
-    "CANNOT_CANCEL_WITHIN_24H": "Cancellation within 24 hours is only possible via phone!",
-    "DELETE_SUCCESS": "Successful cancellation. The slot is now available."
-    },
+    "UNAUTHORIZED": "Unauthorized to manage booking!",
+    "CONFLICT": "This time slot is already taken! Please choose another one.",
+    "CANNOT_CANCEL_WITHIN_24H": "Cancellation within 24h is only possible by phone!",
+    "CANCEL_SUCCESS": "Appointment cancelled successfully!",
+    "DELETE_SUCCESS": "Success! The slot is now free again.",
+    "ADMIN_CANCEL_SUCCESS": "As an administrator, you have successfully cancelled the booking!",
+    "ERROR_LOAD": "Failed to load bookings.",
+    "SERVER_ERROR": "Internal server error occurred during cancellation."
+  },
   "MESSAGES": {
     "AUTH": {
       "MISSING_FIELDS": "Please fill in all fields!",
       "PASSWORD_MISMATCH": "Passwords do not match!",
-      "EMAIL_ALREADY_TAKEN": "This email is already in use!",
-      "REGISTRATION_SUCCESS_VERIFY": "Registration successful! Please verify your email address.",
+      "EMAIL_ALREADY_TAKEN": "This email address is already in use!",
+      "REGISTRATION_SUCCESS_VERIFY": "Registration successful! Please verify your email.",
       "INVALID_TOKEN": "Invalid or expired token!",
-      "EMAIL_VERIFIED_SUCCESS": "Email address successfully verified!",
+      "EMAIL_VERIFIED_SUCCESS": "Email successfully verified!",
       "INVALID_CREDENTIALS": "Invalid email or password!",
       "ACCOUNT_INACTIVE": "This account is currently inactive.",
       "EMAIL_NOT_VERIFIED": "Please verify your email address before logging in!",
       "EMAIL_REQUIRED": "Email address is required!",
-      "FORGOT_PASSWORD_SENT": "If the address exists, we have sent a password reset link.",
+      "FORGOT_PASSWORD_SENT": "If the address exists, we've sent a password reset link.",
       "TOKEN_REQUIRED": "Reset token is missing!",
-      "INVALID_OR_EXPIRED_TOKEN": "The link is invalid or has expired.",
-      "PASSWORD_RESET_SUCCESS": "Password successfully reset!",
-      "ERROR_GENERAL": "An unexpected error occurred. Please try again later!",
-      "VALIDATION_ERROR": "Please fill in the login details correctly!"
+      "INVALID_OR_EXPIRED_TOKEN": "Link is invalid or has expired.",
+      "PASSWORD_RESET_SUCCESS": "Password successfully changed!",
+      "ERROR_GENERAL": "Unsuccessful login. Please try again later!",
+      "VALIDATION_ERROR": "Please fill in login data correctly!",
+      "REGISTRATION_SUCCESS": "Registration successful! You can now log in."
     },
     "BOOKING": {
-      "CANCEL_SUCCESS": "Successfully cancelled the appointment.",
-      "CANCELLATION_TOO_LATE": "The appointment can no longer be cancelled (it is within 24 hours).",
+      "CANCEL_SUCCESS": "Appointment successfully cancelled.",
+      "CANCELLATION_TOO_LATE": "Appointment can no longer be cancelled (within 24h).",
       "SUCCESS_MSG": "Booking successful!",
-      "ERROR_MSG": "An error occurred during booking.",
+      "ERROR_MSG": "Error during booking.",
       "ERROR_LOAD": "Failed to load bookings.",
-      "NOT_FOUND": "The requested booking was not found.",
-      "CONFLICT": "You already have another appointment at this time!",
+      "NOT_FOUND": "Requested booking not found.",
+      "CONFLICT": "You already have another appointment booked at this time!",
       "BOOKING_NOT_FOUND": "Booking not found!",
-      "UNAUTHORIZED": "You do not have permission for this action!",
-      "CANNOT_CANCEL_WITHIN_24H": "Online cancellation is not possible within 24 hours.",
-      "DELETE_SUCCESS": "Appointment successfully deleted and slot freed.",
-      "SERVER_ERROR": "A server error occurred during the operation."
+      "UNAUTHORIZED": "Unauthorized action!",
+      "CANNOT_CANCEL_WITHIN_24H": "Online cancellation within 24h is not possible.",
+      "DELETE_SUCCESS": "Appointment successfully deleted and released.",
+      "SERVER_ERROR": "Server error during operation."
     }
   },
   "SLOTS": {
     "MESSAGES": {
-      "SUCCESS": "Time slot saved successfully!",
-      "DELETE_SUCCESS": "The time slot has been removed from the calendar.",
-      "UPDATE_SUCCESS": "The time slot has been updated.",
-      "NOT_FOUND": "The requested time slot was not found.",
-      "PAST_DATE_ERROR": "You cannot create appointments in the past!",
+      "SUCCESS": "Slot successfully saved!",
+      "DELETE_SUCCESS": "Slot deleted from calendar.",
+      "UPDATE_SUCCESS": "Slot modified successfully.",
+      "NOT_FOUND": "Requested slot not found.",
+      "PAST_DATE_ERROR": "Cannot create slots in the past!",
       "UNAUTHORIZED": "You can only manage your own calendar!",
-      "LOAD_ERROR": "Failed to load time slots."
+      "LOAD_ERROR": "Failed to load slots."
     }
   },
   "VERIFY_EMAIL": {
-    "LOADING_TITLE": "Account Activation",
+    "LOADING_TITLE": "Activating Account",
     "LOADING_SUB": "Please wait while we verify your data...",
-    "SUCCESS_TITLE": "Successful Confirmation!",
+    "SUCCESS_TITLE": "Verification Successful!",
     "SUCCESS_SUB": "Thank you for your trust! Your account is now active, and all our services are available to you.",
     "SUCCESS_BTN": "CONTINUE TO LOGIN",
     "ERROR_TITLE": "Activation Failed",
     "ERROR_SUB": "The confirmation link is unfortunately invalid or has expired. Please try registering again.",
     "ERROR_BTN_RETRY": "START NEW REGISTRATION",
-    "ERROR_LINK_HOME": "Back to home page",
+    "ERROR_LINK_HOME": "Back to Home",
     "LOG": {
       "SUCCESS": "Activation successful:",
       "ERROR": "Activation error:"
+    }
+  },
+  "EMAILS": {
+    "MESSAGES": {
+      "SEND_ERROR": "Failed to send email. Please try again later.",
+      "CONFIRMATION_ERROR": "Failed to send booking confirmation.",
+      "RESET_ERROR": "Failed to send password reset email."
     }
   }
 }

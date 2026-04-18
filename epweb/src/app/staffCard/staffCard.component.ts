@@ -35,7 +35,7 @@ export class StaffCardComponent implements OnInit {
           .filter((s: any) => s.isActive === true || s.isActive === 1)
           .map((s: any, i: number) => {
             const name = s.user?.name || s.name || '';
-            const femaleNames = ['Tünde', 'Beatrix', 'Julianna', 'Anna', 'Eszter', 'Lilla', 'Andrea', 'Katalin'];
+            const femaleNames = ['Tünde', 'Beatrix', 'Julianna', 'Anna', 'Eszter', 'Lilla', 'Andrea', 'Kata'];
             const isFemale = femaleNames.some(fn => name.includes(fn));
 
             let fallback: string;
@@ -59,7 +59,6 @@ export class StaffCardComponent implements OnInit {
               finalUrl = fallback;
             }
 
-            // JAVÍTÁS: Itt csak a kulcsokat adjuk át, a fordítást a HTML végzi (pipe)
             const processedStaff = {
               ...s,
               name: s.user?.name || s.name || 'COMMON.UNKNOWN_NAME',

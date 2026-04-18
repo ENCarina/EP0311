@@ -35,7 +35,7 @@ async function up({context: QueryInterface}) {
       references: { model: 'consultations', key: 'id' }
     },
 
-     slotId: {
+    slotId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: { model: 'slots', key: 'id' }, 

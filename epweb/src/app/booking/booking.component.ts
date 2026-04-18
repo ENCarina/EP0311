@@ -1,5 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../shared/booking.service';
 import { StaffService } from '../shared/staff.service';
@@ -10,6 +9,10 @@ import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Staff } from '../shared/interfaces/staff.interface';
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 @Component({
@@ -26,6 +29,7 @@ export class BookingComponent implements OnInit {
   private readonly router = inject(Router);
   public readonly auth = inject(AuthService);
   public translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected staffs: any[] = [];
   protected filteredStaffs: any[] = [];
@@ -47,30 +51,25 @@ export class BookingComponent implements OnInit {
 
   ngOnInit(): void {
     this.generateWeek(this.currentDate);
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.loadInitialData(params); 
     });
   } 
 
-  generateWeek(refDate: Date) {
+  generateWeek(refDate: Date): void {
     const start = new Date(refDate);
     const day = start.getDay();
-   
-    if (day === 6) start.setDate(start.getDate() + 2);
-      else if (day === 0) start.setDate(start.getDate() + 1);
-      else {
-        
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-        start.setDate(diff);
-      }
 
-      this.weekDays = [];
-      for (let i = 0; i < 5; i++) {
-        const d = new Date(start);
-        d.setDate(start.getDate() + i);
-        this.weekDays.push(d);
-      }
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    start.setDate(start.getDate() + diffToMonday);
+   
+    this.weekDays = [];
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      this.weekDays.push(d);
     }
+  }
 
   changeWeek(days: number) {
     this.currentDate.setDate(this.currentDate.getDate() + days);
@@ -85,21 +84,16 @@ export class BookingComponent implements OnInit {
   }
 
   getSlotsForHour(day: Date, hour: string) {
+    const targetDateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const targetHour = hour.split(':')[0].padStart(2, '0');
   
-  const targetDateStr = day.toLocaleDateString('sv-SE');
-  
-  const targetHour = parseInt(hour.split(':')[0], 10);
-  
-  return this.availableSlots.filter(s => {
-    if (!s.date || !s.startTime) return false;
-
-    const slotDateStr = s.date.toString().substring(0, 10);
-    const slotHourStr = s.startTime.split(':')[0];
-    const slotHour = parseInt(slotHourStr, 10);
-    
-    return slotDateStr === targetDateStr && slotHour === targetHour;
-  });
-}
+    return this.availableSlots.filter(s => {
+      if (!s.date || !s.startTime) return false;
+      const slotDateStr = s.date.toString().substring(0, 10);
+      const slotHour = s.startTime.split(':')[0].padStart(2, '0');
+      return slotDateStr === targetDateStr && slotHour === targetHour;
+    });
+  }
 
   loadInitialData(params?: any): void {
     this.isLoading = true;
@@ -196,12 +190,9 @@ export class BookingComponent implements OnInit {
     const start = this.weekDays[0].toLocaleDateString('sv-SE');
     const end = this.weekDays[4].toLocaleDateString('sv-SE');
 
-    const sId: number = Number(this.selectedStaffId);
-    const cId: number = Number(this.selectedConsultationId);
-
-    this.bookingApi.getAvailableSlots(sId, start, end, cId).subscribe({
+    this.bookingApi.getAvailableSlots(this.selectedStaffId, start, end, this.selectedConsultationId).subscribe({
       next: (res: any) => {
-        const allData = res.data || res;
+        const allData = res.data || res || [];
         const now = new Date();
         const minimumLeadTimeHours = 0;
         const limitTime = new Date(now.getTime() + ( minimumLeadTimeHours* 60 * 60 * 1000));
@@ -268,7 +259,7 @@ export class BookingComponent implements OnInit {
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#003366',
-      confirmButtonText: this.translate.instant('COMMON.SUCCESS'),
+      confirmButtonText: this.translate.instant('BOOKINGS.ACTIONS.CONFIRM_BOOKING'),
       cancelButtonText: this.translate.instant('COMMON.CANCEL')
     }).then((result) => {
       if (result.isConfirmed) {
@@ -282,9 +273,11 @@ export class BookingComponent implements OnInit {
     const userId = this.auth.getUserId();
 
     if (!userId) {
-      Swal.fire(this.translate.instant('COMMON.ERROR'),
-      this.translate.instant('HOME.SWAL.TEXT'),
-       'warning');
+      Swal.fire({
+        title: this.translate.instant('COMMON.ERROR.TITLE'),
+        text: this.translate.instant('HOME.SWAL.TEXT'),
+        icon: 'warning'
+      });
       this.router.navigate(['/login']);
       return;
     }
@@ -292,7 +285,11 @@ export class BookingComponent implements OnInit {
     const selectedTreatment = this.filteredConsultations.find(c => Number(c.id) === Number(this.selectedConsultationId));
 
     if (!selectedTreatment) {
-      Swal.fire(this.translate.instant('COMMON.ERROR'),this.translate.instant('COMMON.NOT_FOUND'),'error');
+      Swal.fire({
+        title: this.translate.instant('COMMON.ERROR.TITLE'),
+        text: this.translate.instant('COMMON.NOT_FOUND'),
+        icon: 'error'
+        }); 
       return;
     }
 
@@ -313,12 +310,34 @@ export class BookingComponent implements OnInit {
 
     this.bookingApi.createBooking(bookingData as any).subscribe({
       next: () => {
-        Swal.fire(this.translate.instant('BOOKING.SUCCESS_MSG'), '', 'success')
-          .then(() => this.loadSlots());
+        Swal.fire({
+          title: this.translate.instant('BOOKING.SUCCESS_MSG'),
+          icon: 'success',
+          confirmButtonColor: '#003366'
+        }).then(() => this.loadSlots());
       },
-      error: (err) => {
-        const msg = err.error?.message || this.translate.instant('BOOKING.ERROR_MSG');
-        Swal.fire(this.translate.instant('COMMON.ERROR'), msg, 'error');
+      error: (err: HttpErrorResponse) => {
+        console.error('Booking error detail:', err);
+
+        let serverKey ='';
+        if (err.error && typeof err.error === 'object') {
+          serverKey = err.error.message || err.error.error || '';
+        } else if (typeof err.error === 'string') {
+          serverKey = err.error;
+        }
+        const titleText = String(this.translate.instant('COMMON.ERROR.TITLE')); 
+        
+        const bodyText = serverKey 
+          ? this.translate.instant(serverKey) 
+          : this.translate.instant('BOOKING.ERROR_MSG');
+        
+        Swal.fire({
+          title:this.translate.instant('COMMON.ERROR.TITLE'),
+          text: bodyText,
+          icon: 'error',
+          confirmButtonColor: '#003366',
+          confirmButtonText: String(this.translate.instant('COMMON.OK'))
+        });
       }
     });
   }

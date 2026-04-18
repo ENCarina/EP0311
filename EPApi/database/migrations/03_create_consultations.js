@@ -16,7 +16,7 @@ async function up({context: QueryInterface}) {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-     specialty: {
+    specialty: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -39,4 +39,4 @@ async function down({context: QueryInterface}) {
   await QueryInterface.dropTable('consultations');
 }
 
-export { up, down }
+export { up, down };

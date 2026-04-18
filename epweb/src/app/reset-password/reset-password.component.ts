@@ -33,8 +33,7 @@ export class ResetPasswordComponent implements OnInit {
   get f() { return this.resetForm.controls; }
 
   ngOnInit() {
-    this.token = this.route.snapshot.queryParamMap.get('token');
-    //this.token = this.route.snapshot.paramMap.get('token') || '';
+    this.token = this.route.snapshot.paramMap.get('token') || '';
     
     if (!this.token) {
       this.errorMessage = this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
@@ -48,18 +47,14 @@ export class ResetPasswordComponent implements OnInit {
   }
  
   onSubmit() {
-    if (this.resetForm.valid) {
-      if (!this.token) {
-        this.errorMessage = this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
-        return;
-      }
+    if (this.resetForm.valid && this.token) {
       this.isLoading = true;
       this.errorMessage = '';
 
       const passwordData = {
         password: this.resetForm.value.password,
         password_confirmation: this.resetForm.value.confirmPassword,
-        lang: this.translate.currentLang || 'hu'
+        lang: this.translate.currentLang || 'en'
       };;
 
       this.authService.resetPassword(this.token, passwordData).subscribe({
@@ -67,13 +62,17 @@ export class ResetPasswordComponent implements OnInit {
           this.isLoading = false;
           this.router.navigate(['/login'], { queryParams: { resetSuccess: true } });
         },
-        error: (err) => {
+        error: (err:any) => {
           this.isLoading = false;
-          this.errorMessage = err.error?.message || this.translate.instant('COMMON.GENERIC_ERROR');
+          const serverKey = err.error?.message || 'MESSAGES.AUTH.ERROR_GENERAL';
+          this.errorMessage = this.translate.instant(serverKey);
         }
       });
     } else {
       this.resetForm.markAllAsTouched();
     }
+  }
+  goToLogin() {
+    this.router.navigate(['/login']);
   }
 }

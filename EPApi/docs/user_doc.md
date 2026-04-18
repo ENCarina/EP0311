@@ -1,8 +1,8 @@
-# User documentation
+# USER DOCUMENTATION - API SERVICE
 
-## Install dependencies
+## 1. INSTALLATION - Install dependencies
 
-Dependencies must be installed before use.
+All dependencies must be installed before starting the application:
 
 ```cmd
 npm install
@@ -10,20 +10,17 @@ npm install
 
 Or use your favorite package manager.
 
-## Generate config file
+## 2. CONFIGURATION (.ENV) - Generate config file
 
-The settings are located in a file called:
+Environment settings are managed through .env files.
 
-* .env
-
-To generate the .env file:
-
-```cmd
-node op conf:generate
-```
+* **Main config:** `node op conf:generate` -> creates `.env`
+* **Test config:** `node op testconf:generate` -> creates `.env.test`
+* **App Key:** `node op key:generate` -> generates `APP_KEY`
 
 ### Test configurations file generate
 
+Generate the test environment file (.env.test):
 ```cmd
 node op testconf:generate
 ```
@@ -32,83 +29,70 @@ Result: .env.test file.
 
 ## App key generation
 
-Te generate the application key:
+Generate the Application Security Key (APP_KEY):
 
 ```cmd
 node op key:generate
 ```
 
-## Database setup
+## 3. DATABASE MANAGEMENT 
 
-Edit the .env file.
+### Migrations & Setup
 
-## Endpoints
+* **Run all migrations:** `node op migrate`
+* **Rollback last:** `node op migrate:rollback`
+* **Reset database:** `node op migrate:reset`
+* **Fresh install:** `node op migrate:fresh`
 
-All endpoint have a /api prefix.
+### Seeders & Admin (Data population):
+* Generate Admin user:      > node op admin:generate
+* Populate test data:       > node op db:seed
+
+
+## 4. API ENDPOINTS 
+
+All endpoints are prefixed with `/api`.
 
 | Endpoint | Method | Auth | Description |
-|-|-|-|-|
-| /register | POST  | no |  create user |
-| /login    | POST  | no |  login  |
-| /users    | GET   | yes |  read users |
-| /users/:id | GET  | yes | read user |
-| /users/:id/password | PUT  | yes | change password |
+| :--- | :--- | :--- | :--- |
+| `/auth/register` | POST | no | Create new user account |
+| `/auth/login` | POST | no | User login & Token generation |
+| `/profile/me` | GET | yes | Get own profile data |
+| `/staff` | GET | no | List all medical staff |
+| `/staff` | POST | Admin | Add new staff member |
+| `/consultations`| GET | no | List all available treatments |
+| `/bookings` | POST | yes | Book an appointment |
+| `/users` | GET | Admin | List all users |
+| `/users/:id` | DELETE| Admin | Delete a user |
 
-## The register endpoint
-
+### Payload Examples
+**Login/Register:**
 ```json
 {
-    "name": "joe",
-    "email": "joe@green.lan",
-    "password": "secret",
-    "password_confirmation": "secret"
+    "name": "Dr.Kovács Antal",
+    "email": "dr.kovacs@example.com",
+    "password": "doctor123",
+    "password_confirmation": "doctor123"
 }
 ```
-
 ## The login endpoint
 
 ```json
 {
-    "name": "joe",
-    "password": "secret"
+    "email": "dr.kovacs@example.com",
+    "password": "password123"
 }
 ```
 
-You receive the bearear token with accessToken key.
+You receive the Bearear token with accessToken key.
 
 ## The users endpoint
 
 To query users or user, send the bearer token to endpoint.
 
-## Model and controller generation
+## 5. DATA IMPORT
 
-Use the following instructions to generate models and controllers:
-
-```cmd
-node op make:model thing
-node op make:controller thing
-```
-
-## Key generation
-
-You can generate the application key with the following command:
-
-```cmd
-node op key:generate
-```
-
-## Generate admin user
-
-You can create an admin user if it does not already exist in the database:
-
-```cmd
-node op admin:generate
-```
-
-## Database import
-
-It is possible to import data from JSON and CSV files.
-
+Import data from JSON or CSV files. The last parameter is the separator.
 ```cmd
 node op db:import thing things.json
 node op db:import thing things.csv
@@ -117,68 +101,85 @@ node op db:import thing things.csv ";"
 node op db:import thing things.csv :
 ```
 
-The last option is the separator.
-
 For example JSON file:
 
 employees.json:
 
 ```json
 [
-    { "id": 1, "name": "Tom Large" },
-    { "id": 2, "name": "Jack Small" }
+    { "id": 1, "name": "Tom Miller" },
+    { "id": 2, "name": "Jack Smith" }
 ]
 ```
 
 The default separator is comma.
 
 ```cmd
-node op db:import employee employees.json
+node op db:import staff staffs.json
 ```
 
 For example CSV file:
 
-employees.csv:
+staffs.csv:
 
 ```csv
 id,name
-1,Joe Kitin
-2,Peter Fall
+1,Tom Miller
+2,Jack Smith
 ```
 
 If you have colon separator, use sep parameter.
 
 ```csv
 id:name
-1:Joe Kitin
-2:Peter Fall
+1:Jack Smith
+2:Tom Miller
 ```
 
 ```cmd
-node op db:import employee employees.csv --sep :
+node op db:import staff staffs.csv --sep :
 ```
 
 If the file has semicolon separator, use sep parameter, for example:
 
 ```csv
 id;name
-1;Joe Kitin
-2;Peter Fall
+1;Tom Miller
+2;Jack Smith
 ```
 
 Use next command:
 
 ```cmd
-node op db:import employee employees.csv --sep ";"
+node op db:import staff staffs.csv --sep ";"
 ```
+
+## 6. DEVELOPMENT TOOLS  
+### Model and Controller Generation
+Use the following instructions to generate models and controllers:
+
+```cmd
+node op make:model [name]
+node op make:controller [name]
+```
+
 
 ## Database
 
 ### Database synchronization
 
-Models and database tables can be synchronized, but this can be dangerous.
+Models and database tables can be synchronized.
 
-Database synchronization can be set up in the app/models/modrels.js file. Default values are:
+Database synchronization can be set up in the app/models/modrels.js file. 
+
+* **Safe Update:** `{ alter: true }`
+  - Updates the structure but keeps your data.
+* **Hard Reset:** `{ force: true }`
+  - WARNING: Deletes all data and recreates tables!
+* **Disabled:** `false`
+  - No automatic synchronization.
+
+Default values are:
 
 ```js
 { alter: true }
@@ -192,22 +193,19 @@ Possible values:
 { force: true }
 ```
 
-The latter deletes the contents of the database table!
-
 If the value is false, there is no synchronization in either case.
 
-### Migration
+## 7. MIGRATIONS
+### Generate and Run
+Generate a new migration file:
+```cmd
+node op make/migration staff
 
-Generate a migration:
 
-```bash
-node op make/migration thing
-```
+### Migration example for staff table:
 
-For example migration for employee table:
-
-```bash
-node op make/migration employee
+```cmd
+node op make/migration staff
 ```
 
 ```javascript
@@ -233,7 +231,7 @@ async function up({context: QueryInterface}) {
 }
 
 async function down({context: QueryInterface}) {
-  await QueryInterface.dropTable('employees');
+  await QueryInterface.dropTable('staff');
 }
 
 export { up, down }
@@ -283,15 +281,15 @@ node op migration:fresh
 node op migrate:fresh
 ```
 
-### Database seed
+### Database seeding
 
-Generate a seeder:
+Generate and Run a seeder:
 
 ```bash
 node op make/seeder ...
 ```
 
-Example seeder for staff table:
+Seeder example for staff table:
 
 ```bash
 node op make/seeder staff

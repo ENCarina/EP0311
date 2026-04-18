@@ -60,7 +60,7 @@ export class UserListComponent implements OnInit {
     const userId = user.id;
 
     this.adminService.updateUserStatus(userId, newStatus).subscribe({
-      next: () => {
+      next: (res:any) => {
         user.isActive = newStatus;
         if (user.staffProfile) {
           user.staffProfile.isActive = newStatus;
@@ -76,7 +76,7 @@ export class UserListComponent implements OnInit {
 
         Toast.fire({
           icon: 'success',
-          title: this.translate.instant(newStatus ? 'USERS.MESSAGES.STATUS_ACTIVATED' : 'USERS.MESSAGES.STATUS_DEACTIVATED')
+          title: this.translate.instant(res.message || 'USERS.MESSAGES.STATUS_UPDATED_SUCCESS')
         });
       },
       error: (err) => {

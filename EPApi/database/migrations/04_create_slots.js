@@ -19,39 +19,39 @@ async function up({context: QueryInterface}) {
       onDelete: 'CASCADE'
     },
 
-  consultationId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'consultations',
-      key: 'id'
-  },
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
-  },
+    consultationId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'consultations',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL'
+    },
 
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
     },
    
-  startTime: {
-    type: DataTypes.STRING,
-    allowNull: false
+    startTime: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
     
-  endTime: {
-    type: DataTypes.STRING,
-    allowNull: false
+    endTime: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
 
-  isAvailable: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    isAvailable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     },
     
-  createdAt: { type: DataTypes.DATE },
-  updatedAt: { type: DataTypes.DATE }    
+    createdAt: { type: DataTypes.DATE },
+    updatedAt: { type: DataTypes.DATE }    
   });
 }
 
@@ -59,4 +59,4 @@ async function down({context: QueryInterface}) {
   await QueryInterface.dropTable('slots');
 }
 
-export { up, down }
+export { up, down };

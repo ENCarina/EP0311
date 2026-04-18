@@ -50,4 +50,4 @@ async function down({context: QueryInterface}) {
   await QueryInterface.dropTable('users');
 }
 
-export { up, down }
+export { up, down };

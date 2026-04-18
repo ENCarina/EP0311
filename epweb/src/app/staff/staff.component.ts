@@ -25,7 +25,6 @@ export class StaffComponent implements OnInit {
   public readonly auth = inject(AuthService);
   private readonly bookingApi = inject(BookingService);
 
-  // Adatok és Állapotjelzők
   protected staffs: any[] = [];
   protected allConsultations: any[] = [];
   protected selectedTreatments: number[] = [];
@@ -67,13 +66,24 @@ export class StaffComponent implements OnInit {
             userId: s.userId || profile.id,
             name: profile.name || s.name || this.translate.instant('COMMON.UNKNOWN_NAME'),
             email: profile.email || s.email || this.translate.instant('COMMON.NO_EMAIL'),
+            user: s.user || { name: this.translate.instant('COMMON.UNKNOWN_NAME') },
             role: (s.roleId || profile.roleId || s.role || '1').toString(),
             isActive: s.isActive ?? true,
             isAvailable: s.isAvailable ?? true,
           };
         });
       },
-      error: () => Swal.fire(this.translate.instant('COMMON.ERROR'), '', 'error')
+      error: (err) => {
+        const errorTitle = this.translate.instant('COMMON.ERROR.TITLE') || 'Error';
+        const errorText = err.error?.message || this.translate.instant('COMMON.ERROR.SERVER_ERROR');
+        Swal.fire({
+          title: errorTitle,
+          text: errorText,
+          icon: 'error',
+          confirmButtonColor: '#003366',
+          confirmButtonText: 'OK'
+        });
+      }
     });
   }
 
@@ -143,10 +153,19 @@ export class StaffComponent implements OnInit {
 
     this.api.addStaff(payload).subscribe({
       next: () => this.completeAction(this.translate.instant('STAFF.MESSAGES.ADD_SUCCESS')),
-      error: (err) => Swal.fire('Error', err.error?.message, 'error')
+      error: (err) => {
+        const errorKey = err.error?.message || 'COMMON.ERROR_GENERAL';
+        const translatedMessage = this.translate.instant(errorKey);
+
+        Swal.fire(
+          this.translate.instant('COMMON.ERROR_TITLE'), 
+          translatedMessage, 
+          'error'
+        );
+      }
     });
   }
-
+  
   updateStaff() {
     if (!this.selectedStaffId || !this.selectedStaffForGen?.userId) return;
     
@@ -171,23 +190,21 @@ export class StaffComponent implements OnInit {
           error: () => this.completeAction(this.translate.instant('STAFF.MESSAGES.ASSIGN_ERROR'))
         });
       },
-      error: (err) => Swal.fire('Error', err.error?.message, 'error')
+      error: (err) => {
+        const errorKey = err.error?.message || 'COMMON.ERROR_GENERAL';
+        Swal.fire(this.translate.instant('COMMON.ERROR_TITLE'), this.translate.instant(errorKey), 'error');
+      }
     });
   }
 
   // --- Időpont Generálás ---
   generateAutoSlots(staff?: any) {
-    if (staff) this.selectedStaffForGen = staff;
-    if (!this.selectedStaffForGen) {
-      Swal.fire('Hiba', 'Nincs kiválasztott szakember!', 'error');
-      return;
-    }
-
-    const s = this.selectedStaffForGen;
-    const defaultConsultationId = s.treatments?.[0]?.id || s.consultationId || (this.selectedTreatments.length > 0 ? this.selectedTreatments[0] : null);
-
-    if (!defaultConsultationId) {
-      Swal.fire('Hiba', 'Nincs vizsgálat rendelve!', 'error');
+    const s = staff || this.selectedStaffForGen;
+    if (!s) return;
+   
+    const consultationId = s.treatments?.[0]?.id || (this.selectedTreatments.length > 0 ? this.selectedTreatments[0] : null);
+    if (!consultationId) {
+      Swal.fire(this.translate.instant('COMMON.ATTENTION'), this.translate.instant('STAFF.MESSAGES.NO_CONSULTATION'), 'warning');
       return;
     }
 
@@ -214,24 +231,29 @@ export class StaffComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.isLoading = true;
+
         const payload = {
           staffId: Number(s.id),
+          consultationId: Number(consultationId),
           startTime: result.value.startTime,
           endTime: result.value.endTime,
           interval: Number(result.value.interval),
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 12096e5).toISOString().split('T')[0],
-          consultationId: defaultConsultationId
+          startDate: new Date().toLocaleDateString('sv-SE'),
+          endDate: new Date(Date.now() + 12096e5).toLocaleDateString('sv-SE')
         };
+
         this.bookingApi.generateStaffSlots(payload).subscribe({
-          next: () => { 
-            this.isLoading = false; 
-            Swal.fire(this.translate.instant('COMMON.SUCCESS'), '', 'success'); 
+          next: (res: any) => { 
+            this.isLoading = false;
+            const successMsg = this.translate.instant('STAFF.MESSAGES.SLOTS_GENERATED', { count: res.count }) 
+                     || `${res.count} idősáv létrejött.`;
+            Swal.fire(this.translate.instant('COMMON.SUCCESS'), successMsg, 'success');
           },
           error: (err) => { 
-            this.isLoading = false; 
-            Swal.fire('Error', err.error?.message, 'error'); 
-          }
+            this.isLoading = false;
+            const errorKey = err.error?.message || 'COMMON.ERROR_GENERAL';
+            Swal.fire(this.translate.instant('COMMON.ERROR_TITLE'), this.translate.instant(errorKey), 'error');
+            }
         });
       }
     });
@@ -249,7 +271,10 @@ export class StaffComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.api.archiveUser(targetUserId).subscribe({
-          next: () => { this.getStaffs(); Swal.fire('Success', '', 'success'); }
+          next: () => { 
+            this.getStaffs(); 
+            Swal.fire(this.translate.instant('COMMON.SUCCESS'), '', 'success');
+          }
         });
       }
     });
@@ -259,7 +284,10 @@ export class StaffComponent implements OnInit {
     const targetUserId = staff.userId || staff.id;
     this.api.updateStaff(targetUserId, { ...staff, isActive: true }).subscribe({
       next: () => { this.getStaffs(); Swal.fire('Success', '', 'success'); },
-      error: (err) => Swal.fire('Error', err.error?.message, 'error')
+      error: (err) => {
+        const errorKey = err.error?.message || 'COMMON.ERROR_GENERAL';
+        Swal.fire(this.translate.instant('COMMON.ERROR_TITLE'), this.translate.instant(errorKey), 'error');
+      }
     });
   }
 

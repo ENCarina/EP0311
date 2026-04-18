@@ -7,4 +7,4 @@ const __dirname = dirname(__filename);
 const ROOT_DIR = resolve(__dirname, '../..');
 const UPLOAD_PATH = join(ROOT_DIR, 'public', 'uploads');
 
-export { ROOT_DIR, UPLOAD_PATH }
+export { ROOT_DIR, UPLOAD_PATH };

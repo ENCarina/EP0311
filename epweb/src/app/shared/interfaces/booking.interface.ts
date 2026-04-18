@@ -4,18 +4,13 @@ export interface Booking {
     patientId: number;
     staffId: number;
     consultationId: number;
-
-    name: string;   // Ezeket a Consultation interfészből vesszük át a foglaláskor
+    name: string;   
     price: number;
-
     startTime: string;
     endTime?: string;
     status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
-    
     isPublic: boolean;
     notes?: string;
-
-    // lekérdezéskor a backend ezeket is küldheti
     slot?: any;           
     patient?: any;
     staff?: any;

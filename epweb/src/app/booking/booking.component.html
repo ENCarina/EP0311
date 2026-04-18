@@ -11,7 +11,7 @@
           <div class="mb-4">
             <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SELECT_DATE' | translate }}</label>
             <div class="d-grid">
-              <button class="btn btn-outline-primary rounded-pill border-light-subtle shadow-sm text-start py-2 px-3" 
+              <button class="btn btn-primary rounded-pill border-light-subtle shadow-sm text-start py-2 px-3" 
                       (click)="goToToday()">
                 <i class="bi bi-calendar-event me-2"></i> {{ 'BOOKING.TODAY' | translate }}
               </button>
@@ -33,7 +33,7 @@
             <select class="form-select border-light-subtle shadow-sm" [(ngModel)]="selectedStaffId" (change)="onStaffChange()" [disabled]="!selectedSpecialty">
               <option [ngValue]="null" disabled>{{ 'BOOKING.STAFF_PLACEHOLDER' | translate }}</option>
               @for (staff of filteredStaffs; track staff.id) {
-                <option [ngValue]="staff.id">{{ staff.user?.name || staff.name }}</option>
+                <option [ngValue]="staff.id">{{ $any(staff).user?.name || staff.name }}</option>
               }
             </select>
           </div>
@@ -120,8 +120,8 @@
       
       @if (availableSlots.length === 0 && !isLoading) {
         <div class="text-center py-5 mt-4 bg-white rounded-4 shadow-sm">
-          <i class="bi bi-calendar-x text-muted fs-1 mb-2"></i>
-          <p class="text-muted mb-0">{{ 'BOOKING.NO_SLOTS_TITLE' | translate }}</p>
+          <i class="bi" [ngClass]="errorMessage ? 'bi-exclamation-triangle text-danger' : 'bi-calendar-x text-muted'" class="fs-1 mb-2"></i>
+          <p class="mb-0" [class.text-danger]="errorMessage">{{ (errorMessage || 'BOOKING.NO_SLOTS_TITLE') | translate }}</p>
         </div>
       }
     </div>

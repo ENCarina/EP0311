@@ -4,8 +4,7 @@ import { ActivatedRoute, Router, RouterModule, RouterLink} from '@angular/router
 import { AuthService } from '../shared/auth.service';
 import Swal from 'sweetalert2'
 import { CommonModule } from '@angular/common';
-import { TranslateService } from '@ngx-translate/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +15,6 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 
 export class LoginComponent implements OnInit {
-
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -27,7 +25,10 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   
   loginForm = this.fb.nonNullable.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [
+        Validators.required, 
+        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
+      ]],
       password: ['', [Validators.required, Validators.minLength(6)]]
   }); 
   
@@ -53,7 +54,7 @@ export class LoginComponent implements OnInit {
 
     const loginPayload = {
       ...this.loginForm.getRawValue(),
-      lang: this.translate.currentLang || 'hu'
+      lang: this.translate.currentLang || 'en'
     };
 
     this.auth.login(loginPayload).subscribe({
@@ -68,7 +69,7 @@ export class LoginComponent implements OnInit {
         this.cleanupModal();
 
         const role = Number(res.roleId || res.user?.roleId);
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/booking';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
         const staffId = this.route.snapshot.queryParams['staffId'];
 
         if (role === 2 || role === 1) {
@@ -86,21 +87,26 @@ export class LoginComponent implements OnInit {
       }, 
       error: (err: any) => {
         this.isLoading = false;
-       // DINAMIKUS HIBAÜZENETEK KEZELÉSE
+       
         const serverKey = err.error?.message;
 
-        if (serverKey && serverKey.startsWith('AUTH.')) {
-          this.errorMessage = this.translate.instant(serverKey);
+        if (serverKey) {
+          const translated = this.translate.instant(serverKey);
+          
+          this.errorMessage = (translated !== serverKey)
+          ? translated 
+          : this.translate.instant('MESSAGES.AUTH.ERROR_GENERAL');
         } else {
-          // Tartalék terv, ha a szerver nem küld specifikus kulcsot
-          this.errorMessage = this.translate.instant('AUTH.ERROR_GENERAL');
+          this.errorMessage = this.translate.instant('MESSAGES.AUTH.ERROR_GENERAL');
         }
 
-        Swal.fire(
-          this.translate.instant('COMMON.ERROR'), 
-          this.errorMessage, 
-          'error'
-        );
+        Swal.fire({
+          title: this.translate.instant('COMMON.ERROR.TITLE'), 
+          text: this.errorMessage, 
+          icon: 'error',
+          confirmButtonColor: '#007bff',
+          confirmButtonText: this.translate.instant('COMMON.OK')
+      });
       }
     }); 
   }

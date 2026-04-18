@@ -74,7 +74,7 @@ export class AuthService {
         const token = response.accessToken || response.token;
         const userId = response.id || response.user?.id || response.data?.id;
         const roleId = response.roleId ?? response.user?.roleId;
-        const name = response.name || response.userName || response.user?.name || 'Felhasználó';
+        const name = response.name || response.userName || response.user?.name || 'User';
 
         if (this.isBrowser && token) {
           this.saveUserData(token, userId, roleId, name);
@@ -102,7 +102,7 @@ export class AuthService {
     this._isAuthenticated.set(false);
     this.currentUserRole.set(null);
     this.currentUserId.set(null);
-    this.currentUserName.set('Felhasználó');
+    this.currentUserName.set('User');
     this.router.navigate(['/login']);
   }
 
@@ -115,7 +115,7 @@ export class AuthService {
       token: token,
       password: data.password,
       password_confirmation: data.password_confirmation,
-      lang: data.lang || 'hu'
+      lang: data.lang || 'en'
     };
     return this.http.post(`${this.host}reset-password`, payload);
   }

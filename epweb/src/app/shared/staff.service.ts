@@ -2,14 +2,15 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BulkSlotConfig } from './interfaces/slot.interface';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
   providedIn: 'root',
 })
 export class StaffService {
-  protected readonly http= inject(HttpClient);
-    private readonly baseUrl = 'http://localhost:8000/api';
+    protected readonly http = inject(HttpClient);
+    private readonly baseUrl = environment.apiUrl;
 
     getStaff() {
         return this.http.get(`${this.baseUrl}/staff`);

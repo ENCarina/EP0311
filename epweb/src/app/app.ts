@@ -37,8 +37,12 @@ export class App implements OnInit {
   }
   
   ngOnInit(): void {
-    this.translate.addLangs(['hu', 'en']);
-    this.translate.use('hu'); 
+    this.initializeLanguage(); 
+  }
+  private initializeLanguage(): void {
+    this.translate.addLangs(['en', 'hu']);
+    const savedLang = localStorage.getItem('lang') || 'en';
+    this.translate.use(savedLang);
   }
   switchLanguage(lang: string): void {
     this.translate.use(lang);
@@ -47,12 +51,14 @@ export class App implements OnInit {
 
   toggleAdminMenu(event: Event): void {
     event.stopPropagation();
-    this.isAdminMenuOpen.update(v => !v);
+    this.isAdminMenuOpen.update(open => !open);
   }
 
   @HostListener('document:click')
   closeMenus(): void {
-    this.isAdminMenuOpen.set(false);
+    if (this.isAdminMenuOpen()) {
+      this.isAdminMenuOpen.set(false);
+    }
   }
 } 
  

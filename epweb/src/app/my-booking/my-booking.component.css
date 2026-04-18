@@ -8,7 +8,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- IDŐPONT KÁRTYA (AZ "ÚJ SZÉLEK") --- */
+/* --- IDŐPONT KÁRTYA --- */
 .card {
   border: none !important;
   border-radius: 20px !important;
@@ -25,9 +25,29 @@
   border-top: 5px solid #007bff !important;
 }
 
-/* Kártya fejléc igazítása */
+/* Kártya fejléc */
 .card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px; 
+  min-height: 60px; /* Egyforma magasság a kártyafejeknek */
   border-bottom: 1px solid #f8f9fa !important;
+}
+.treatment-badge {
+  flex: 1; 
+  min-width: 0; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block; 
+  text-align: center;
+}
+
+.price-tag {
+  flex-shrink: 0; 
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums; 
 }
 
 /* --- BELSŐ ELEMEK --- */

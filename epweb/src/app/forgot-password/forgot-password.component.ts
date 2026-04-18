@@ -35,7 +35,14 @@ export class ForgotPasswordComponent {
       error: (err) => {
         this.isLoading = false;
         this.isError = true;
-        this.message = err.error.message || this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
+
+        const backendMessage = err.error?.message;
+
+        if (backendMessage) {
+          this.message = this.translate.instant(backendMessage);
+        } else {
+          this.message = this.translate.instant('FORGOT_PASSWORD.MESSAGES.ERROR');
+        }
       }
     });
   }

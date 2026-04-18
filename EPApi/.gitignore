@@ -2,3 +2,19 @@
 /access.log
 /.env
 /database.sqlite
+
+# Angular build mappa (ezt generálja az ng build)
+/dist
+/tmp
+/out-tsc
+
+# IDE beállítások (VS Code, WebStorm)
+.vscode/
+.idea/
+
+# Operációs rendszer szemetei
+Thumbs.db
+.DS_Store
+
+#npm logok
+npm-debug.log*

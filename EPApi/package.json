@@ -1,9 +1,9 @@
 {
-  "name": "EPApi",
+  "name": "vizsgamunka-backend",
   "version": "0.0.1",
-  "description": "REST API project for EPApi",
+  "description": "REST API project for EPApi application",
   "main": "index.js",
-  "scripts": {
+ "scripts": {
     "test": "cross-env NODE_ENV=test mocha --file test/mocha.setup.js 'test/**/*.spec.js'",
     "dev": "nodemon app",
     "start": "node app",
@@ -14,7 +14,7 @@
     "express",
     "api"
   ],
-  "author": "your name",
+  "author": "Etelka Nagy",
   "license": "ISC",
   "dependencies": {
     "@sipere/op-cli": "^1.1.0",
@@ -32,10 +32,16 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/bcryptjs": "^2.4.6",
+    "chai": "^6.2.2",
+    "chai-http": "^5.1.2",
     "cross-env": "^10.1.0",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
     "fs-extra": "^11.3.0",
-    "mocha": "^11.7.4",
+    "globals": "^17.4.0",
+    "mocha": "^11.7.5",
     "nodemon": "^2.0.22",
     "sequelize-cli": "^6.6.5",
     "supertest": "^6.3.3"

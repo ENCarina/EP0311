@@ -128,7 +128,7 @@ export class MyBookingComponent implements OnInit {
             Swal.fire({
               icon: 'success',
               title: this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TITLE'),
-              text: res.message || this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT')
+              text: this.translate.instant(res.message) || this.translate.instant('MY_BOOKINGS.CANCEL_SUCCESS_TEXT')
             });
           }
           this.loading = false;

@@ -7,5 +7,5 @@ export interface Staff {
   isAvailable: boolean;
   role: string;
   image?: string;
-  password?: string; // Opcionális, mert lekéréskor nem kapunk jelszót, csak küldéskor
+  password?: string; 
 }

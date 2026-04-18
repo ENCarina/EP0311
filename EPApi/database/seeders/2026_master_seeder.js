@@ -19,7 +19,7 @@ function getNextWeekDay(daysFromMonday, hour = 8, minute = 0) {
 }
 
 export const up = async ({ context: queryInterface }) => {
-  const { sequelize, User, Staff, Consultation, Slot, Booking } = db;
+  const { sequelize, Slot, Booking } = db;
   const now = new Date();
   const drPass = bcrypt.hashSync('doctor123', 10);
   const userPass = bcrypt.hashSync('test987', 10);
@@ -53,16 +53,16 @@ export const up = async ({ context: queryInterface }) => {
     { id: 100, name: 'Admin', email: 'admin@ep.com', password: adminPass, roleId: 2, verified: 1,resetPasswordToken: null, resetPasswordExpires: null, createdAt: now, updatedAt: now }
   ]);
 
-  // 3. STAFF - Javítva: Magyar szavak helyett JSON kulcsok
+  // 3. STAFF -  JSON kulcsok
   await queryInterface.bulkInsert('staff',[
-  { id: 1, userId: 101, specialty: 'CARDIOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_KOVACS', createdAt: now, updatedAt: now },
-  { id: 2, userId: 102, specialty: 'DENTISTRY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_TOTH', createdAt: now, updatedAt: now },
-  { id: 3, userId: 103, specialty: 'PSYCHIATRY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_HOUSE', createdAt: now, updatedAt: now },
-  { id: 4, userId: 104, specialty: 'DERMATOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_SZABO', createdAt: now, updatedAt: now },
-  { id: 5, userId: 105, specialty: 'ORTHOPEDICS', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_KISS', createdAt: now, updatedAt: now },
-  { id: 6, userId: 106, specialty: 'OPHTHALMOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_MOLNAR', createdAt: now, updatedAt: now },
-  { id: 7, userId: 107, specialty: 'UROLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_BARNA', createdAt: now, updatedAt: now },
-  { id: 8, userId: 108, specialty: 'GYNECOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_VARGA', createdAt: now, updatedAt: now }
+    { id: 1, userId: 101, specialty: 'CARDIOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_KOVACS', createdAt: now, updatedAt: now },
+    { id: 2, userId: 102, specialty: 'DENTISTRY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_TOTH', createdAt: now, updatedAt: now },
+    { id: 3, userId: 103, specialty: 'PSYCHIATRY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_HOUSE', createdAt: now, updatedAt: now },
+    { id: 4, userId: 104, specialty: 'DERMATOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_SZABO', createdAt: now, updatedAt: now },
+    { id: 5, userId: 105, specialty: 'ORTHOPEDICS', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_KISS', createdAt: now, updatedAt: now },
+    { id: 6, userId: 106, specialty: 'OPHTHALMOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_MOLNAR', createdAt: now, updatedAt: now },
+    { id: 7, userId: 107, specialty: 'UROLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_BARNA', createdAt: now, updatedAt: now },
+    { id: 8, userId: 108, specialty: 'GYNECOLOGY', isAvailable: true, isActive: true, bio: 'STAFF.BIOS.DR_VARGA', createdAt: now, updatedAt: now }
   ]);
 
   // 4. CONSULTATIONS 

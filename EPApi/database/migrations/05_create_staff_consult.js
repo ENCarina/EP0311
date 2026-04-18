@@ -37,4 +37,4 @@ async function down({ context: QueryInterface }) {
   await QueryInterface.dropTable('staff_consult');
 }
 
-export { up, down }
+export { up, down };

@@ -15,28 +15,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (isPlatformBrowser(platformId)) {
     const token = localStorage.getItem('token');
 
-    const lang = localStorage.getItem('lang') || 'hu';
+    const lang = localStorage.getItem('lang') || 'en';
 
-    const headers: any = {
-      'Accept-Language': lang
-    };
+    let headers = req.headers.set('Accept-Language', lang);
 
     if (token) {
-      authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
+
+    authReq = req.clone({ headers }); 
   }
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !req.url.includes('login')) {
-        if (isPlatformBrowser(platformId)) {
-          authService.logout();;
-        }
-        router.navigate(['/login']);
+          authService.logout();
+          router.navigate(['/login'], {
+            queryParams: { returnUrl: router.url }
+        });
       }
       return throwError(() => error);
     })

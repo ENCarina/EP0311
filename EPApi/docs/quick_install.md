@@ -1,7 +1,7 @@
 # Gyors telepítési útmutató - Quick Installation Guide
 
 ```cmd
-git clone https://github.com/ENCarina/EPort.git
+git clone https://github.com/ENCarina/EPort10.git
 cd EPApi
 npm install
 node op conf:generate

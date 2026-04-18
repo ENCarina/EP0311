@@ -15,6 +15,7 @@ import { NopageComponent } from './nopage/nopage.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { BookingListComponent } from './admin/booking-list/booking-list.component';
+import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -36,6 +37,7 @@ export const routes: Routes = [
     { path: 'booking', component:BookingComponent, canActivate: [authGuard]},
         
     //admin
+    { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [authGuard] },
     { path: 'admin/users', component: UserListComponent, canActivate: [authGuard] }, 
     { path: 'admin/staff', component: StaffComponent, canActivate: [authGuard]},
     { path: 'admin/consultation', component:ConsultationComponent, canActivate: [authGuard]},

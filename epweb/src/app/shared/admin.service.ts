@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly apiUrl = 'http://localhost:8000/api';
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -18,7 +18,7 @@ export class AdminService {
     });
   }
 
-  // --- Felhasználók kezelése ---
+ // --- User Management ---
 
   getAllUsers(): Observable<any[]> {
     return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/users`, { headers: this.getHeaders() }).pipe(
@@ -59,21 +59,41 @@ export class AdminService {
       map(res => res.data)
     );
   }
-  // --- Foglalások kezelése (Admin) ---
+  // --- Booking & Slot Management ---
 
-  /** Összes foglalás lekérése az admin felületre */
   getAllBookings(): Observable<any[]> {
     return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/bookings`, { headers: this.getHeaders() }).pipe(
       map(res => res.data)
     );
   }
 
-  /** Foglalás törlése (Admin felülbírálással) */
   deleteBooking(bookingId: number): Observable<any> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.apiUrl}/bookings/${bookingId}`, 
       { headers: this.getHeaders() }
     );
   }
-
+  // --- Statistics 
+  getDashboardStats(): Observable<any> {
+    return this.http.get<{ success: boolean; data: any }>(`${this.apiUrl}/admin/stats`, { 
+      headers: this.getHeaders() 
+    }).pipe(map(res => res.data));
+  }
+  getAllSlots(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/slots/all`, { 
+      headers: this.getHeaders() 
+    }).pipe(map(res => res.data || []));
+  }
+  updateBookingStatus(bookingId: number, status: string): Observable<any> {
+    return this.http.patch<{ success: boolean; message: string }>(
+      `${this.apiUrl}/bookings/${bookingId}/status`, 
+      { status }, 
+      { headers: this.getHeaders() }
+    );
+  }
+  getAllConsultations(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/consultations`, { 
+      headers: this.getHeaders() 
+    }).pipe(map(res => res.data || []));
+  }
 }

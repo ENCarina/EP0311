@@ -20,4 +20,4 @@ async function down({context: QueryInterface}) {
   await QueryInterface.dropTable('roles');
 }
 
-export { up, down }
+export { up, down };
