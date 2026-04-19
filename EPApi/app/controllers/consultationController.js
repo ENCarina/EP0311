@@ -3,7 +3,7 @@ import log from '../utils/logger.js';
 
 const ConsultationController = { 
   handleError(res, error) {
-    log(`CONSULTATION ERROR: ${error.message}`);
+    console.error(`CONSULTATION ERROR: ${error.message}`);
     let status = 500;
     let message = 'COMMON.ERROR_GENERAL'; 
 
@@ -21,7 +21,9 @@ const ConsultationController = {
     return res.status(status).json({
       success: false,
       message: message, 
-      error: error.name || 'UnknownError',
+      error: error.message,
+      stack: error.stack
+      //error: error.name || 'UnknownError',
     });
   },
 

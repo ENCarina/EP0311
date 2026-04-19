@@ -4,6 +4,17 @@
       <h2 class="fw-bold text-navy mb-0">
         <i class="bi bi-calendar-check me-2"></i>{{ 'MENU.ADMIN.BOOKINGS' | translate }}
       </h2>
+      <div class="form-check form-switch mt-2">
+        <input 
+          class="form-check-input custom-switch" 
+          type="checkbox" 
+          id="activeFilter" 
+          [checked]="showOnlyActive()" 
+          (change)="toggleFilter()">
+        <label class="form-check-label small text-muted fw-bold" for="activeFilter">
+          {{ (showOnlyActive() ? 'BOOKINGS.FILTER.ONLY_ACTIVE' : 'BOOKINGS.FILTER.SHOW_ALL') | translate }}
+        </label>
+      </div>
       <p class="text-muted small mb-0">
         {{ ('BOOKINGS.SUBTITLE' | translate) }}
       </p>

@@ -88,6 +88,10 @@
     "RIGHTS": "All rights reserved"
   },
   "BOOKINGS": {
+    "FILTER": {
+      "ONLY_ACTIVE": "Only active bookings",
+      "SHOW_ALL": "Show all bookings"
+    },
     "SUBTITLE": "Manage all system bookings",
     "NO_DATA": "No active bookings in the system.",
     "TABLE": {
@@ -522,6 +526,12 @@
     "LOGIN_REQUIRED": "Login required to book"
   },
   "BOOKING": {
+     "CONFLICT": {
+        "TITLE": "Existing Booking",
+        "MESSAGE": "You already have an active appointment at this time.",
+        "SUBTEXT": "Only one booking is allowed per time slot. Please choose a different time!",
+        "GO_TO_MY_BOOKINGS": "View My Bookings"
+      },
     "TODAY": "Current Week",
     "SIDEBAR_TITLE": "Filters",
     "SELECT_DATE": "Select Period",
@@ -547,7 +557,6 @@
     "ERROR_MSG": "An error occurred during booking.",
     "NOT_FOUND": "Booking not found!",
     "UNAUTHORIZED": "Unauthorized to manage booking!",
-    "CONFLICT": "This time slot is already taken! Please choose another one.",
     "CANNOT_CANCEL_WITHIN_24H": "Cancellation within 24h is only possible by phone!",
     "CANCEL_SUCCESS": "Appointment cancelled successfully!",
     "DELETE_SUCCESS": "Success! The slot is now free again.",

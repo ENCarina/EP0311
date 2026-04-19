@@ -8,10 +8,13 @@ const BookingController = {
   // 1. Összes foglalás listázása (Szerepkör alapú szűréssel)
   async index(req, res) {
     try {
+      const onlyActive = req.query.active === 'true';
+      const todayStr = new Date().toLocaleDateString('sv-SE');
       let whereCondition = {};
+
       const roleId = Number(req.user?.roleId); 
       const currentUserId = req.user?.id;
-
+    
       // Szűrési logika: Páciens csak a sajátját, Szakember a hozzárendeltet, Admin mindet
       if (roleId === 1) { // STAFF
         const staff = await db.Staff.findOne({ where: { userId: currentUserId } });
@@ -21,6 +24,18 @@ const BookingController = {
       } else if (roleId === 2) { // ADMIN
         whereCondition = {};
       }
+
+      if (onlyActive) {
+      // A lemondottakat (Cancelled) ne vegye bele az aktívakba
+        whereCondition = {
+        ...whereCondition,
+        status: { [Op.ne]: 'Cancelled' } 
+        };
+
+        whereCondition['$timeSlot.date$'] = { 
+                [Op.gte]: todayStr
+              };
+            }
 
       const bookings = await db.Booking.findAll({
         where: whereCondition,
@@ -39,7 +54,7 @@ const BookingController = {
           { 
             model: db.Slot, 
             as: 'timeSlot',
-            required: false, 
+            required: onlyActive, 
             attributes: ['id', 'date', 'startTime', 'endTime'] 
           },
           { 
@@ -48,7 +63,7 @@ const BookingController = {
             attributes: ['id', 'name', 'price'] 
           }
         ],
-        order: [['createdAt', 'DESC']]
+        order: onlyActive ? [[{model: db.Slot, as: 'timeSlot'}, 'date', 'ASC']] : [['createdAt', 'DESC']]
       });
 
       return res.status(200).json({ success: true, data: bookings });
@@ -97,11 +112,12 @@ const BookingController = {
     try {
       const requester = req.user;
       const isAdmin = Number(requester.roleId) === 2;
+      const lang = req.body.lang || 'hu';
 
       const targetPatientId = isAdmin ? (req.body.patientId || requester.id) : requester.id;
       
-
       if (!targetPatientId) {
+        if (t) await t.rollback();
         return res.status(401).json({ success: false, message: 'AUTH.INVALID_CREDENTIALS' });
       }
            
@@ -116,8 +132,29 @@ const BookingController = {
       if (t) await t.rollback();
         return res.status(400).json({ success: false, message: 'BOOKING.NO_SLOTS_TITLE' });
       }
+      // --- Kezelés automatikus választása ---
+      let finalConsultationId = req.body.consultationId;
+      if (!finalConsultationId) {
+        const staffId = req.body.staffId || selectedSlot.staffId;
+        const staffConsultations = await db.Consultation.findAll({
+          where: { staffId: staffId },
+          transaction: t
+      });
 
-      // Ütközésvizsgálat: ne legyen ugyanarra az időpontra más aktív foglalása a páciensnek
+      if (staffConsultations.length === 1) {
+          finalConsultationId = staffConsultations[0].id;
+          req.body.consultationId = finalConsultationId;
+          req.body.name = staffConsultations[0].name;
+          req.body.price = staffConsultations[0].price;
+          req.body.duration = staffConsultations[0].duration;
+      } else {
+          await t.rollback();
+                return res.status(400).json({ success: false, message: 'BOOKING.TREATMENT_REQUIRED' });
+            }
+        }
+
+
+      // Ütközésvizsgálat (páciensre)
       const existingConflict = await db.Booking.findOne({
         include: [{
           model: db.Slot,
@@ -127,13 +164,15 @@ const BookingController = {
             startTime: selectedSlot.startTime
           }
         }],
-        where: {
-          patientId: targetPatientId,
-          status: { [Op.ne]: 'Cancelled' }
-        }
+         where: {
+          patientId: targetPatientId, 
+          status: { [Op.ne]: 'Cancelled' } 
+        },
+        transaction: t
       });
 
       if (existingConflict) {
+        if (t) await t.rollback();
         return res.status(400).json({
           success: false,
           message: 'BOOKING.CONFLICT'
@@ -142,12 +181,12 @@ const BookingController = {
 
       const bookingData = {
         ...req.body,
+        consultationId: finalConsultationId,
         patientId: targetPatientId,
         status: req.body.status || 'Confirmed'
       };
 
       // Itt hívjuk meg a Service-t a tényleges mentéshez
-      const lang = req.headers['accept-language'] || 'hu';
       const newBooking = await BookingService.createBooking(bookingData, user, lang, { transaction: t });
 
       await db.Slot.update(
@@ -161,8 +200,11 @@ const BookingController = {
         message: 'BOOKING.SUCCESS_MSG',
         data: newBooking
       });
+
     } catch (error) {
       if (t) await t.rollback();
+      console.error("!!! BACKEND HIBA !!!:", error);
+      const errorKey = error.message === 'BOOKING.CONFLICT' ? 'BOOKING.CONFLICT' : 'BOOKING.ERROR_MSG';
       return res.status(400).json({
         success: false,
         message: 'BOOKING.ERROR_MSG',

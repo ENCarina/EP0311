@@ -19,6 +19,8 @@ export class BookingListComponent implements OnInit {
   isLoading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
+  showOnlyActive = signal<boolean>(false);
+
   ngOnInit(): void {
     this.loadBookings();
   }
@@ -28,7 +30,7 @@ export class BookingListComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.getAllBookings().subscribe({
+    this.adminService.getAllBookings(this.showOnlyActive()).subscribe({
       next: (res:any) => {
         // Időpont szerinti rendezés (legfrissebb elöl)
         const data = Array.isArray(res) ? res : (res.data || []);
@@ -56,6 +58,10 @@ export class BookingListComponent implements OnInit {
         );
       }
     });
+  }
+  toggleFilter(): void {
+    this.showOnlyActive.update(val => !val);
+    this.loadBookings();
   }
   //Foglalás törlése adminisztrátori felülbírálással
   onCancelBooking(bookingId: number): void {

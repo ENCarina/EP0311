@@ -152,20 +152,27 @@ export class BookingComponent implements OnInit {
       this.selectedConsultationId = null;
       return;
     }
+
     this.isLoading = true;
     this.staffApi.getTreatmentsForStaff(Number(this.selectedStaffId)).subscribe({
       next: (res: any) => {
         this.filteredConsultations = res.data || res || [];
         
         if (this.filteredConsultations.length > 0) {
+          let nextId: number | null = null;
+
           if (targetTreatmentId) {
-            this.selectedConsultationId = targetTreatmentId;
+            nextId = targetTreatmentId;
           } else {
             const stillValid = this.filteredConsultations.some(c => Number(c.id) === Number(this.selectedConsultationId));
-            if (!stillValid) {
-              this.selectedConsultationId = Number(this.filteredConsultations[0].id);
+            if (!stillValid || this.filteredConsultations.length === 1) {
+              nextId = Number(this.filteredConsultations[0].id);
+            } else {
+              nextId = this.selectedConsultationId;
             }
           }
+          this.selectedConsultationId = nextId;
+           
           this.loadSlots();
         } else {
           this.selectedConsultationId = null;
@@ -272,6 +279,10 @@ export class BookingComponent implements OnInit {
     const currentLang = this.translate.currentLang || 'hu';
     const userId = this.auth.getUserId();
 
+    if (!this.selectedConsultationId && this.filteredConsultations.length === 1) {
+        this.selectedConsultationId = this.filteredConsultations[0].id!;
+    }
+
     if (!userId) {
       Swal.fire({
         title: this.translate.instant('COMMON.ERROR.TITLE'),
@@ -318,27 +329,36 @@ export class BookingComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         console.error('Booking error detail:', err);
-
         let serverKey ='';
         if (err.error && typeof err.error === 'object') {
           serverKey = err.error.message || err.error.error || '';
-        } else if (typeof err.error === 'string') {
-          serverKey = err.error;
+        } 
+        if (serverKey === 'BOOKING.CONFLICT') {
+          Swal.fire({
+            title: this.translate.instant('BOOKING.CONFLICT.TITLE'),
+            text: this.translate.instant('BOOKING.CONFLICT.MESSAGE') + ' ' + this.translate.instant('BOOKING.CONFLICT.SUBTEXT'),
+            icon: 'warning',
+            confirmButtonColor: '#003366',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: this.translate.instant('BOOKING.CONFLICT.GO_TO_MY_BOOKINGS'),
+            cancelButtonText: this.translate.instant('COMMON.CLOSE')
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.router.navigate(['/my-bookings']);
+            }
+          });
+        } else {
+          const bodyText = serverKey ? this.translate.instant(serverKey) : this.translate.instant('BOOKING.ERROR_MSG');
+
+          Swal.fire({
+            title:this.translate.instant('COMMON.ERROR.TITLE'),
+            text: bodyText,
+            icon: 'error',
+            confirmButtonColor: '#003366',
+            confirmButtonText: String(this.translate.instant('COMMON.OK'))
+          });
         }
-        const titleText = String(this.translate.instant('COMMON.ERROR.TITLE')); 
-        
-        const bodyText = serverKey 
-          ? this.translate.instant(serverKey) 
-          : this.translate.instant('BOOKING.ERROR_MSG');
-        
-        Swal.fire({
-          title:this.translate.instant('COMMON.ERROR.TITLE'),
-          text: bodyText,
-          icon: 'error',
-          confirmButtonColor: '#003366',
-          confirmButtonText: String(this.translate.instant('COMMON.OK'))
-        });
       }
     });
   }
-}
+} 

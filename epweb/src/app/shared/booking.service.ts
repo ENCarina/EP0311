@@ -34,7 +34,7 @@ export class BookingService {
     return this.http.post<any>(`${this.apiUrl}/slots/generate`, payload, { headers: this.getHeaders()});
   }
  
-  getUserBookings(): Observable<any[]> {
+  getUserBookings(onlyActive: boolean = false): Observable<any[]> {
     return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/bookings`, {
       headers: this.getHeaders()
     }).pipe(

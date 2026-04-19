@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -61,8 +61,13 @@ export class AdminService {
   }
   // --- Booking & Slot Management ---
 
-  getAllBookings(): Observable<any[]> {
-    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/bookings`, { headers: this.getHeaders() }).pipe(
+  getAllBookings(onlyActive: boolean = false): Observable<any[]> {
+    let params = new HttpParams();
+
+    if (onlyActive) {
+      params = params.set('active', 'true');
+    }
+    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/bookings`, { params: params, headers: this.getHeaders() }).pipe(
       map(res => res.data)
     );
   }

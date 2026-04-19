@@ -89,6 +89,10 @@
     "RIGHTS": "Minden jog fenntartva"
   },
   "BOOKINGS": {
+    "FILTER": {
+      "ONLY_ACTIVE": "Csak az aktív foglalások",
+      "SHOW_ALL": "Összes foglalás megjelenítése"
+    },
     "SUBTITLE": "Rendszerben lévő összes foglalás kezelése",
     "NO_DATA": "Nincsenek aktív foglalások a rendszerben.",
     "TABLE": {
@@ -523,6 +527,12 @@
     "LOGIN_REQUIRED": "Bejelentkezés szükséges a foglaláshoz"
   },
   "BOOKING": {
+    "CONFLICT": {
+      "TITLE": "Már van foglalása",
+      "MESSAGE": "Ön már rendelkezik aktív időpontfoglalással ebben az időpontban.",
+      "SUBTEXT": "Egyszerre csak egy időpont foglalható erre az idősávra. Kérjük, válasszon egy másik időpontot!",
+      "GO_TO_MY_BOOKINGS": "Foglalásaim megtekintése"
+    },
     "TODAY": "Aktuális hét",
     "SIDEBAR_TITLE": "Szűrés",
     "SELECT_DATE": "Dátum kiválasztása",
@@ -548,7 +558,6 @@
     "ERROR_MSG": "Hiba történt a foglalás során.",
     "NOT_FOUND": "A foglalás nem található!",
     "UNAUTHORIZED": "Nincs jogosultsága a foglalás kezeléséhez!",
-    "CONFLICT": "Ez az időpont már foglalt! Kérjük, válasszon egy másikat.",
     "CANNOT_CANCEL_WITHIN_24H": "A lemondás 24 órán belül csak telefonon lehetséges!",
     "DELETE_SUCCESS": "Sikeres lemondás. Az időpont újra felszabadult.",
     "CANCEL_SUCCESS":"A foglalás sikeresen törölve.",

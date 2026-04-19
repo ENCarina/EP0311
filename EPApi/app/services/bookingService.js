@@ -4,8 +4,16 @@ import log from '../utils/logger.js';
 
 export const BookingService = {
   async getUserBookings(userId) {
+    const whereCondition = { patientId: userId };
+
+    if (onlyActive) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    whereCondition.date = { [Op.gte]: today };
+    }
+
     return await db.Booking.findAll({
-      where: { patientId: userId },
+      where: whereCondition,
       include: [{
         model: db.Slot,
         as: 'timeSlot' 
@@ -14,12 +22,11 @@ export const BookingService = {
     });
   },
 
-  async createBooking(bookingData, user , lang = 'hu') {
-    let t;
+  async createBooking(bookingData, user , lang = 'hu', options = {}) {
+    const transaction = options.transaction;
     try {
-      t = await db.sequelize.transaction();
 
-      const slot = await db.Slot.findByPk(bookingData.slotId, { transaction: t });
+      const slot = await db.Slot.findByPk(bookingData.slotId, { transaction });
 
       if (!slot) {
         throw new Error('SLOTS.MESSAGES.NOT_FOUND');
@@ -37,9 +44,7 @@ export const BookingService = {
         status: 'Confirmed'
       }, { transaction: t });
 
-      await slot.update({ isAvailable: false }, { transaction: t });
-
-      await t.commit();
+      await slot.update({ isAvailable: false }, { transaction });
 
       if (EmailService && user?.email) {
         const emailData = {
@@ -57,8 +62,7 @@ export const BookingService = {
       return newBooking;
 
     } catch (error) {
-      if (t) await t.rollback();
-      log(`ERROR - Booking creation failed: ${error.message}`);
+      //log(`ERROR - Booking creation failed: ${error.message}`);
       throw error;
     }
   },
