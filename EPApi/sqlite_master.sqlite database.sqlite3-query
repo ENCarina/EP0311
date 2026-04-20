@@ -1,4 +1,0 @@
--- database: ./database.sqlite
-
-
-UPDATE staff SET isActive = true WHERE archivedAt IS NULL;

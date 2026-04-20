@@ -1,3 +1,0 @@
-Bug: {"success":false,"error":"SQLITE_CONSTRAINT: FOREIGN KEY constraint failed"}
-Tesztelés során a foglalás létrehozása során a következő hibaüzenet jelent meg: "SQLITE_CONSTRAINT: FOREIGN KEY constraint failed". Ez azt jelenti, hogy a foglalás létrehozásakor egy idegen kulcs megsértése történt, valószínűleg a slotId vagy staffId mezőben. Ellenőrizni kell, hogy a megadott slotId és staffId értékek valóban léteznek-e a megfelelő táblákban (Slot és Staff), mielőtt megpróbáljuk létrehozni a foglalást.
-Insomnia test
