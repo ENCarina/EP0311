@@ -1,0 +1,118 @@
+Return-Path: <elitport@freemail.hu>
+Received: from smtp-out.freemail.hu (fmx.freemail.hu [84.2.43.65])
+    (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+    by fmx.freemail.hu with ESMTPS id 4fjrmF5LlnzF05;
+    Sat, 28 Mar 2026 22:50:38 +0100
+X-FMUUID: rOVvNqhJSIWYzvVhH1fXdQ==
+Received: from [127.0.0.1] (catv-89-132-127-40.catv.fixed.one.hu [89.132.127.40])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.freemail.hu (Postfix) with ESMTPSA id 4fjrmF3GWTzP8
+	for <elitport@freemail.hu>; Sat, 28 Mar 2026 22:50:37 +0100 (CET)
+From: Elit Klinika <elitport@freemail.hu>
+To: elitport@freemail.hu
+Subject: =?UTF-8?Q?Jelsz=C3=B3_vissza=C3=A1ll=C3=ADt=C3=A1s?=
+ =?UTF-8?Q?_-_ElitPort?=
+Message-ID: <9c647de8-4ae8-2e28-85fd-66c3780310d6@freemail.hu>
+Content-Transfer-Encoding: quoted-printable
+Date: Sat, 28 Mar 2026 21:50:36 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=simple/relaxed; t=1774734637;
+	s=20181004; d=freemail.hu;
+	h=From:To:Subject:Message-ID:Content-Transfer-Encoding:Date:MIME-Version:Content-Type;
+	l=1883; bh=an9ghgmP9GN04VPJaiehOdJhi5JGICqE5aafKxdCTB8=;
+	b=Z/zmxr7a70z7IpV2b7CHTQghqwQzASGyOZzCEtpOmRfqUFPQehftImKrsTFtnslR
+	ywfC7J+Vx2CZAbcHn8QhNA8BqX6GoeH7ev38gzN4nNeIt05jqdRHajhlcoKPYmL52Ik
+	cvVcAaOYWA/eHYAdFQOMLufHuDKK20+yHOX1fCUdxCmBWdI0L7cs3/7MuKMaAY8XDXN
+	PPDJF/R4VEd1/nvfpQgYOModkatzjKRaFbYRB1nQ4KnAPrl6DNkNzievjxQqr1SNSGo
+	wCVv8mtq9Dz3AbVHPPNadlKWmFk57IKSf812bToWQ1keVJ2HXCyMB8zDyYGLze8krUl
+	ZEhxVS4n/w==
+X-Rspamd-Queue-Id: 4fjrmF5LlnzF05
+X-Rspamd-Action: add header
+X-Rspamd-Server: fmfe36.freemail.private
+X-Spamd-Result: default: False [-0.20 / 4.00];
+	MIME_HTML_ONLY(0.20)[];
+	R_SPF_ALLOW(-0.20)[+ip4:84.2.43.65];
+	R_DKIM_ALLOW(-0.20)[freemail.hu:s=20181004];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	DMARC_NA(0.00)[freemail.hu];
+	URIBL_MULTI_FAIL(0.00)[smtp-out.freemail.hu:server fail,fmx.freemail.hu:server fail,freemail.hu:server fail,localhost:server fail];
+	FREEMAIL_ENVRCPT(0.00)[freemail.hu];
+	ARC_NA(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[freemail.hu];
+	FREEMAIL_TO(0.00)[freemail.hu];
+	FREEMAIL_FROM(0.00)[freemail.hu];
+	RCPT_COUNT_ONE(0.00)[1];
+	MIME_TRACE(0.00)[0:~];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[freemail.hu:+];
+	MISSING_XM_UA(0.00)[];
+	LOCAL_SENDER_AUTH_IP(0.00)[84.2.43.65];
+	TO_DN_NONE(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_EQ_FROM(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[elitport@freemail.hu];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:5483, ipnet:84.2.42.0/23, country:HU];
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[84.2.43.65:from]
+X-RSpam: Yes
+X-freemail-inbox: yes
+Delivered-To: elitport@freemail.hu
+
+
+                <div style=3D"font-family: Arial, sans-serif; color: =
+#333333; max-width: 600px; margin: auto; border: 1px solid #C0C0C0; =
+background-color: #FFFFFF; padding: 0;">=20
+                    <div =
+style=3D"background-color: #002C5A; padding: 20px; text-align: center;">
+                        <h1 style=3D"color: #FFFFFF; margin: 0; font-size: =
+24px;">Jelsz=C3=B3 vissza=C3=A1ll=C3=ADt=C3=A1s</h1>
+                    </div>
+                   =20
+                    <div =
+style=3D"padding: 30px;">
+                        <p style=3D"font-size: =
+16px; line-height: 1.5;">Tisztelt Felhaszn=C3=A1l=C3=B3!</p>
+                        <p style=3D"font-size: 16px; line-height: 1.=
+5;">=C3=9Agy =C3=A9rtes=C3=BClt=C3=BCnk, hogy elfelejtette jelszav=C3=A1t. =
+Ha =C3=96n k=C3=A9rte a vissza=C3=A1ll=C3=ADt=C3=A1st, kattintson az =
+al=C3=A1bbi gombra:</p>
+                       =20
+                        =
+<div style=3D"text-align: center; margin: 30px 0;">
+                            <a href=3D"http://localhost:4200/reset-password=
+/5dc8836788d0da98859bed0f4d8761b3c974f48a56f6fec0aaf24b690220a8ae" =
+style=3D"background-color: #002C5A; color: #FFFFFF; padding: 15px 25px; =
+text-decoration: none; border-radius: 5px; font-weight: bold; display: =
+inline-block;">=C3=9Aj jelsz=C3=B3 megad=C3=A1sa</a>
+                        </div>
+                       =20
+                        <p style=3D"font-size: 14px; color: #333333; =
+line-height: 1.5;">
+                            A biztons=C3=A1g =
+=C3=A9rdek=C3=A9ben ez a link <strong>30 perc m=C3=BAlva =
+lej=C3=A1r</strong>.<br>
+                            Ha nem =C3=96n =
+k=C3=A9rte a jelsz=C3=B3 vissza=C3=A1ll=C3=ADt=C3=A1s=C3=A1t, =
+k=C3=A9rj=C3=BCk, hagyja figyelmen k=C3=ADv=C3=BCl ezt az =C3=BCzenetet.
+                        </p>
+                    </div>
+                   =20
+                    <div style=3D"background-color: =
+#F5F7FA; border-top: 1px solid #C0C0C0; padding: 15px; text-align: =
+center;">
+                        <p style=3D"font-size: 12px; color: =
+#002C5A; margin: 0;">Ez egy biztons=C3=A1gi =C3=A9rtes=C3=ADt=C3=A9s az =
+ElitPort rendszer=C3=A9b=C5=91l.</p>
+                        <p =
+style=3D"font-size: 10px; color: #333333; margin-top: 5px;">=C2=A9 2026 =
+Elit Klinika</p>
+                    </div>
+                </div>
+               =20

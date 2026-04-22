@@ -1,0 +1,108 @@
+<div class="main-container">
+  <div class="container py-5">
+    @if (selectedStaff) {
+      <div class="animate-fade-in">
+        <button class="btn btn-link text-decoration-none mb-4 p-0 text-elit" (click)="backToList()">
+          <i class="bi bi-arrow-left me-2"></i>{{ 'STAFF_CARD.BACK_TO_LIST' | translate }}
+        </button>
+
+        <div class="row g-5">
+          <div class="col-md-4 text-center">
+            <img [src]="selectedStaff.imageUrl" 
+                 [alt]="selectedStaff.name" 
+                 (error)="handleImageError(selectedStaff)"
+                 class="rounded-4 shadow-sm img-fluid doctor-img-large">
+          </div>
+          
+          <div class="col-md-8">
+            <h2 class="fw-bold mb-1 text-white text-shadow-dark">{{ selectedStaff.name }}</h2>
+            
+            <p class="text-primary fs-5 mb-4">
+                {{ 'SPECIALTIES.' + selectedStaff.specialty + '.NAME' | translate }}
+            </p>
+            
+            <div class="bio-section mb-5 p-4 rounded-4 bg-white-10 shadow-sm">
+              <h5 class="fw-bold border-bottom border-white-50 pb-2 text-white">{{ 'STAFF_CARD.BIO_TITLE' | translate }}</h5>
+              <p class="lead mt-3 bio-text-full text-medical-blue">
+                {{ (selectedStaff.bio | translate) || ('STAFF_CARD.DEFAULT_BIO' | translate) }}
+              </p>
+            </div>
+
+            <div class="services-section p-4 bg-light rounded-4 shadow-sm">
+              <h5 class="fw-bold mb-4">{{ 'STAFF_CARD.SERVICES_TITLE' | translate }}</h5>
+              <div class="list-group list-group-flush bg-transparent"> 
+                @for (service of selectedStaff.treatments; track service.id) {
+                  <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom px-0">
+                    <div>
+                      <span class="fw-bold d-block text-dark">
+                          {{ 'SERVICES.' + service.name | translate }}
+                      </span>
+                      <small class="text-muted">{{ 'STAFF_CARD.TREATMENT_TYPE' | translate }}</small>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">
+                          {{ service.duration || '30' }} {{ 'STAFF_CARD.MINUTES' | translate }}
+                      </span>
+                      <span class="d-block fw-bold text-elit mb-2">
+                        {{ service.price | number:'1.0-0' }} {{ 'STAFF_CARD.CURRENCY' | translate }}
+                      </span>
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="text-muted italic">{{ 'STAFF_CARD.NO_SERVICES' | translate }}</p>
+                }
+              </div>
+
+              <div class="mt-4 text-end">
+                <button class="btn btn-elit btn-sm rounded-pill px-4" 
+                        [routerLink]="auth.isAuthenticated() ? ['/booking'] : ['/login']" 
+                        [queryParams]="{ staffId: selectedStaff.id, returnUrl: '/booking' }">
+                  {{ auth.isAuthenticated() ? ('STAFF_CARD.BOOKING' | translate) : ('STAFF_CARD.LOGIN_TO_BOOK' | translate) }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    } @else {
+      <h2 class="text-center mb-5 fw-bold section-title text-white">{{ 'STAFF_CARD.PAGE_TITLE' | translate }}</h2>
+      <div class="row row-cols-1 row-cols-md-3 g-4">
+        @for (staff of staffs; track staff.id) {
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0 staff-card">
+              <div class="text-center mt-4">
+                <img [src]="staff.imageUrl" 
+                     [alt]="staff.name" 
+                     (error)="handleImageError(staff)"
+                     class="rounded-circle doctor-img">
+              </div>
+
+              <div class="card-body text-center p-4">
+                <h5 class="card-title fw-bold mb-1">{{ staff.name }}</h5>
+                
+                <p class="specialty-text small mb-3 text-primary">
+                    {{ 'SPECIALTIES.' + staff.specialty + '.NAME' | translate }}
+                </p>
+
+                <p class="card-text text-muted small mb-4 bio-text">
+                  {{ (staff.bio | translate) || ('STAFF_CARD.DEFAULT_BIO' | translate) }}
+                </p>
+
+                <button class="btn btn-outline-elit rounded-pill px-4 w-100 mb-2" (click)="selectStaff(staff)">
+                  {{ 'STAFF_CARD.VIEW_PROFILE' | translate }}
+                </button>
+                
+                <button class="btn btn-elit btn-sm rounded-pill px-4" 
+                        [routerLink]="auth.isAuthenticated() ? ['/booking'] : ['/login']" 
+                        [queryParams]="{ staffId: staff.id, returnUrl: '/booking' }">
+                  {{ auth.isAuthenticated() ? ('STAFF_CARD.BOOK_APPOINTMENT' | translate) : ('STAFF_CARD.LOGIN_REQUIRED' | translate) }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

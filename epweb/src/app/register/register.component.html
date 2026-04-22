@@ -1,0 +1,89 @@
+<div class="register-wrapper d-flex justify-content-center align-items-center">
+  <div class="col-12 col-md-8 col-lg-5 col-xl-4 px-3">
+    <div class="card elite-card-register shadow-lg border-0">
+      <div class="card-body p-4 p-md-5">
+        
+        <div class="text-center mb-4">
+          <div class="icon-circle mb-3">
+            <i class="bi bi-person-plus text-primary display-5"></i>
+          </div>
+          <h2 class="fw-bold h3">{{ 'REGISTER.TITLE' | translate }}</h2>
+          <p class="text-muted small">{{ 'REGISTER.SUBTITLE' | translate }}</p>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert alert-danger py-2 mb-4 border-0 small text-center animate__animated animate__shakeX">
+            <i class="bi bi-exclamation-circle me-2"></i> {{ errorMessage }}
+          </div>
+        }
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.NAME' | translate }}</label>
+            <input type="text" formControlName="name" class="form-control elite-input" 
+                   [placeholder]="'REGISTER.FIELDS.NAME_PLACEHOLDER' | translate"
+                   [class.is-invalid]="f.name.invalid && f.name.touched">
+            <div class="invalid-feedback">
+              {{ 'REGISTER.ERRORS.REQUIRED' | translate }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.EMAIL' | translate }}</label>
+            <input type="email" formControlName="email" class="form-control elite-input"
+                   [placeholder]="'REGISTER.FIELDS.EMAIL_PLACEHOLDER' | translate"
+                   [class.is-invalid]="f.email.invalid && f.email.touched">
+            <div class="invalid-feedback">
+              <span *ngIf="f.email.errors?.['required']">{{ 'REGISTER.ERRORS.REQUIRED' | translate }}</span>
+              <span *ngIf="f.email.errors?.['email']">{{ 'REGISTER.ERRORS.EMAIL_INVALID' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.PASSWORD' | translate }}</label>
+            <input type="password" formControlName="password" class="form-control elite-input"
+                   [placeholder]="'REGISTER.FIELDS.PASS_PLACEHOLDER' | translate"
+                   [class.is-invalid]="f.password.invalid && f.password.touched">
+            <div class="invalid-feedback">
+              <span *ngIf="f.password.errors?.['required']">{{ 'REGISTER.ERRORS.REQUIRED' | translate }}</span>
+              <span *ngIf="f.password.errors?.['minlength']">
+                {{ 'REGISTER.ERRORS.MIN_LENGTH' | translate: { length: 6 } }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-secondary">{{ 'REGISTER.FIELDS.CONFIRM_PASSWORD' | translate }}</label>
+            <input type="password" formControlName="confirmPassword" class="form-control elite-input"
+                   [placeholder]="'REGISTER.FIELDS.PASS_PLACEHOLDER' | translate"
+                   [class.is-invalid]="(f.confirmPassword.touched && f.confirmPassword.invalid) || (f.confirmPassword.touched && registerForm.hasError('mismatch'))">
+            <div class="invalid-feedback">
+              <span *ngIf="f.confirmPassword.hasError('required')">{{ 'REGISTER.ERRORS.REQUIRED' | translate }}</span>
+              <span *ngIf="!f.confirmPassword.hasError('required') && registerForm.hasError('mismatch')">
+                {{ 'REGISTER.ERRORS.MISMATCH' | translate }}
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="!registerForm.valid || isLoading" class="btn btn-elite-submit w-100 py-3 shadow-sm">
+            @if (isLoading) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              {{ 'REGISTER.BUTTON.LOADING' | translate }}
+            } @else {
+              <span class="fw-bold letter-spacing-1">{{ 'REGISTER.BUTTON.SUBMIT' | translate }}</span>
+            }
+          </button>
+        </form>
+
+        <div class="text-center mt-5">
+          <p class="mb-0 small text-secondary">{{ 'REGISTER.ALREADY_HAVE_ACCOUNT' | translate }}</p>
+          <a routerLink="/login" class="login-link fw-bold text-decoration-none">
+            {{ 'REGISTER.LOGIN_LINK' | translate }} <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>

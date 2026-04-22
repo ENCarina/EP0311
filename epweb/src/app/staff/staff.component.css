@@ -1,0 +1,192 @@
+/* 1. Alapbeállítások */
+:host {
+    display: block;
+    min-height: 100vh;
+    background-color: #f8fafd;
+    position: relative; 
+}
+
+/* 2. Reszponzív táblázat javítása */
+@media screen and (max-width: 768px) { 
+    .table-responsive {
+        border: none !important;
+        background: transparent !important;
+        overflow: visible !important; /* Fontos, hogy a gombok ne vágódjanak le */
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        background: #ffffff;
+        border-radius: 15px !important;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #edf2f7 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        position: relative; /* Segít a belső elemek pozicionálásában */
+    }
+
+    td {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        border: none !important;
+        padding: 0.75rem 0.5rem !important;
+        text-align: left;
+        min-height: 3rem; 
+    }
+
+    td::before {
+        content: attr(data-column);
+        flex: 0 0 120px;
+        text-align: left;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-right: 10px;
+    }
+
+    /* Műveletek gombok mobilon - Itt volt a hiba! */
+    td:last-child {
+        display: flex !important; /* Maradjon flex a gombok elrendezéséhez */
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+        /* margin-top: 1rem;
+        padding-top: 1rem !important;
+        border-top: 1px solid #f1f5f9 !important; */
+    }
+
+    td:last-child::before {
+        content: "Műveletek" !important; /* Mobilon is legyen címe */
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .btn-group {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr; 
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .btn-group .btn {
+        padding: 12px !important; 
+        font-size: 1.2rem; 
+    }
+}
+
+/* 3. Modal és Fixek (Hogy a gombok kattinthatóak legyenek) */
+.admin-table-card {
+    background: #ffffff;
+    border-radius: 20px !important;
+    border: 1px solid rgba(0, 0, 0, 0.03) !important;
+    position: relative;
+    z-index: 1; /* Alacsony z-index, hogy a Modal (1050) simán elé kerüljön */
+}
+
+/* Modal finomítása - Kiemelten fontos a z-index! */
+.modal {
+    z-index: 1060 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+.modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    pointer-events: auto !important; /* Garantálja a kattinthatóságot */
+}
+
+/* 4. Kezelések (Badges) interaktív stílusa */
+.treatment-badge {
+    cursor: pointer; /* Legyen kéz kurzor! */
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    padding: 8px 15px;
+    display: inline-block;
+    margin: 4px;
+    border-radius: 50px;
+}
+
+.treatment-badge.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+/* 5. Gombok */
+.btn-elit {
+    background: linear-gradient(135deg, #001f3f, #003366);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer !important;
+}
+/* Interaktív vizsgálat gombok */
+.treatment-badge {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #dee2e6;
+    font-size: 0.85rem;
+    padding: 5px 12px;
+    border-radius: 50px;
+    background-color: #f8f9fa;
+    color: #495057;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+    font-size: 0.9rem;
+}
+
+.treatment-badge:hover {
+    border-color: #007bff;
+    background-color: #e7f1ff;
+}
+
+.treatment-badge.active {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    color: white ;
+    border-color: #0056b3 !important;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+@media screen and (max-width: 768px) {
+    /* A korábbi td:last-child felülírása a Te kérésed szerint (balra rendezés + gombok) */
+    td:last-child {
+        justify-content: flex-start !important;
+        flex-direction: row !important; /* Ne legyen oszlop! */
+        align-items: center !important;
+        flex-wrap: nowrap !important; /* Kényszerítjük egy sorba */
+        overflow-x: auto; /* Ha nagyon sok gomb lenne, görgethető legyen oldalra */
+    }
+
+    /* A gomb konténer ne legyen 100% széles, hogy elférjen mellette a "Műveletek" felirat */
+    .staff-action-container {
+        display: flex !important;
+        width: auto !important;
+        flex-shrink: 0;
+    }
+
+    /* A gombok fix szélessége mobilon, hogy ne nyomódjanak össze */
+    .staff-action-container .btn {
+        padding: 8px 12px !important;
+        flex: 0 0 auto;
+    }
+}

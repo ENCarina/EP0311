@@ -1,0 +1,636 @@
+{
+  "TITLE": "ElitPort",
+  "WELCOME": "Üdvözöljük az ElitPort Magánklinikán!",
+  "COMMON": {
+    "ERROR": {
+      "TITLE": "Hiba",
+      "SERVER_ERROR": "Szerverhiba történt. Kérjük, próbálja újra később, vagy keresse fel az ügyfélszolgálatot!",
+      "ONLY_IMAGES": "Csak kép fájlok engedélyezettek!"
+    },
+    "SUCCESS": "Siker",
+    "CANCEL": "Mégse",
+    "SAVE": "Mentés",
+    "LOADING": "Betöltés...",
+    "LOADING_DATA": "Adatok betöltése",
+    "LOADING_HIDDEN": "Betöltés...",
+    "LOADING_ERROR": "Hiba történt az adatok betöltésekor.",
+    "GENERIC_ERROR": "A művelet sikertelen",
+    "ERROR_GENERAL": "Hiba történt a művelet során.",
+    "ATTENTION": "Figyelem",
+    "UNKNOWN_ERROR": "Váratlan hiba történt.",
+    "UNKNOWN": "Ismeretlen",
+    "UNKNOWN_NAME": "Névtelen",
+    "NO_EMAIL": "Nincs megadva email",
+    "NOT_FOUND": "Nem található",
+    "YES_DELETE": "Igen, törlöm",
+    "ACTIONS": "Műveletek",
+    "REFRESH": "Frissítés",
+    "DELETE": "Törlés",
+    "GENERATE": "Generálás",
+    "WARNING": "Figyelem",
+    "OK": "Rendben",
+    "OCCASION": "Alkalom",
+    "CURRENCY": "Ft", 
+    "ACTIVE": "Aktív"
+  },
+  "DAYS": {
+    "MONDAY": "Hétfő",
+    "TUESDAY": "Kedd",
+    "WEDNESDAY": "Szerda",
+    "THURSDAY": "Csütörtök",
+    "FRIDAY": "Péntek",
+    "SATURDAY": "Szombat",
+    "SUNDAY": "Vasárnap"
+  },
+  "MENU": {
+    "HOME": "Kezdőlap",
+    "STAFF": "Szakembereink",
+    "ABOUT": "Rólunk",
+    "MY_BOOKINGS": "Foglalásaim",
+    "BOOKING": "Időpontfoglalás",
+    "LOGIN": "Bejelentkezés",
+    "LOGOUT": "Kijelentkezés",
+    "GREETING": "Üdv",
+    "ADMIN": {
+      "STAFF": "Személyzet",
+      "SERVICES": "Szolgáltatások",
+      "DASHBOARD": "Vezérlő/Statisztika",
+      "BOOKINGS": "Foglalások Kezelése",
+      "TITLE": "Adminisztráció",
+      "USERS": "Felhasználók Kezelése"
+    }
+  },
+  "DASHBOARD": {
+    "TITLE": "Admin Vezérlőpult és Elemzések",
+    "SUBTITLE": "Rendszerstatisztikák és folyamatok áttekintése",
+    "EXPORT": "PDF Riport letöltése",
+    "REVENUE": "Összes bevétel",
+    "BOOKINGS": "Összes Foglalás",
+    "CANCEL_RATE": "Lemondási arány",
+    "WEEKLY_ROAM": "Heti leterheltség (Hőtérkép)",
+    "STAFF_EFFICIENCY": "Személyzet hatékonysága",
+    "TOP_SERVICES": "Legnépszerűbb szolgáltatások",
+    "BOOKING_COUNT": "Foglalások száma",
+    "HEATMAP_TITLE": "Idősávok népszerűsége",
+    "HEATMAP_LEGEND": "Foglalási sűrűség",
+    "BOOKINGS_LABEL": "foglalás",
+    "TIMES_LABEL": "alkalom",
+    "TOTAL_REVENUE": "Összes bevétel",
+    "ACTIVE_STAFF": "Aktív szakembereink",
+    "THIS_WEEK": "Ezen a héten",
+    "LAST_30_DAYS": "Elmúlt 30 nap",
+    "PDF_TITLE": "ElitPort - Klinika Riport",
+    "PDF_GENERATED": "Generálva",
+    "PDF_FILENAME": "klinika_riport"
+  },
+  "FOOTER": {
+    "ADDRESS": "1125 Budapest, Szinapszis u. 7.",
+    "HOURS": "H-P: 08:00-19:00",
+    "RIGHTS": "Minden jog fenntartva"
+  },
+  "BOOKINGS": {
+    "FILTER": {
+      "ONLY_ACTIVE": "Csak az aktív foglalások",
+      "SHOW_ALL": "Összes foglalás megjelenítése"
+    },
+    "SUBTITLE": "Rendszerben lévő összes foglalás kezelése",
+    "NO_DATA": "Nincsenek aktív foglalások a rendszerben.",
+    "TABLE": {
+      "PATIENT": "Páciens neve",
+      "DATE": "Dátum",
+      "TIME": "Időpont",
+      "STATUS": "Állapot",
+      "CREATED": "Létrehozva"
+    },
+    "STATUS": {
+      "CONFIRMED": "Aktív",
+      "CANCELLED": "Lemondva",
+      "COMPLETED": "Befejezett",
+      "EXPIRED": "Lejárt"
+    },
+    "ACTIONS": {
+      "CANCEL": "Időpont lemondása",
+      "CONFIRM_CANCEL": "Igen, lemondom",
+      "CONFIRM_BOOKING": "Igen, lefoglalom"
+    },
+    "MESSAGES": {
+      "CANCEL_CONFIRM_TITLE": "Biztos benne?",
+      "CANCEL_CONFIRM_TEXT": "Ez a művelet adminisztrátori felülbírálással törli a foglalást!",
+      "CANCEL_SUCCESS": "A foglalás sikeresen törölve.",
+      "ARCHIVED": "Archiválva",
+      "NOT_FOUND": "A foglalás nem található.",
+      "UNAUTHORIZED": "Nincs jogosultsága a művelethez.",
+      "ALREADY_CANCELLED": "Ez a foglalás már korábban lemondásra került.",
+      "CANNOT_CANCEL_WITHIN_24H": "Az időpont 24 órán belül már nem mondható le online.",
+      "ADMIN_CANCEL_SUCCESS": "Adminisztrátori lemondás sikeres.",
+      "HARD_DELETE_SUCCESS": "A tesztadat véglegesen törölve az adatbázisból."
+    }
+  },
+  "SERVICES": {
+    "NAME": "Szolgáltatás neve",
+    "CARDIOLOGY_EXAM": "Kardiológiai szakvizsgálat",
+    "DENTAL_CHECKUP": "Fogászati kontroll",
+    "PSYCHIATRY_CONSULT": "Pszichiátriai konzultáció",
+    "DERMATOLOGY_SCREENING": "Bőrgyógyászati szűrés",
+    "ORTHOPEDICS_EXAM": "Ortopédiai szakvizsgálat",
+    "OPHTHALMOLOGY_EXAM": "Szemészeti alapvizsgálat",
+    "UROLOGY_SCREENING": "Urológiai szűrővizsgálat",
+    "GYNECOLOGY_SCREENING": "Nőgyógyászati rákszűrés",
+    "GYNECOLOGY_EXAM_LONG": "Nőgyógyászati szakvizsgálat",
+    "DENTAL_SCALING": "Fogkő-eltávolítás",
+    "DENTAL_FILLING": "Fogtömés",
+    "VISION_TEST": "Látásvizsgálat",
+    "JOINT_INJECTION": "Ízületi injekció",
+    "POSTOP_CONTROL": "Műtét utáni kontroll",
+    "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digitális dermatoszkópia és anyajegyszűrés",
+    "TITLE": "Szolgáltatások",
+    "SUBTITLE": "Vizsgálatok és konzultációk árlistájának kezelése",
+    "ADD_NEW": "Új szolgáltatás",
+    "EDIT_TITLE": "Szolgáltatás szerkesztése",
+    "SAVE_SERVICE": "Szolgáltatás mentése",
+    "SAVE_CHANGES": "Változtatások mentése",
+    "EMPTY": "Nincsenek rögzített szolgáltatások.",
+    "Consultation": "Konzultáció",
+    "General Checkup": "Általános vizsgálat",
+    "Follow-up": "Kontroll vizsgálat",
+    "DESCRIPTION": {
+      "CARDIOLOGY_EXAM": "Átfogó kardiológiai vizsgálat, amely magában foglalja a szív és érrendszer állapotának értékelését.",
+      "DENTAL_CHECKUP": "Rendszeres fogászati ellenőrzés a szájhigiénia és a fogak egészségének megőrzése érdekében.",
+      "PSYCHIATRY_CONSULT": "Személyre szabott pszichiátriai konzultáció mentális egészségének támogatására.",
+      "DERMATOLOGY_SCREENING": "Bőrgyógyászati szűrés a bőrproblémák korai felismerése és kezelése érdekében.",
+      "ORTHOPEDICS_EXAM": "Ortopédiai szakvizsgálat mozgásszervi problémák diagnosztizálására és kezelésére.",
+      "OPHTHALMOLOGY_EXAM": "Átfogó szemészeti vizsgálat látásproblémák és szemészeti betegségek felismerésére.",
+      "UROLOGY_SCREENING": "Urológiai szűrővizsgálat a húgyúti rendszer egészségének megőrzése érdekében.",
+      "GYNECOLOGY_SCREENING": "Nőgyógyászati rákszűrés a méhnyakrák korai felismerésére és megelőzésére.",
+      "GYNECOLOGY_EXAM_LONG": "Átfogó nőgyógyászati szakvizsgálat a női reproduktív egészség támogatására.",
+      "DENTAL_SCALING": "Professzionális fogkő-eltávolítás a fogak tisztaságának és egészségének megőrzése érdekében.",
+      "DENTAL_FILLING": "Minőségi fogtömés szuvasodás vagy sérülés esetén a fog szerkezetének helyreállítására.",
+      "VISION_TEST": "Részletes látásvizsgálat a látásproblémák korai felismerése és kezelése érdekében.",
+      "JOINT_INJECTION": "Gyulladáscsökkentő és fájdalomcsillapító ízületi injekciók mozgásszervi problémák kezelésére.",
+      "POSTOP_CONTROL": "Műtét utáni kontrollvizsgálat a gyógyulás nyomon követésére és a komplikációk megelőzésére.",
+      "DIGITAL_DERMOSCOPY_AND_MOLE_MAPPING": "Digitális dermatoszkópia és anyajegyszűrés a bőrrák korai felismerése érdekében."
+    },
+    "MESSAGES": {
+      "ADD_SUCCESS": "Szolgáltatás sikeresen hozzáadva!",
+      "UPDATE_SUCCESS": "Sikeres frissítés!",
+      "DELETE_SUCCESS": "Szolgáltatás eltávolítva.",
+      "DELETE_CONFIRM_TITLE": "Biztosan törölni szeretné?",
+      "DELETE_CONFIRM_TEXT": "Ez a folyamat nem vonható vissza!",
+      "CONFIRM_DELETE": "Igen, törlöm!",
+      "MISSING_ID": "A keresett szolgáltatás nem található!",
+      "DUPLICATE_NAME": "Ez a szolgáltatásnév már létezik!",
+      "TREATMENTS_LOAD_ERROR": "Kezelések betöltése sikertelen.",
+      "CANNOT_CANCEL_WITHIN_24H": "Online lemondás 24 órán belül már nem lehetséges. Kérjük, hívjon minket!",
+      "BOOKING_NOT_FOUND": "Foglalás nem található!"
+    },
+    "TABLE": {
+      "NAME": "Megnevezés",
+      "DESC": "Leírás",
+      "SPECIALTY": "Szakterület",
+      "DURATION": "Időtartam",
+      "PRICE": "Ár",
+      "MESSAGES": {
+        "ADD_SUCCESS": "Szakember sikeresen hozzáadva!",
+        "CONFIRM_DELETE": "Igen, archiválom"
+      }
+    },
+    "FORM": {
+      "ID_LABEL": "Rendszer ID",
+      "NAME_LABEL": "Szolgáltatás neve *",
+      "SPECIALTY_LABEL": "Szakterület",
+      "SPECIALTY_PLACEHOLDER": "pl. Bőrgyógyászat",
+      "DURATION_LABEL": "Időtartam (perc) *",
+      "PRICE_LABEL": "Ár (Ft) *",
+      "DESC_LABEL": "Leírás",
+      "DESC_PLACEHOLDER": "Részletes szolgáltatás leírás a pácienseknek...",
+      "DEFAULT_SPECIALTY": "Általános"
+    }
+  },
+  "USERS": {
+    "TITLE": "Felhasználókezelés",
+    "SUBTITLE": "Regisztrált páciensek adatainak karbantartása",
+    "SEARCH_PLACEHOLDER": "Keresés név vagy email alapján...",
+    "REGISTERED_COUNT": "{{count}} regisztrált tag",
+    "MESSAGES": {
+      "ARCHIVE_SUCCESS": "Felhasználó sikeresen archiválva.",
+      "UPDATE_SUCCESS": "Adatok sikeresen frissítve.",
+      "PWD_SUCCESS": "Jelszó sikeresen megváltoztatva.",
+      "ARCHIVE_CONFIRM_TITLE": "Biztosan archiválni szeretné?",
+      "ARCHIVE_CONFIRM_TEXT": "A felhasználó ezután nem fog tudni bejelentkezni!",
+      "PWD_INPUT_LABEL": "Adja meg az új jelszót",
+      "PWD_PLACEHOLDER": "Legalább 6 karakter...",
+      "PWD_VALIDATION": "Legalább 6 karakternek kell lennie!",
+      "PROMOTE_TEXT": "Munkakör megadása",
+      "ROLE_PLACEHOLDER": "Munkakör megnevezése...",
+      "ROLE_REQUIRED": "A munkakör megadása kötelező!",
+      "ALL_FIELDS_REQUIRED": "Kérjük, töltsön ki minden mezőt!",
+      "PROFILE_NOT_FOUND": "Szakmai profil nem található.",
+      "LOAD_ERROR": "Hiba történt a felhasználók betöltésekor.",
+      "DELETE_SUCCESS": "Felhasználó sikeresen törölve.",
+      "RESTORE_SUCCESS": "A felhasználói profil sikeresen újraaktiválva.",
+      "PASSWORD_UPDATE_SUCCESS": "A jelszó sikeresen megváltozott!",
+      "FETCH_ERROR": "Hiba történt a felhasználói adatok lekérésekor.",
+      "UNAUTHORIZED": "Nincs jogosultsága a profil módosításához.",
+      "STATUS_ACTIVATED": "Felhasználó aktiválva!",
+      "STATUS_DEACTIVATED": "Felhasználó deaktiválva!",
+      "STATUS_UPDATED_SUCCESS": "A státusz sikeresen frissítve!",
+      "UPDATE_ERROR": "Hiba történt a mentés során."
+    },
+    "TABLE": {
+      "ID": "#ID",
+      "USER": "Név",
+      "EMAIL": "Email cím",
+      "ROLE": "Szerepkör",
+      "SPECIALTY": "Szakterület kulcsa (pl. DERMATOLOGY)",
+      "STATUS": "Állapot",
+      "ACTIONS": "Műveletek",
+      "EMPTY": "Nincsenek megjeleníthető felhasználók."
+    },
+    "ROLES": {
+      "ADMIN": "Admin",
+      "STAFF_DEFAULT": "Szakember",
+      "PATIENT": "Páciens"
+    },
+    "STATUS": {
+      "ACTIVE": "Aktív",
+      "INACTIVE": "Inaktív"
+    },
+    "ACTIONS": {
+      "PROMOTE": "Szakemberré kinevezés",
+      "RESET_PWD": "Jelszó módosítása",
+      "EDIT": "Szerkesztés",
+      "ARCHIVE": "Archiválás"
+    }
+  },
+  "LOGIN": {
+    "TITLE": "Bejelentkezés",
+    "SUBTITLE": "Üdvözöljük újra!",
+    "EMAIL_LABEL": "Email cím",
+    "EMAIL_PLACEHOLDER": "pelda@email.com",
+    "PASSWORD_LABEL": "Jelszó",
+    "FORGOT_PASSWORD": "Elfelejtette a jelszavát?",
+    "SUBMIT_BTN": "Bejelentkezés",
+    "NO_ACCOUNT": "Még nincs fiókja?",
+    "REGISTER_HERE": "Regisztráljon itt!"
+  },
+  "REGISTER": {
+    "TITLE": "Fiók létrehozása",
+    "SUBTITLE": "Csatlakozzon az Elit Medical Centre közösségéhez.",
+    "ALREADY_HAVE_ACCOUNT": "Már van fiókja?",
+    "LOGIN_LINK": "Bejelentkezés",
+    "FIELDS": {
+      "NAME": "Név",
+      "NAME_PLACEHOLDER": "Minta János",
+      "EMAIL": "Email cím",
+      "EMAIL_PLACEHOLDER": "pelda@email.com",
+      "PASSWORD": "Jelszó",
+      "CONFIRM_PASSWORD": "Jelszó megerősítése",
+      "PASS_PLACEHOLDER": "••••••••"
+    },
+    "ERRORS": {
+      "REQUIRED": "A mező kitöltése kötelező.",
+      "MIN_LENGTH": "Legalább {{length}} karakter szükséges.",
+      "EMAIL_INVALID": "Érvénytelen email cím.",
+      "MISMATCH": "A két jelszó nem egyezik."
+    },
+    "BUTTON": {
+      "SUBMIT": "Regisztráció",
+      "LOADING": "Feldolgozás..."
+    },
+    "SWAL": {
+      "SUCCESS_TITLE": "Sikeres regisztráció!",
+      "SUCCESS_TEXT": "Üdvözöljük!",
+      "ERROR_TITLE": "Hiba!",
+      "ERROR_DEFAULT": "A regisztráció sikertelen!"
+    }
+  },
+  "AUTH": {
+    "VERIFY_EMAIL": "Kérjük, igazolja vissza email címét a bejelentkezéshez!",
+    "VALIDATION_ERROR": "Kérjük, töltse ki megfelelően az összes mezőt!",
+    "INVALID_CREDENTIALS": "Hibás email cím vagy jelszó!",
+    "ERROR_GENERAL": "Érvénytelen e-mail cím vagy jelszó. Kérjük, próbálja újra!",
+    "ERROR_401": "Hibás hitelesítési adatok. A hozzáférés megtagadva.",
+    "LOGIN_SUCCESS": "Sikeres bejelentkezés!",
+    "LOGIN_FAILED": "Sikertelen bejelentkezés"
+  },
+  "STAFF": {
+    "BIOS": {
+      "DR_KOVACS": "20 év tapasztalat a kardiológiai rehabilitációban.",
+      "DR_TOTH": "Esztétikai fogászat és szájsebészet szakorvosa.",
+      "DR_HOUSE": "Mindenki lódít. Diagnosztikai specialista.",
+      "DR_SZABO": "Bőrgyógyász szakorvos, onkodermatológus.",
+      "DR_KISS": "Ízületi betegségek és sportsebészet specialistája.",
+      "DR_MOLNAR": "Szemész szakorvos, lézeres szemsebész.",
+      "DR_BARNA": "Urológiai daganatok és kismedencei szűrések szakértője.",
+      "DR_VARGA": "Nőgyógyászati endokrinológia és meddőségi tanácsadás."
+    },
+    "TITLE": "Szakemberek Kezelése",
+    "SUBTITLE": "Orvosok és asszisztensek kezelése a rendszerben",
+    "NEW_BUTTON": "Új szakember",
+    "GENERATE_SLOTS_TITLE": "Idősávok generálása",
+    "TABLE": {
+      "ID": "ID",
+      "NAME_EMAIL": "Név és Email",
+      "ROLE": "Szerepkör",
+      "SPECIALTY": "Szakterület",
+      "STATUS": "Állapot",
+      "ACTIONS": "Műveletek",
+      "EMPTY": "Nincsenek megjeleníthető szakemberek.",
+      "AVAILABLE": "Elérhető",
+      "NOT_AVAILABLE": "Nem elérhető",
+      "BIO": "Bemutatkozás"
+    },
+    "ROLES": {
+      "DOCTOR": "Orvos",
+      "ADMIN": "Adminisztrátor",
+      "ASSISTANT": "Asszisztens"
+    },
+    "MODAL": {
+      "ADD_TITLE": "Új szakember regisztrálása",
+      "EDIT_TITLE": "Szakember adatainak szerkesztése",
+      "FULL_NAME": "Teljes név",
+      "EMAIL": "Email cím",
+      "PASSWORD": "Jelszó",
+      "BIO": "Bemutatkozás",
+      "SPECIALTY": "Szakterület",
+      "PASSWORD_HINT": "Hagyja üresen, ha nem változik",
+      "ASSIGNED_TREATMENTS": "Hozzárendelt vizsgálatok",
+      "IS_AVAILABLE": "Jelenleg elérhető",
+      "ACTIVE_STATUS": "Aktív státusz",
+      "CANCEL": "Mégse",
+      "SAVE": "Mentés",
+      "UPDATE": "Frissítés"
+    },
+    "MESSAGES": {
+      "ADD_SUCCESS": "Szakember sikeresen hozzáadva!",
+      "UPDATE_SUCCESS": "Adatok és kezelések sikeresen frissítve!",
+      "DELETE_SUCCESS": "Szakember sikeresen eltávolítva!",
+      "ASSIGN_SUCCESS": "Kezelések sikeresen hozzárendelve!",
+      "ASSIGN_ERROR": "A szakember mentve, de a kezelések hozzárendelése sikertelen!",
+      "INVALID_ID": "A szakember nem azonosítható.",
+      "RESTORE_ERROR": "A szerver elutasította a kérést.",
+      "RESTORE_SUCCESS": "Szakember hozzáférése sikeresen visszaállítva.",
+      "PROFILE_NOT_FOUND": "Nem található szerkeszthető szakmai profil ehhez a felhasználóhoz.",
+      "PROMOTE_SUCCESS": "A felhasználó sikeresen előléptetve szakemberré!",
+      "TREATMENTS_NOT_FOUND": "Nem találhatók kezelések ehhez a szakemberhez.",
+      "STATUS_ACTIVE": "A szakmai profil mostantól aktív.",
+      "STATUS_ARCHIVED": "A szakmai profil archiválva (inaktív).",
+      "GENERATE_TITLE": "Heti időpontok generálása",
+      "GENERATE_SUCCESS": "Időpontok sikeresen létrehozva 30 napra!",
+      "GENERATE_ERROR": "Hiba történt az időpontok generálása során.",
+      "SLOTS_GENERATED": "{{count}} Idősávok sikeresen generálva!",
+      "SLOTS_ERROR": "Hiba történt az idősávok generálása során!",
+      "NO_SLOTS_GENERATED": "Nem jött létre egyetlen idősáv sem. Ellenőrizze a dátumokat és a munkaidőt!"  
+    },
+    "TOOLTIPS": {
+      "APPOINTMENTS": "Időpontok",
+      "EDIT": "Szerkesztés",
+      "DEACTIVATE": "Deaktiválás",
+      "RESTORE": "Visszaállítás",
+      "GENERATE_SLOTS": "Időpontok automatikus generálása"
+    }
+  },
+  "SPECIALTIES": {
+    "CARDIOLOGY": { "NAME": "Kardiológia", "DOCTOR": "Kardiológus" },
+    "DENTISTRY": { "NAME": "Fogászat", "DOCTOR": "Fogorvos" },
+    "PSYCHIATRY": { "NAME": "Pszichiátria", "DOCTOR": "Pszichiáter" },
+    "DERMATOLOGY": { "NAME": "Bőrgyógyászat", "DOCTOR": "Bőrgyógyász" },
+    "ORTHOPEDICS": { "NAME": "Ortopédia", "DOCTOR": "Ortopéd szakorvos" },
+    "OPHTHALMOLOGY": { "NAME": "Szemészet", "DOCTOR": "Szemész" },
+    "GYNECOLOGY": { "NAME": "Nőgyógyászat", "DOCTOR": "Nőgyógyász" },
+    "UROLOGY": { "NAME": "Urológia", "DOCTOR": "Urológus" },
+    "GENERAL": { "NAME": "Általános", "DOCTOR": "Általános orvos" }
+  },
+  "MY_BOOKINGS": {
+    "TITLE": "Foglalásaim",
+    "SUBTITLE": "Kezelje egy helyen rögzített időpontjait és adatait.",
+    "NEW_BOOKING": "Új foglalás",
+    "LOADING": "Foglalások lekérése...",
+    "ERROR_TITLE": "Hiba történt",
+    "DEFAULT_TREATMENT": "Általános vizsgálat",
+    "DEFAULT_DOCTOR": "Szakorvos",
+    "DEFAULT_SPECIALTY": "Szakorvos",
+    "CURRENCY": "Ft",
+    "PAST_VISIT": "Múltbeli vizit",
+    "CANCEL_APPOINTMENT": "Időpont lemondása",
+    "CANCEL_ONLY_PHONE": "Csak telefonon mondható le",
+    "CANCEL_TOOLTIP": "24 órán belül online nem mondható le",
+    "STATUS_PAST": "MÚLTBELI / LEZÁRT",
+    "STATUS_FINALIZED": "VÉGLEGESÍTETT (NEM LEMONDHATÓ)",
+    "STATUS_ACTIVE": "AKTÍV / Lemondható",
+    "EMPTY_TITLE": "Még nincs foglalása",
+    "EMPTY_SUBTITLE": "Úgy tűnik, jelenleg nincs rögzített időpontja.",
+    "BOOK_NOW": "Foglaljon időpontot most",
+    "CANCEL_CONFIRM_TITLE": "Biztosan lemondja?",
+    "CANCEL_CONFIRM_TEXT": "Ez a művelet nem vonható vissza!",
+    "CANCEL_CONFIRM_BTN": "Igen, lemondom!",
+    "CANCEL_CANCEL_BTN": "Mégse",
+    "CANCEL_SUCCESS_TITLE": "Sikeres lemondás!",
+    "CANCEL_SUCCESS_TEXT": "Az időpontja felszabadult.",
+    "ERROR_LOAD": "Foglalások betöltése sikertelen.",
+    "ERROR_CANCEL_GENERAL": "A lemondás során szerveroldali hiba történt. Próbálja újra később!"
+  },
+  "HOME": {
+    "TITLE": {
+      "PREFIX": "ELIT",
+      "SUFFIX": "MedicalCentre"
+    },
+    "SUBTITLE": "Digitális betegkezelés az Ön kényelméért.",
+    "CARDS": {
+      "ENVIRONMENT": {
+        "TITLE": "Modern Környezet",
+        "TEXT": "Csúcstechnológiás eszközeink és barátságos rendelőink garantálják a kiváló ellátást."
+      },
+      "EXPERTISE": {
+        "TITLE": "Szakértő Kezek",
+        "TEXT": "Magasan képzett szakorvosaink a legmagasabb szakmai szinten gondoskodnak Önre."
+      }
+    },
+    "BUTTON": {
+      "BOOKING": "IDŐPONTFOGLALÁS INDÍTÁSA",
+      "LOGIN": "JELENTKEZZEN BE A FOGLALÁSHOZ"
+    },
+    "SWAL": {
+      "TITLE": "Bejelentkezés szükséges",
+      "TEXT": "Időpontfoglaláshoz kérjük, jelentkezzen be rendszerünkbe!",
+      "BTN": "Bejelentkezés a fiókba"
+    }
+  },
+  "FORGOT_PASSWORD": {
+    "TITLE": "Elfelejtett jelszó",
+    "SUBTITLE": "Adja meg email címét a helyreállításhoz.",
+    "EMAIL_LABEL": "Email cím",
+    "EMAIL_PLACEHOLDER": "pelda@email.com",
+    "SEND_BTN": "Link küldése",
+    "SENDING": "Küldés...",
+    "BACK_TO_LOGIN": "Vissza a bejelentkezéshez",
+    "MESSAGES": {
+      "SUCCESS": "A helyreállító linket elküldtük az email címére!",
+      "ERROR": "Hiba történt. Kérjük, ellenőrizze az email címet!",
+      "PASSWORD_MISMATCH": "A jelszavak nem egyeznek!",
+      "ERROR_GENERAL": "Hiba történt a művelet során."
+    }
+  },
+  "RESET_PASSWORD": {
+    "TITLE": "Új jelszó",
+    "SUBTITLE": "Kérjük, adja meg az új jelszavát!",
+    "LABEL_NEW": "Új jelszó",
+    "LABEL_CONFIRM": "Jelszó megerősítése",
+    "SUBMIT_BTN": "Jelszó mentése",
+    "BACK_TO_LOGIN": "Vissza a bejelentkezéshez",
+    "ERRORS": {
+      "LENGTH": "A jelszónak legalább 6 karakternek kell lennie!",
+      "MISMATCH": "A jelszavak nem egyeznek!"
+    }
+  },
+  "ERROR_PAGES": {
+    "NOT_FOUND": {
+      "TITLE": "404",
+      "SUBTITLE": "HUPPSZ! AZ OLDAL NEM TALÁLHATÓ",
+      "MESSAGE": "Sajnáljuk, a keresett tartalom nem érhető el.<br>Hamarosan átirányítjuk a kezdőlapra.",
+      "BACK_BUTTON": "Vissza a főoldalra"
+    }
+  },
+  "ERRORS": {
+    "REQUIRED": "A mező kitöltése kötelező!",
+    "EMAIL_FORMAT": "Kérjük, érvényes email címet adjon meg!",
+    "MIN_LENGTH": "Legalább {{length}} karakter szükséges."
+  },
+  "ABOUT": {
+    "TAGLINE": "Intelligens Időpontfoglaló Rendszer",
+    "VERSION": "Verzió",
+    "DEVELOPERS": "Fejlesztők",
+    "STATUS": "Állapot",
+    "SYSTEM_ACTIVE": "Rendszer aktív",
+    "PROJECT_TITLE": "A projektről",
+    "PROJECT_DESC": "Az <strong>ElitPort</strong> egy hiánypótló, jövőbiztos klinikai szoftver, amely a technikai innovációt kihasználva nyújt teljesen reaktív és biztonságos megoldást az induló magánrendelők betegfogadási és adminisztrációs folyamatainak egyszerűsítésére.",
+    "TECHNOLOGIES": "Főbb technológiák",
+    "DOCS": "Dokumentáció",
+    "SUPPORT": "Támogatás",
+    "ALL_RIGHTS": "Minden jog fenntartva."
+  },
+  "STAFF_CARD": {
+    "BACK_TO_LIST": "Vissza a szakembereinkhez",
+    "BIO_TITLE": "Bemutatkozás",
+    "SERVICES_TITLE": "Elérhető szolgáltatások",
+    "TREATMENT_TYPE": "Szakorvosi ellátás",
+    "MINUTES": "perc",
+    "CURRENCY": "Ft",
+    "NO_SERVICES": "Nincsenek rögzített szolgáltatások.",
+    "BOOKING": "Foglalás",
+    "BOOKING_LONG": "Időpontfoglalás",
+    "LOGIN_TO_BOOK": "Bejelentkezés a foglaláshoz",
+    "PAGE_TITLE": "Szakembereink",
+    "VIEW_PROFILE": "Profil megtekintése",
+    "DEFAULT_BIO": "Tapasztalt szakemberünk várja jelentkezését.",
+    "BOOK_APPOINTMENT": "Időpontfoglalás",
+    "LOGIN_REQUIRED": "Bejelentkezés szükséges a foglaláshoz"
+  },
+  "BOOKING": {
+    "CONFLICT": {
+      "TITLE": "Már van foglalása",
+      "MESSAGE": "Ön már rendelkezik aktív időpontfoglalással ebben az időpontban.",
+      "SUBTEXT": "Egyszerre csak egy időpont foglalható erre az idősávra. Kérjük, válasszon egy másik időpontot!",
+      "GO_TO_MY_BOOKINGS": "Foglalásaim megtekintése"
+    },
+    "TODAY": "Aktuális hét",
+    "SIDEBAR_TITLE": "Szűrés",
+    "SELECT_DATE": "Dátum kiválasztása",
+    "SPECIALTY": "Szakterület",
+    "SPECIALTY_PLACEHOLDER": "-- Válasszon szakterületet --",
+    "STAFF": "Szakember",
+    "STAFF_PLACEHOLDER": "-- Válasszon orvost --",
+    "TREATMENT": "Vizsgálat típusa",
+    "TREATMENT_PLACEHOLDER": "-- Válasszon vizsgálatot --",
+    "SEARCH_BTN": "Keresés",
+    "UPDATING": "Frissítés...",
+    "AVAILABLE_SLOTS": "Elérhető időpontok",
+    "TIME": "Idő",
+    "FREE_PLACES": "{{count}} szabad hely",
+    "BOOK_NOW": "Időpont foglalása",
+    "ALREADY_BOOKED": "Már foglalt",
+    "NO_SLOTS_TITLE": "Nincs szabad időpont",
+    "NO_SLOTS_SUBTITLE": "Válassz szakterületet, orvost és vizsgálatot.",
+    "CONFIRM_PROMPT": "Időpont foglalása",
+    "CONFIRM_TITLE": "Foglalás megerősítése",
+    "CONFIRM_QUESTION": "Biztosan lefoglalod az időpontot: {{date}} {{time}}?",
+    "SUCCESS_MSG": "Sikeres foglalás!",
+    "ERROR_MSG": "Hiba történt a foglalás során.",
+    "NOT_FOUND": "A foglalás nem található!",
+    "UNAUTHORIZED": "Nincs jogosultsága a foglalás kezeléséhez!",
+    "CANNOT_CANCEL_WITHIN_24H": "A lemondás 24 órán belül csak telefonon lehetséges!",
+    "DELETE_SUCCESS": "Sikeres lemondás. Az időpont újra felszabadult.",
+    "CANCEL_SUCCESS":"A foglalás sikeresen törölve.",
+    "ADMIN_CANCEL_SUCCESS": "Adminisztrátorként sikeresen törölted a foglalást!",
+    "ERROR_LOAD": "A foglalások betöltése sikertelen.",
+    "SERVER_ERROR": "Szerverhiba történt a lemondás során."
+  },
+  "MESSAGES": {
+    "AUTH": {
+      "MISSING_FIELDS": "Kérjük, töltsön ki minden mezőt!",
+      "PASSWORD_MISMATCH": "A jelszavak nem egyeznek!",
+      "EMAIL_ALREADY_TAKEN": "Ez az e-mail cím már használatban van!",
+      "REGISTRATION_SUCCESS_VERIFY": "Sikeres regisztráció! Kérjük, igazolja vissza e-mail címét.",
+      "INVALID_TOKEN": "Érvénytelen vagy lejárt token!",
+      "EMAIL_VERIFIED_SUCCESS": "E-mail cím sikeresen megerősítve!",
+      "INVALID_CREDENTIALS": "Hibás e-mail cím vagy jelszó!",
+      "ACCOUNT_INACTIVE": "Ez a fiók jelenleg nem aktív.",
+      "EMAIL_NOT_VERIFIED": "Kérjük, igazolja vissza e-mail címét a belépés előtt!",
+      "EMAIL_REQUIRED": "E-mail cím megadása kötelező!",
+      "FORGOT_PASSWORD_SENT": "Ha a cím létezik, elküldtük a jelszó-visszaállító linket.",
+      "TOKEN_REQUIRED": "A visszaállító token hiányzik!",
+      "INVALID_OR_EXPIRED_TOKEN": "A link érvénytelen vagy már lejárt.",
+      "PASSWORD_RESET_SUCCESS": "A jelszó sikeresen megváltoztatva!",
+      "ERROR_GENERAL": "Sikertelen bejelentkezés.Kérjük, próbálja meg később!",
+      "VALIDATION_ERROR": "Kérjük, megfelelően töltse ki a belépési adatokat!",
+      "REGISTRATION_SUCCESS": "Sikeres regisztráció! Most már bejelentkezhet."
+    },
+    "BOOKING": {
+      "CANCEL_SUCCESS": "Sikeresen lemondta az időpontot.",
+      "CANCELLATION_TOO_LATE": "Az időpont már nem mondható le (24 órán belül van).",
+      "SUCCESS_MSG": "Sikeres foglalás!",
+      "ERROR_MSG": "Hiba történt a foglalás során.",
+      "ERROR_LOAD": "Foglalások betöltése sikertelen.",
+      "NOT_FOUND": "A keresett foglalás nem található.",
+      "CONFLICT": "Ekkor már van egy másik lefoglalt időpontja!",
+      "BOOKING_NOT_FOUND": "Foglalás nem található!",
+      "UNAUTHORIZED": "Nincs jogosultsága a művelethez!",
+      "CANNOT_CANCEL_WITHIN_24H": "Online lemondás 24 órán belül már nem lehetséges.",
+      "DELETE_SUCCESS": "Időpont sikeresen törölve és felszabadítva.",
+      "SERVER_ERROR": "Szerverhiba történt a művelet során."
+    }
+  },
+  "SLOTS": {
+    "MESSAGES": {
+      "SUCCESS": "Időpont sikeresen mentve!",
+      "DELETE_SUCCESS": "Az időpontot töröltük a naptárból.",
+      "UPDATE_SUCCESS": "Az időpont módosítása megtörtént.",
+      "NOT_FOUND": "A keresett időpont nem található.",
+      "PAST_DATE_ERROR": "Nem hozhat létre időpontot a múltban!",
+      "UNAUTHORIZED": "Csak a saját naptárát kezelheti!",
+      "LOAD_ERROR": "Az időpontok betöltése sikertelen."
+    }
+  },
+  "VERIFY_EMAIL": {
+    "LOADING_TITLE": "Fiók aktiválása",
+    "LOADING_SUB": "Kérjük, várjon, amíg hitelesítjük adatait...",
+    "SUCCESS_TITLE": "Sikeres visszaigazolás!",
+    "SUCCESS_SUB": "Köszönjük bizalmát! Fiókja mostantól aktív, és minden szolgáltatásunk elérhető az Ön számára.",
+    "SUCCESS_BTN": "TOVÁBB A BELÉPÉSHEZ",
+    "ERROR_TITLE": "Sikertelen aktiválás",
+    "ERROR_SUB": "A megerősítő link sajnos érvénytelen vagy már lejárt. Kérjük, próbálja meg újra a regisztrációt.",
+    "ERROR_BTN_RETRY": "ÚJ REGISZTRÁCIÓ INDÍTÁSA",
+    "ERROR_LINK_HOME": "Vissza a főoldalra",
+    "LOG": {
+      "SUCCESS": "Sikeres aktiválás:",
+      "ERROR": "Aktiválási hiba:"
+    }
+  },
+ "EMAILS": {
+    "MESSAGES": {
+      "SEND_ERROR": "Az e-mail küldése sikertelen. Kérjük, próbálja újra később.",
+      "CONFIRMATION_ERROR": "A foglalási visszaigazolás küldése sikertelen.",
+      "RESET_ERROR": "A jelszóvisszaállító e-mail küldése sikertelen."
+    }
+  }
+}

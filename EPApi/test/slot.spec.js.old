@@ -1,0 +1,65 @@
+import request from 'supertest';
+import app from '../app/app.js';
+import { expect } from 'chai';
+
+describe('/api/slots', () => {
+  const restype = 'application/json; charset=utf-8';
+  let token = '';
+  let testSlotId;
+
+  // 1. Token megszerzése a tesztek előtt
+  before(async () => {
+    const loginRes = await request(app)
+      .post('/api/login') 
+      .send({
+        email: 'admin@test.hu', 
+        password: 'password123'
+      });
+    
+    token = loginRes.body.token;
+  });
+
+  it('POST /api/slots - Új idősáv létrehozása', async () => {
+    const res = await request(app)
+      .post('/api/slots')
+      .set('Authorization', `Bearer ${token}`) 
+      .set('Accept', 'application/json')
+      .send({
+        startTime: '2026-05-01T10:00:00',
+        endTime: '2026-05-01T11:00:00',
+        staffId: 1 
+      })
+      .expect('Content-Type', restype)
+      .expect(201);
+
+    testSlotId = res.body.id;
+    expect(res.body).to.have.property('id');
+  });
+
+  it('GET /api/slots - Idősávok lekérése', async () => {
+    await request(app)
+      .get('/api/slots')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${token}`) 
+      .expect('Content-Type', restype)
+      .expect(200);
+  });
+
+  it('PUT /api/slots/:id - Idősáv módosítása', async () => {
+    await request(app)
+      .put(`/api/slots/${testSlotId}`) 
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        startTime: '2026-05-01T12:00:00'
+      })
+      .expect('Content-Type', restype)
+      .expect(200);
+  });
+
+  it('DELETE /api/slots/:id - Idősáv törlése', async () => {
+    await request(app)
+      .delete(`/api/slots/${testSlotId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+  });
+});

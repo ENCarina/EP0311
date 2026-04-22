@@ -1,0 +1,61 @@
+<div class="home-hero-wrapper">
+  <div class="stones-overlay"></div>
+
+  <div class="container text-center py-5 position-relative">
+    
+    <div class="header-section mb-5 animate__animated animate__fadeIn">
+      <h2 class="display-3 fw-light text-dark mb-2">
+        <span class="fw-bold text-primary">{{ 'HOME.TITLE.PREFIX' | translate }}</span> 
+        {{ 'HOME.TITLE.SUFFIX' | translate }}
+      </h2>
+      <div class="divider-line mx-auto"></div>
+      <p class="lead text-secondary mt-3 fw-light">
+        {{ 'HOME.SUBTITLE' | translate }}
+      </p>
+    </div>
+    
+    <div class="row g-5 justify-content-center">
+      
+      <div class="col-lg-5 col-md-6 col-12">
+        <div class="elite-card">
+          <div class="img-container">
+            <img src="/booking.jpg" class="card-img-top" [alt]="'HOME.CARDS.ENVIRONMENT.TITLE' | translate">
+          </div>
+          <div class="card-body p-4">
+            <h4 class="fw-bold letter-spacing-1">{{ 'HOME.CARDS.ENVIRONMENT.TITLE' | translate }}</h4>
+            <p class="text-muted fw-light">
+              {{ 'HOME.CARDS.ENVIRONMENT.TEXT' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 col-md-6 col-12">
+        <div class="elite-card">
+          <div class="img-container">
+            <img src="/Medical.jpg" class="card-img-top" [alt]="'HOME.CARDS.EXPERTISE.TITLE' | translate">
+          </div>
+          <div class="card-body p-4">
+            <h4 class="fw-bold letter-spacing-1">{{ 'HOME.CARDS.EXPERTISE.TITLE' | translate }}</h4>
+            <p class="text-muted fw-light">
+              {{ 'HOME.CARDS.EXPERTISE.TEXT' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5 pt-4">
+      <button (click)="onStartBooking()" class="btn-elite-primary shadow-lg">
+        @if (authService.isAuthenticated()) {
+          <i class="bi bi-calendar-check-fill me-2"></i> 
+          <span>{{ 'HOME.BUTTON.BOOKING' | translate }}</span>
+        } @else {
+          <i class="bi bi-lock-fill me-2"></i> 
+          <span>{{ 'HOME.BUTTON.LOGIN' | translate }}</span>
+        }
+      </button>
+    </div>
+
+  </div>
+</div>

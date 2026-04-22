@@ -1,0 +1,113 @@
+<div class="container mt-5 animate-fade-in">
+  <div class="card shadow-sm border-0 overflow-hidden rounded-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3 border-0" 
+         style="background-color: #1e3a8a; color: white;"> 
+      <h3 class="mb-0 h5 fw-bold text-white">
+        <i class="bi bi-people-fill me-2"></i>{{ 'USERS.TITLE' | translate }}
+      </h3>
+      <span class="badge bg-white text-dark rounded-pill px-3 shadow-sm fw-bold">
+        {{ 'USERS.REGISTERED_COUNT' | translate: { count: users.length } }}
+      </span>
+    </div>
+    
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 custom-user-table">
+          <thead class="table-light text-secondary small text-uppercase d-none d-md-table-header-group">
+            <tr>
+              <th class="ps-4" style="width: 80px;">{{ 'USERS.TABLE.ID' | translate }}</th>
+              <th>{{ 'USERS.TABLE.USER' | translate }}</th>
+              <th class="d-none d-lg-table-cell">{{ 'USERS.TABLE.ROLE' | translate }}</th>
+              <th>{{ 'USERS.TABLE.STATUS' | translate }}</th>
+              <th class="text-end pe-4">{{ 'USERS.TABLE.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr [class.opacity-50]="!user.isActive" [class.bg-light]="!user.isActive" 
+                  class="transition-all d-flex flex-column d-md-table-row border-bottom">
+                
+                <td class="ps-md-4 text-muted small d-none d-md-table-cell">#{{ user.id }}</td>
+                
+                <td class="ps-4 ps-md-0 border-0 border-md-bottom">
+                  <div class="d-flex align-items-center mt-2 mt-md-0">
+                    <div class="avatar-sm-circle bg-light text-primary me-2 d-md-none d-flex align-items-center justify-content-center rounded-circle" style="width: 32px; height: 32px;">
+                       <i class="bi bi-person"></i>
+                    </div>
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold text-dark">{{ user.name }}</span>
+                      <small class="text-muted">{{ user.email }}</small>
+                      <div class="d-lg-none mt-1">
+                         @if (user.roleId == 2) {
+                           <span class="badge-dot text-danger small">● {{ 'USERS.ROLES.ADMIN' | translate }}</span>
+                         } @else if (user.roleId == 0) {
+                           <span class="badge-dot text-secondary small">● {{ 'USERS.ROLES.PATIENT' | translate }}</span>
+                         } @else {
+                           <span class="badge-dot text-info small">● Staff</span>
+                         }
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                
+                <td class="d-none d-lg-table-cell border-0 border-md-bottom">
+                  <div class="d-flex gap-1 flex-wrap">
+                    @if (user.roleId == 2) {
+                      <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle">
+                        {{ 'USERS.ROLES.ADMIN' | translate }}
+                      </span>
+                    }
+                    @if (user.staffProfile || user.roleId == 1) {
+                      <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle">
+                        Staff
+                      </span>
+                    } 
+                    @else if (user.roleId == 0) {
+                      <span class="badge rounded-pill bg-light text-secondary border">
+                        {{ 'USERS.ROLES.PATIENT' | translate }}
+                      </span>
+                    }
+                  </div>
+                </td>
+                
+                <td class="ps-4 ps-md-0 border-0 border-md-bottom">
+                  <div class="form-check form-switch d-flex align-items-center">
+                    <input class="form-check-input cursor-pointer" type="checkbox" role="switch" 
+                           [id]="'userSwitch-' + user.id"
+                           [checked]="user.isActive" 
+                           (change)="onToggleActive(user)">
+                    <label class="form-check-label small ms-2 fw-medium d-none d-sm-inline" 
+                           [for]="'userSwitch-' + user.id"
+                           [class.text-success]="user.isActive" 
+                           [class.text-danger]="!user.isActive">
+                      {{ (user.isActive ? 'USERS.STATUS.ACTIVE' : 'USERS.STATUS.INACTIVE') | translate }}
+                    </label>
+                  </div>
+                </td>
+                
+                <td class="text-end pe-4 py-3 border-0 border-md-bottom">
+                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    @if (user.roleId == 0) {
+                      <button class="btn btn-action btn-outline-success" (click)="onPromoteToStaff(user)">
+                        <i class="bi bi-mortarboard-fill"></i>
+                      </button>
+                    }
+                    <button class="btn btn-action btn-outline-warning" (click)="onResetPassword(user)">
+                      <i class="bi bi-key-fill"></i>
+                    </button>
+                    <button class="btn btn-action btn-outline-primary" (click)="onEditUser(user)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-action btn-outline-danger" [disabled]="!user.isActive" (click)="onArchive(user.id)">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

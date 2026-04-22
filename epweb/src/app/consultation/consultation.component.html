@@ -1,0 +1,168 @@
+<div class="container py-5 mt-5 animate-fade-in"> 
+  <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+    <div>
+      <h1 class="h3 mb-0 fw-bold text-dark">
+        <i class="bi bi-stethoscope me-2 text-primary"></i>{{ 'SERVICES.TITLE' | translate }}
+      </h1>
+      <p class="text-muted small mb-0 ps-4">{{ 'SERVICES.SUBTITLE' | translate }}</p>
+    </div>
+    <button (click)="startShowModal()" class="btn btn-elit shadow-sm px-4"> 
+      <i class="bi bi-plus-circle me-2"></i>{{ 'SERVICES.ADD_NEW' | translate }}
+    </button>
+  </div>
+  <div class="card admin-table-card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;" class="ps-4">ID</th>
+            <th>{{ 'SERVICES.TABLE.NAME' | translate }}</th>
+            <th class="d-none d-lg-table-cell">{{ 'SERVICES.TABLE.DESC' | translate }}</th>
+            <th>{{ 'SERVICES.TABLE.SPECIALTY' | translate }}</th>
+            <th class="text-center">{{ 'SERVICES.TABLE.DURATION' | translate }}</th>
+            <th>{{ 'SERVICES.TABLE.PRICE' | translate }}</th>
+            <th class="text-center" style="width: 150px;">{{ 'USERS.TABLE.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (con of filteredConsultations; track con.id) {
+            <tr>
+              <td class="ps-4 text-muted small">#{{con.id}}</td>
+              <td>
+                <div class="d-flex flex-column">
+                  <span class="fw-bold text-dark">
+                    {{ (con.name && con.name.includes('_')) ? ('SERVICES.' + con.name | translate) : con.name }}
+                  </span>
+                  <small class="text-muted d-lg-none">
+                    {{ 'SERVICES.DESCRIPTION.' + con.name | translate }}
+                  </small>
+                </div>
+              </td>
+              <td class="d-none d-lg-table-cell">
+                <div class="text-muted small text-truncate" style="max-width: 300px;" 
+                     [title]="'SERVICES.DESCRIPTION.' + con.name | translate">
+                  {{ 'SERVICES.DESCRIPTION.' + con.name | translate }}
+                </div>
+              </td>
+              <td class="d-none d-md-table-cell">
+                <span class="badge bg-light text-secondary border px-3 rounded-pill small">
+                  @if (con.specialty) {
+                    {{ 'SPECIALTIES.' + (con.specialty | uppercase) + '.NAME' | translate }}
+                  } @else {
+                    {{ 'SERVICES.FORM.DEFAULT_SPECIALTY' | translate }}
+                  }
+                </span>
+              </td>
+              <td class="text-center text-primary fw-medium">
+                {{con.duration}}'
+              </td>
+              <td>
+                <span class="fw-bold text-dark">
+                  {{con.price | currency:'HUF':'symbol':'1.0-0':'hu'}}
+                </span>
+              </td>
+              <td class="text-center pe-3">
+                <div class="service-action-container d-inline-flex shadow-sm border rounded-3 overflow-hidden bg-white">
+                  <button class="btn btn-light btn-sm text-primary border-end px-3" (click)="startEdit(con)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-light btn-sm text-danger px-3" (click)="deleteConsultation(con.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="bi bi-search display-4 d-block mb-3 opacity-25"></i>
+                {{ 'SERVICES.EMPTY' | translate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@if (showModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn animate__faster">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header text-white" style="background: linear-gradient(135deg, #001f3f, #003366);">
+          <h5 class="modal-title fw-bold">
+            <i class="bi me-2" [ngClass]="addMode ? 'bi-plus-circle' : 'bi-pencil-square'"></i>
+            {{ (addMode ? "SERVICES.ADD_NEW" : "SERVICES.EDIT_TITLE") | translate }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="cancel()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-light-subtle">
+          <form [formGroup]="consultationForm">
+            <div class="row g-3">
+              @if(!addMode) {
+                <div class="col-12">
+                  <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.ID_LABEL' | translate }}</label>
+                  <input type="text" class="form-control bg-light" formControlName="id" readonly>
+                </div>
+              }
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.NAME_LABEL' | translate }}</label>
+                <input type="text" class="form-control shadow-sm" formControlName="name"
+                       [class.is-invalid]="consultationForm.get('name')?.invalid && consultationForm.get('name')?.touched">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.SPECIALTY_LABEL' | translate }}</label>
+                <select class="form-select shadow-sm" formControlName="specialty">
+                  <option value="GENERAL">{{ 'SPECIALTIES.GENERAL.NAME' | translate }}</option>
+                  <option value="CARDIOLOGY">{{ 'SPECIALTIES.CARDIOLOGY.NAME' | translate }}</option>
+                  <option value="DENTISTRY">{{ 'SPECIALTIES.DENTISTRY.NAME' | translate }}</option>
+                  <option value="PSYCHIATRY">{{ 'SPECIALTIES.PSYCHIATRY.NAME' | translate }}</option>
+                  <option value="DERMATOLOGY">{{ 'SPECIALTIES.DERMATOLOGY.NAME' | translate }}</option>
+                  <option value="ORTHOPEDICS">{{ 'SPECIALTIES.ORTHOPEDICS.NAME' | translate }}</option>
+                  <option value="OPHTHALMOLOGY">{{ 'SPECIALTIES.OPHTHALMOLOGY.NAME' | translate }}</option>
+                  <option value="GYNECOLOGY">{{ 'SPECIALTIES.GYNECOLOGY.NAME' | translate }}</option>
+                  <option value="UROLOGY">{{ 'SPECIALTIES.UROLOGY.NAME' | translate }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.DURATION_LABEL' | translate }}</label>
+                <div class="input-group shadow-sm">
+                  <input type="number" class="form-control" formControlName="duration">
+                  <span class="input-group-text small">min</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.PRICE_LABEL' | translate }}</label>
+                <div class="input-group shadow-sm">
+                  <input type="number" class="form-control" formControlName="price">
+                  <span class="input-group-text fw-bold">Ft</span>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted">{{ 'SERVICES.FORM.DESC_LABEL' | translate }}</label>
+                <textarea class="form-control shadow-sm" formControlName="description" rows="3" 
+                          [placeholder]="'SERVICES.FORM.DESC_PLACEHOLDER' | translate"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer bg-light p-3">
+          <button type="button" class="btn btn-link text-muted text-decoration-none px-4" (click)="cancel()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button type="button" 
+                  class="btn btn-elit px-5 shadow-sm" 
+                  (click)="startSave()" 
+                  [disabled]="consultationForm.invalid">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ (addMode ? 'SERVICES.SAVE_SERVICE' : 'SERVICES.SAVE_CHANGES') | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

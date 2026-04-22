@@ -1,0 +1,90 @@
+import request from 'supertest';
+import app from '../app/app.js';
+import User from '../app/models/user.js';
+import { expect } from 'chai'; 
+
+describe('/api/staff', () => {
+    const restype = 'application/json; charset=utf-8';
+    let token = ''; 
+    let testUserId;
+    let testStaffId; 
+
+    before(async () => {
+        const user = await User.findOrCreate({
+          where: { email: 'mary@zold.lan' },
+          defaults: {
+            name: 'Mary Test',
+            password: 'secret',
+            roleId: 0 
+          }
+      });
+    
+      testUserId = user.id;
+
+      const loginRes = await request(app)
+        .post('/api/login')
+        .send({
+          email: 'mary@zold.lan',
+          password: 'secret'
+        });
+      
+      token = loginRes.body.token || loginRes.body.accessToken;
+    });
+
+    it('POST /api/staff - Új szakember létrehozása', async () => {
+        const res = await request(app)
+            .post('/api/staff')
+            .set('Accept', 'application/json')
+            .set('Authorization', `Bearer ${token}`) 
+            .expect(201)
+            .send({
+                userId: testUserId,   
+                specialty: 'Fogász szakorvos',
+                isAvailable: true,
+                isActive: true,
+                bio: 'Több mint 10 éves szakmai tapasztalattal rendelkező szakember.',
+                imageUrl: 'http://example.com/image.jpg'
+            })
+            .expect('Content-Type', restype)
+            .expect(201);
+
+        testStaffId = res.body.id; 
+        expect(res.body).to.have.property('id');
+        expect(res.body.userId).to.equal(testUserId);
+        expect(res.body.specialty).to.equal('Fogász szakorvos');
+    });
+
+    it('GET /api/staff - Összes szakember listázása', async () => {
+        const res = await request(app)
+            .get('/api/staff')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', restype)
+            .expect(200);
+
+        expect(res.body).to.be.an('array');
+    });
+
+    it('PUT /api/staff/:id - Szakember adatainak módosítása', async () => {
+        await request(app)
+            .put(`/api/staff/${testStaffId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Accept', 'application/json')
+            .send({
+                specialty: 'Szájsebész'
+            })
+            .expect('Content-Type', restype)
+            .expect(200);
+    });
+
+    it('DELETE /api/staff/:id - Szakember törlése', async () => {
+        await request(app)
+            .delete(`/api/staff/${testStaffId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Accept', 'application/json')
+            .expect(200);
+            
+        await request(app)
+            .get(`/api/staff/${testStaffId}`)
+            .expect(404);
+    });
+});

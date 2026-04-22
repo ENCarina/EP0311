@@ -1,0 +1,130 @@
+<div class="container py-5 animate-fade-in">
+  <div class="row">
+    
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 mb-4 rounded-4">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-4 fw-bold">
+            <i class="bi bi-filter-left me-2 text-primary"></i>{{ 'BOOKING.SIDEBAR_TITLE' | translate }}
+          </h5>
+          
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SELECT_DATE' | translate }}</label>
+            <div class="d-grid">
+              <button class="btn btn-primary rounded-pill border-light-subtle shadow-sm text-start py-2 px-3" 
+                      (click)="goToToday()">
+                <i class="bi bi-calendar-event me-2"></i> {{ 'BOOKING.TODAY' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.SPECIALTY' | translate }}</label>
+            <select class="form-select border-light-subtle shadow-sm" [(ngModel)]="selectedSpecialty" (change)="onSpecialtyChange()">
+              <option value="" disabled selected>{{ 'BOOKING.SPECIALTY_PLACEHOLDER' | translate }}</option>
+              @for (spec of specialties; track spec) {
+                <option [value]="spec">{{ 'SPECIALTIES.' + spec + '.NAME' | translate }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.STAFF' | translate }}</label>
+            <select class="form-select border-light-subtle shadow-sm" [(ngModel)]="selectedStaffId" (change)="onStaffChange()" [disabled]="!selectedSpecialty">
+              <option [ngValue]="null" disabled>{{ 'BOOKING.STAFF_PLACEHOLDER' | translate }}</option>
+              @for (staff of filteredStaffs; track staff.id) {
+                <option [ngValue]="staff.id">{{ $any(staff).user?.name || staff.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">{{ 'BOOKING.TREATMENT' | translate }}</label>
+            <select class="form-select border-light-subtle shadow-sm" [(ngModel)]="selectedConsultationId" (change)="onFilterChange()" [disabled]="!selectedStaffId" [class.border-success]="filteredConsultations.length === 1">
+              <option [ngValue]="null" disabled>{{ 'BOOKING.TREATMENT_PLACEHOLDER' | translate }}</option>
+              @for (cons of filteredConsultations; track cons.id) {
+                <option [ngValue]="cons.id">{{ 'SERVICES.' + cons.name | translate }}</option>
+              }
+            </select>
+          </div>
+
+          <button class="btn btn-elit w-100 mt-3 rounded-pill py-2 shadow-sm" (click)="onFilterChange()" [disabled]="isLoading || !selectedConsultationId">
+            @if (isLoading) {
+              <span class="spinner-border spinner-border-sm me-2"></span> {{ 'BOOKING.UPDATING' | translate }}
+            } @else {
+              <i class="bi bi-search me-2"></i>{{ 'BOOKING.SEARCH_BTN' | translate }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold">{{ 'BOOKING.AVAILABLE_SLOTS' | translate }}</h4>
+        
+        <div class="btn-group shadow-sm rounded-pill overflow-hidden border bg-white">
+          <button class="btn btn-light btn-sm px-3 border-0" (click)="changeWeek(-7)">
+            <i class="bi bi-chevron-left text-primary"></i>
+          </button>
+          <div class="px-3 d-flex align-items-center fw-bold small text-dark border-start border-end bg-white">
+            {{ weekDays[0] | date: dateFormat}} - {{ weekDays[4] | date: dateFormat }}
+          </div>
+          <button class="btn btn-light btn-sm px-3 border-0" (click)="changeWeek(7)">
+            <i class="bi bi-chevron-right text-primary"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="table-responsive">
+          <table class="table mb-0 table-fixed">
+            <thead class="bg-light">
+              <tr>
+                <th class="text-center py-3 text-muted small fw-bold border-0" style="width: 70px;">{{ 'BOOKING.TIME' | translate }}</th>
+                @for (day of weekDays; track day.getTime()) {
+                  <th class="text-center py-3 border-0">
+                    <span class="d-block fw-bold text-dark small text-uppercase">{{ day | date: dayFormat : undefined : currentLocale }}</span>
+                    <small class="text-primary fw-normal" style="font-size: 0.7rem;">{{ day | date: dateFormat }}</small>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (hour of hours; track hour) {
+                <tr class="border-top border-light">
+                  <td class="text-center align-middle bg-light-subtle small fw-bold text-muted border-0">
+                    {{ hour }}
+                  </td>
+                  @for (day of weekDays; track day.getTime()) {
+                    <td class="p-2 align-top border-start border-light" style="min-width: 110px;">
+                      <div class="d-flex flex-column gap-2">
+                        @for (slot of getSlotsForHour(day, hour); track slot.id) {
+                          <button 
+                            (click)="slot.isAvailable && onReserve(slot)"
+                            [disabled]="!slot.isAvailable"
+                            class="btn btn-sm slot-pill py-2 shadow-none border-0"
+                            [ngClass]="slot.isAvailable ? 'btn-outline-primary bg-primary-subtle border-0' : 'btn-light text-muted opacity-50'">
+                            <span class="fw-bold" style="font-size: 0.75rem;">{{ slot.startTime.slice(0, 5) }}</span>
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      @if (availableSlots.length === 0 && !isLoading) {
+        <div class="text-center py-5 mt-4 bg-white rounded-4 shadow-sm">
+          <i class="bi" [ngClass]="errorMessage ? 'bi-exclamation-triangle text-danger' : 'bi-calendar-x text-muted'" class="fs-1 mb-2"></i>
+          <p class="mb-0" [class.text-danger]="errorMessage">{{ (errorMessage || 'BOOKING.NO_SLOTS_TITLE') | translate }}</p>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

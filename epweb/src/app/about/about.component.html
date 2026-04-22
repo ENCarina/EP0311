@@ -1,0 +1,62 @@
+<div class="about-page-wrapper">
+    <div class="stones-background"></div>
+
+    <div class="about-card animate__animated animate__fadeIn">
+        <div class="about-header text-center">
+            <div class="logo-circle mx-auto mb-3">
+                <i class="bi bi-shield-check text-primary"></i>
+            </div>
+            <h1>ElitPort <span class="badge-custom">EP</span></h1>
+            <p class="tagline">{{ 'ABOUT.TAGLINE' | translate }}</p>
+            <div class="title-divider mx-auto"></div>
+        </div>
+
+        <div class="about-grid mt-4">
+            <div class="info-box">
+                <span class="label">{{ 'ABOUT.VERSION' | translate }}</span>
+                <span class="value v-tag">1.0 <small>(Beta)</small></span>
+            </div>
+            
+            <div class="info-box">
+                <span class="label">{{ 'ABOUT.DEVELOPERS' | translate }}</span>
+                <span class="value fw-bold">Nagy Etelka</span>
+            </div>
+
+            <div class="info-box">
+                <span class="label">{{ 'ABOUT.STATUS' | translate }}</span>
+                <span class="value status-online">
+                    <span class="pulse-dot"></span> {{ 'ABOUT.SYSTEM_ACTIVE' | translate }}
+                </span>
+            </div>
+        </div>
+
+        <div class="tech-stack-section mt-4 text-center">
+            <h4 class="text-uppercase small fw-bold letter-spacing-1 mb-3 text-secondary">
+                {{ 'ABOUT.TECHNOLOGIES' | translate }}
+            </h4>
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <span class="badge bg-light text-dark border"><i class="bi bi-patch-check text-primary"></i> Angular 20</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-lightning-charge text-warning"></i> Signals</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-shield-lock text-success"></i> JWT Auth</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-bootstrap text-purple"></i> Bootstrap 5</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-file-earmark-pdf text-danger"></i> jsPDF</span>
+            </div>
+        </div>
+
+        <div class="about-description mt-4">
+            <h3 class="letter-spacing-1">{{ 'ABOUT.PROJECT_TITLE' | translate }}</h3>
+            <p [innerHTML]="'ABOUT.PROJECT_DESC' | translate"></p>
+        </div>
+
+        <div class="about-footer">
+            <div class="links mb-4">
+                <a href="#" class="btn-link-custom">{{ 'ABOUT.DOCS' | translate }}</a>
+                <span class="dot-separator">•</span>
+                <a href="mailto:support@elitport.hu" class="btn-link-custom">{{ 'ABOUT.SUPPORT' | translate }}</a>
+                <span class="dot-separator">•</span>
+                <a href="#" class="btn-link-custom">GitHub</a>
+            </div>
+            <p class="copyright">&copy; 2026 Etelka J Nagy. {{ 'ABOUT.ALL_RIGHTS' | translate }}</p>
+        </div>
+    </div>
+</div>

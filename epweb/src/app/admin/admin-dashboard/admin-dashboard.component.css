@@ -1,0 +1,119 @@
+/* --- 1. Alapstílusok és KPI elemek --- */
+.text-navy { color: #001f3f; }
+
+.btn-elit {
+    background: linear-gradient(135deg, #001f3f, #003366);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.btn-elit:hover {
+    background: linear-gradient(135deg, #003366, #001f3f);
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 31, 63, 0.2);
+}
+
+.kpi-icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-table-card {
+    border-radius: 20px !important;
+    transition: all 0.3s ease;
+}
+
+/* --- 2. Heatmap és Táblázat Specifikus Stílusok --- */
+.table thead th {
+    background-color: #001f3f !important;
+    color: #ffffff !important;           
+    letter-spacing: 0.05rem;
+    padding: 1rem 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border: none;
+}
+
+.heatmap-cell {
+    min-width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.2s ease-in-out;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+/* --- 3. Progress bar és Animációk --- */
+.progress {
+    background-color: #f1f5f9;
+    overflow: visible;
+    height: 8px;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 4. Reszponzivitás --- */
+
+/* Heatmap rögzítése: Mobilon is táblázat marad */
+@media screen and (max-width: 768px) {
+    .heatmap-table {
+        display: table !important; /* Kényszerítjük a táblázat formátumot */
+        font-size: 0.7rem;
+    }
+
+    .heatmap-table tr, .heatmap-table td, .heatmap-table th {
+        display: table-cell !important; 
+        padding: 4px 2px !important;
+    }
+
+    .heatmap-cell {
+        min-width: 25px;
+        height: 25px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Minden egyéb táblázat (ha van) kártyává alakulhat */
+@media (max-width: 767.98px) {
+    .table:not(.heatmap-table) thead {
+        display: none !important;
+    }
+
+    .table:not(.heatmap-table) tbody tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 1rem;
+        padding: 0.75rem;
+    }
+}

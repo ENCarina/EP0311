@@ -1,0 +1,101 @@
+/* --- 1. Alap elrendezés (Sticky Footer megoldás) --- */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* A kijelző teljes magasságát kitölti */
+  background-color: #ffffff;
+}
+
+/* A fő tartalom kitölti a maradék helyet, így a footer mindig az alján marad */
+main {
+  flex: 1 0 auto;
+  background-color: #ffffff;
+}
+
+/* --- 2. Navigáció (Navbar) --- */
+.navbar {
+  z-index: 1030;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand {
+  letter-spacing: 0.5px;
+}
+
+/* Aktív menüpont jelölése */
+.nav-link.active {
+  color: #ffc107 !important; /* Arany kiemelés */
+  font-weight: 600;
+}
+
+/* --- 3. Nyelvváltó (Lang Wrapper) --- */
+.lang-wrapper {
+  transition: all 0.3s ease;
+  gap: 2px;
+}
+
+.btn-xs {
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  min-width: 28px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Nyelvváltó gomb hover effekt */
+.lang-wrapper button:hover:not(.bg-white) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- 4. Admin Dropdown --- */
+.dropdown-menu {
+  display: none; /* Alapértelmezett elrejtés */
+}
+
+.dropdown-menu.show {
+  display: block;
+  animation: navFadeIn 0.2s ease-out;
+}
+
+@keyframes navFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 5. Footer (Lábléc) --- */
+footer {
+  flex-shrink: 0;
+  background-color: #1a1a1a !important; /* Prémium mélyfekete */
+  border-top: 3px solid #007bff; /* ElitPort kék csík */
+}
+
+footer small, footer p {
+  letter-spacing: 0.3px;
+}
+
+/* --- 6. Egyedi Háttér szekciók --- */
+.home-bg-stones {
+  background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), 
+              url('/images/medical-bg2.jpg') no-repeat center center fixed; 
+  background-size: cover;
+  border-radius: 15px; 
+}
+
+/* --- 7. Reszponzív --- */
+@media (max-width: 991px) {
+  .lang-wrapper {
+    margin-right: 5px;
+  }
+  
+  .navbar-collapse {
+    background: rgba(0, 123, 255, 0.98); /* Mobil menü háttérszíne */
+    padding: 1rem;
+    border-radius: 15px;
+    margin-top: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+
+  .nav-link {
+    padding: 10px 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+}

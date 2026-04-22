@@ -1,0 +1,140 @@
+/* --- 1. Alapstílusok (Minden méretben) --- */
+.text-navy {
+    color: #001f3f;
+}
+
+.avatar-sm {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+}
+
+.table thead th {
+   background-color: #001f3f !important;
+    color: #ffffff !important;           
+    letter-spacing: 0.05rem;
+    border-bottom: none;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-weight: 600;
+}
+
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+.transition-all:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Lejárt sorok stílusa */
+.expired-row {
+  background-color: rgba(248, 249, 250, 0.7) !important;
+  color: #adb5bd !important;
+}
+
+.expired-row .avatar-sm {
+  background-color: #e9ecef !important;
+  color: #adb5bd !important;
+}
+
+.expired-row .text-navy, 
+.expired-row .text-dark {
+  color: #adb5bd !important;
+}
+
+/* Kép vagy ikon elhalványítása a sorban */
+.expired-row i {
+  opacity: 0.5;
+}
+
+.btn-link.text-danger {
+  text-decoration: none;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.btn-link.text-danger:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.expired-row .bi-check2-all {
+  font-size: 0.9rem;
+}
+
+/* --- 2. Közepes kijelzők (Tablet / Kis laptop - 991px alatt) --- */
+@media (max-width: 991.98px) {
+    .table td, .table th {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* --- 3. Mobil nézet (768px alatt) --- */
+@media (max-width: 767.98px) {
+    /* Elrejtjük a fejlécet, mert mobilon a kártyák mellé tesszük a címkéket */
+    .table thead {
+        display: none !important;
+    }
+
+    /* A táblázat soraiból kártyákat csinálunk */
+    .table tbody tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 1rem;
+        padding: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* A cellák egymás alá kerülnek */
+    .table tbody td {
+        display: block;
+        width: 100% !important;
+        border: none;
+        padding: 0.5rem 1rem;
+        text-align: left;
+    }
+
+    /* Lemondott sorok stílusa mobilon */
+    tr.opacity-50 {
+        background-color: #f8f9fa !important;
+    }
+
+    /* A gomb mobilon legyen kényelmes, teljes szélességű */
+    .btn-sm {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .table-responsive {
+        border: 0;
+        overflow-x: hidden; /* Ne legyen felesleges oldalra görgetés */
+    }
+}

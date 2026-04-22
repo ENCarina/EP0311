@@ -1,0 +1,127 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background-color: #f8fafd;
+}
+
+/* 1. Kártya és Táblázat */
+.admin-table-card {
+    background: #ffffff;
+    border-radius: 20px !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    position: relative;
+    z-index: 1; 
+}
+
+/* 2. Modal Fixek (Hogy a kattintás átmenjen és a modal látszódjon) */
+.modal {
+    display: block !important; /* Angular @if kezeli, de a display kell neki */
+    z-index: 1060 !important;
+    pointer-events: none; /* Alapesetben átengedjük a kattintást... */
+}
+
+.modal-dialog {
+    pointer-events: auto; /* ...de a modal ablakon belül már működjön! */
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+/* 3. Gombok (Asztali és általános stílus) */
+.btn-elit {
+    background: linear-gradient(135deg, #001f3f, #003366);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer !important;
+}
+
+.service-action-container {
+    transition: all 0.2s ease;
+    background: #ffffff;
+    z-index: 10; /* Biztosítja, h a gombok a táblázat sorai felett legyenek */
+}
+
+.service-action-container:hover {
+    box-shadow: 0 5px 12px rgba(0,0,0,0.08) !important;
+}
+
+.service-action-container .btn {
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer !important; 
+}
+
+.service-action-container .btn:hover {
+    background-color: #f8fafc;
+}
+
+/* 4. Mobil Nézet */
+@media screen and (max-width: 768px) {
+    .table-responsive {
+        border: none !important;
+        overflow: visible !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        background: #ffffff;
+        border-radius: 15px !important;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #edf2f7 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    td {
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center;
+        border: none !important;
+        padding: 0.6rem 0.5rem !important;
+        text-align: left !important;
+    }
+
+    td::before {
+        content: attr(data-column);
+        flex: 0 0 130px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        color: #94a3b8;
+    }
+
+    td:last-child {
+        border-top: 1px solid #f1f5f9 !important;
+        margin-top: 0.5rem;
+        padding-top: 1rem !important;
+        justify-content: flex-start !important;
+        flex-direction: row !important;
+    }
+
+    .service-action-container {
+        display: flex !important;
+        width: auto !important;
+        border-radius: 10px !important;
+    }
+
+    .service-action-container .btn {
+        padding: 10px 20px !important;
+    }
+}
