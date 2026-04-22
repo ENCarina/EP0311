@@ -1,0 +1,87 @@
+/* Fő konténer: Tiszta fehér alap */
+.home-hero-wrapper {
+  position: relative;
+  background-color: #ffffff;
+  min-height: 90vh;
+  overflow: hidden;
+}
+
+/* A kövek háttérképe: Nagyon halvány (10-15% láthatóság) */
+.stones-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url('/images/medical-bg2.jpg'); 
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12; /* Ettől marad világos és fehér a hatás */
+  filter: grayscale(20%) blur(2px);
+  z-index: 0;
+}
+
+/* Cím alatti díszítő vonal */
+.divider-line {
+  width: 60px;
+  height: 3px;
+  background-color: #007bff; /* Vagy az elit kéked */
+  border-radius: 2px;
+}
+
+/* Elit kártya design */
+.elite-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: all 0.4s ease;
+  z-index: 1;
+}
+
+.elite-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  background: #ffffff;
+}
+
+.img-container {
+  overflow: hidden;
+  height: 220px;
+}
+
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.elite-card:hover .img-container img {
+  transform: scale(1.05);
+}
+
+/* Elit Gomb Stílus */
+.btn-elite-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 16px 45px;
+  border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-elite-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3);
+  background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+/* Tipográfia finomítás */
+.letter-spacing-1 {
+  letter-spacing: 1px;
+  color: #1a1a1a;
+}
+

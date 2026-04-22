@@ -1,0 +1,37 @@
+import db from '../../app/models/modrels.js';
+
+async function up({context: QueryInterface}) {
+  if(db.Staff) {
+    await db.Staff.bulkCreate([
+      { id: 1, userId: 101, specialty: 'Kardiológus', isAvailable: true, isActive:true, bio: '20 éves szakmai tapasztalattal rendelkező szakorvos.', imageUrl: null, createdAt: new Date(), updatedAt: new Date()},
+      { id: 2, userId: 102, specialty: 'Fogorvos', isAvailable: true, isActive:true, bio: '15 éves nemzetközi tapasztalattal rendelkező fogorvos.', imageUrl: null, createdAt: new Date(), updatedAt: new Date()},
+      { id: 3, userId: 103, specialty: 'Pszichiáter', isAvailable: true, isActive: true, bio: 'amerikai főorvos.', imageUrl: null, createdAt: new Date(), updatedAt: new Date()},
+      { id: 4, userId: 104, specialty: 'Bőrgyógyász', isAvailable: true, isActive: true, bio: 'Esztétikai bőrgyógyászat és lézeres kezelések szakértője.', imageUrl: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 5, userId: 105, specialty: 'Ortopéd szakorvos', isAvailable: true, isActive: true, bio: 'Sportsebészet és mozgásszervi rehabilitáció specialistája.', imageUrl: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 6, userId: 106, specialty: 'Szemész', isAvailable: true, isActive: true, bio: 'Mikrosebészeti tapasztalattal rendelkező szemész szakorvos.', imageUrl: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 7, userId: 107, specialty: 'Urológus', isAvailable: true, isActive: true, bio: 'Modern diagnosztikai eljárások és kíméletes műtéti technikák.', imageUrl: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 8, userId: 108, specialty: 'Nőgyógyász', isAvailable: true, isActive: true, bio: 'Holisztikus szemléletű szülész-nőgyógyász szakorvos.', imageUrl: null, createdAt: new Date(), updatedAt: new Date() },
+          
+      {id: 9, userId: 100, role: 'staff', specialty: 'Vezető asszisztens', isAvailable: true, isActive:true, bio: 'Laborvizsgálatok és adminisztráció felelőse.', imageUrl: null, createdAt: new Date(),updatedAt: new Date()}
+    ]);
+  }else {
+    await QueryInterface.bulkInsert('staff', [
+      {
+    userId: 101, 
+    role: 'doctor', 
+    specialty: 'Kardiológus', 
+    isAvailable: true,
+    isActive:  true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+    }
+  ]);
+  }
+
+}
+
+async function down({context: QueryInterface}) {
+  await QueryInterface.bulkDelete('staff',  null, {});
+}
+
+export { up, down }

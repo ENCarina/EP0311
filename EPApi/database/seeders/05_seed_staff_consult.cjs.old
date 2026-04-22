@@ -1,0 +1,32 @@
+import db from '../../app/models/modrels.js';
+
+async function up({context: QueryInterface}) {
+  const pivotData = [
+   
+    { staffId: 1, consultationId: 1, createdAt: new Date(), updatedAt: new Date() }, // Dr. Kovács Antal (1) - Kardiológia
+    { staffId: 2, consultationId: 2, createdAt: new Date(), updatedAt: new Date() }, // Dr. Tóth Tünde (2) - Fogászat (3 féle)
+    { staffId: 2, consultationId: 9, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 2, consultationId: 10, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 3, consultationId: 3, createdAt: new Date(), updatedAt: new Date() }, // Dr. House Greg (3) - Pszichiátria
+    { staffId: 4, consultationId: 4, createdAt: new Date(), updatedAt: new Date() }, // Dr. Szabó Beatrix (4) - Bőrgyógyász
+    { staffId: 5, consultationId: 5, createdAt: new Date(), updatedAt: new Date() }, // Dr. Kiss Zoltán (5) - Ortopéd (3 féle)
+    { staffId: 5, consultationId: 12, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 5, consultationId: 13, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 6, consultationId: 6, createdAt: new Date(), updatedAt: new Date() },  // Dr. Molnár Julianna (6) - Szemész (2 féle)
+    { staffId: 6, consultationId: 11, createdAt: new Date(), updatedAt: new Date() },
+    { staffId: 7, consultationId: 7, createdAt: new Date(), updatedAt: new Date() }, // Dr. Barna Barnabás (7) - Urológus
+    { staffId: 8, consultationId: 8, createdAt: new Date(), updatedAt: new Date() }  // Dr. Varga Eszter (8) - Nőgyógyász
+  ];
+
+  if(db && db.staff_consult) {
+    await db.staff_consult.bulkCreate(pivotData);
+  } else {
+    await QueryInterface.bulkInsert('staff_consult', pivotData);
+  }
+}
+
+async function down({context: QueryInterface}) {
+  await QueryInterface.bulkDelete('staff_consult', null, {});
+}
+
+export { up, down }

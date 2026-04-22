@@ -1,0 +1,123 @@
+
+.container {
+  background-color: #ffffff;
+}
+
+/* --- SZŰRŐ PANEL (Bal oldal) --- */
+.card.shadow-sm.rounded-4 {
+  background-color: #ffffff;
+  border: none !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+  border-left: 5px solid #007bff !important; /* Egy elegáns kék csík a szélén */
+  transition: transform 0.3s ease;
+}
+.card.shadow-sm.rounded-4:hover {
+  transform: translateY(-2px);
+}
+
+/* Inputok és Select-ek finomítása */
+.form-control, .form-select {
+  border-radius: 12px !important;
+  border: 1px solid #eee !important;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  background-color: #fcfcfc;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: #ffffff;
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.05) !important;
+}
+
+/* Keresés gomb */
+.btn-elit {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-elit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25);
+}
+
+/* --- IDŐPONT KÁRTYÁK (Jobb oldal) --- */
+/* --- IDŐPONT KÁRTYÁK STÍLUSA --- */
+.slot-card {
+  border: none !important;
+  border-radius: 16px !important;
+  background-color: #ffffff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Kék jelzőcsík felülre, ha szabad */
+.slot-card.border-primary {
+  border-top: 4px solid #007bff !important;
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.08) !important;
+}
+
+.slot-card:hover:not(.disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Az óra ikon és az időpont szövege */
+.slot-card .bi-clock-fill {
+  color: #007bff;
+  opacity: 0.8;
+  transition: transform 0.3s ease;
+}
+
+.slot-card:hover .bi-clock-fill {
+  transform: scale(1.1);
+}
+
+/* Foglalás gomb stílusa */
+
+.slot-button {
+  background-color: #f8f9fa;
+  border: 1px solid #eef2f7;
+  color: #007bff;
+  font-weight: 600;
+  border-radius: 10px !important;
+  transition: all 0.2s ease;
+}
+
+.slot-card:hover:not(.disabled) .slot-button {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+/* Ha foglalt/nem elérhető */
+.slot-card.disabled {
+  opacity: 0.6;
+  background-color: #fdfdfd;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+
+/* Animáció a kártyák megjelenéséhez */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.col-md-6 {
+  animation: fadeInUp 0.5s ease backwards;
+}
+
+/* Sorban úsznak be a kártyák */
+@for $i from 1 through 20 {
+  .col-md-6:nth-child(#{$i}) { animation-delay: #{$i * 0.05}s; }
+}

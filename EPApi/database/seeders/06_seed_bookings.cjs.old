@@ -1,0 +1,133 @@
+'use strict';
+
+export async function up({ context: queryInterface }) {
+  await queryInterface.bulkInsert('bookings', [
+    {
+      name: 'Kardiológiai vizsgálat',
+      patientId: 50,
+      staffId: 1, // Dr. Kovács Antal
+      consultationId: 1,
+      slotId: 1,
+      status: 'Confirmed',
+      duration: 30,
+      startTime: '2026-03-30T08:00:00.000Z',
+      endTime: '2026-03-30T08:30:00.000Z',
+      price: 25000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Fogászati kontroll',
+      patientId: 50,
+      staffId: 2, // Dr. Tóth Tünde
+      consultationId: 2,
+      slotId: 2,
+      status: 'Confirmed',
+      duration: 20,
+      startTime: '2026-03-31T09:00:00.000Z',
+      endTime: '2026-03-31T09:20:00.000Z',
+      price: 15000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Pszichiátriai első konzultáció',
+      patientId: 50,
+      staffId: 3, // Dr. House Greg
+      consultationId: 3,
+      slotId: 3,
+      status: 'Confirmed',
+      duration: 60,
+      startTime: '2026-03-30T10:00:00.000Z',
+      endTime: '2026-03-30T11:00:00.000Z',
+      price: 35000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Anyajegyszűrés',
+      patientId: 50,
+      staffId: 4, // Dr. Szabó Beatrix
+      consultationId: 4,
+      slotId: 4,
+      status: 'Confirmed',
+      duration: 20,
+      startTime: '2026-04-01T08:30:00.000Z',
+      endTime: '2026-04-01T08:50:00.000Z',
+      price: 18000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Ortopédiai szakvizsgálat',
+      patientId: 50,
+      staffId: 5, // Dr. Kiss Zoltán
+      consultationId: 5,
+      slotId: 5,
+      status: 'Confirmed',
+      duration: 30,
+      startTime: '2026-04-01T10:00:00.000Z',
+      endTime: '2026-04-01T10:30:00.000Z',
+      price: 22000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Szemészeti alapvizsgálat',
+      patientId: 50,
+      staffId: 6, // Dr. Molnár Julianna
+      consultationId: 6,
+      slotId: 6,
+      status: 'Confirmed',
+      duration: 25,
+      startTime: '2026-04-02T09:00:00.000Z',
+      endTime: '2026-04-02T09:25:00.000Z',
+      price: 16000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Urológiai szűrés',
+      patientId: 50,
+      staffId: 7, // Dr. Barna Barnabás
+      consultationId: 7,
+      slotId: 7,
+      status: 'Confirmed',
+      duration: 30,
+      startTime: '2026-04-02T11:00:00.000Z',
+      endTime: '2026-04-02T11:30:00.000Z',
+      price: 20000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Nőgyógyászati rákszűrés',
+      patientId: 50,
+      staffId: 8, // Dr. Varga Eszter
+      consultationId: 8,
+      slotId: 8,
+      status: 'Confirmed',
+      duration: 40,
+      startTime: '2026-04-03T10:00:00.000Z',
+      endTime: '2026-04-03T10:40:00.000Z',
+      price: 28000,
+      isPublic: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ], {});
+
+  // Frissítjük a slotokat
+  await queryInterface.sequelize.query('UPDATE slots SET isAvailable = 0 WHERE id IN (1, 2, 3, 4, 5, 6, 7, 8)');
+}
+
+export async function down({ context: queryInterface }) {
+  await queryInterface.bulkDelete('bookings', null, {});
+}

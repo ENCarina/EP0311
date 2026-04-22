@@ -1,0 +1,39 @@
+import { Op } from 'sequelize';
+import db from '../../app/models/modrels.js'; 
+import bcrypt from 'bcryptjs';
+
+async function up({ context: QueryInterface }) {
+
+  await QueryInterface.bulkDelete('users', null, {});
+  await QueryInterface.bulkDelete('roles', null, {});
+
+  await QueryInterface.bulkInsert('roles', [
+    { id: 0, name: 'user', createdAt: new Date(), updatedAt: new Date() },
+    { id: 1, name: 'staff', createdAt: new Date(), updatedAt: new Date() },
+    { id: 2, name: 'admin', createdAt: new Date(), updatedAt: new Date() }
+  ]);
+
+  const doctorsPassword = bcrypt.hashSync('doctor123', 10);
+  const adminPassword = bcrypt.hashSync('joyEtna', 10);
+
+  await QueryInterface.bulkInsert('users', [
+      { id: 25, name: 'User1', email: 'elitport@freemail.hu', password: bcrypt.hashSync('test987',10), roleId: 0, verified: true, verificationToken: null },
+      { id: 50, name: 'User', email: 'user@ep.com', password: bcrypt.hashSync('test1243',10), roleId: 0, verified: true, verificationToken: null },
+      { id: 101, name: 'Dr. Kovács Antal', email: 'dr.kovacs@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 102, name: 'Dr. Tóth Tünde', email: 'dr.toth@ep.com', password: doctorsPassword,  roleId: 1, verified: true, verificationToken: null },
+      { id: 103, name: 'Dr. House Greg', email: 'dr.house@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 104, name: 'Dr. Szabó Beatrix', email: 'dr.szabo@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 105, name: 'Dr. Kiss Zoltán', email: 'dr.kiss@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 106, name: 'Dr. Molnár Julianna', email: 'dr.molnar@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 107, name: 'Dr. Barna Barnabás', email: 'dr.barna@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+      { id: 108, name: 'Dr. Varga Eszter', email: 'dr.varga@ep.com', password: doctorsPassword, roleId: 1, verified: true, verificationToken: null },
+          
+      { id: 100, name: 'Admin', email: 'admin@ep.com', password: adminPassword, roleId: 2, verified: true, verificationToken: null },
+    ]);
+}
+async function down({ context: QueryInterface }) {
+  await QueryInterface.bulkDelete('users', null, {});
+  await QueryInterface.bulkDelete('roles', null, {});
+}
+
+export { up, down };
